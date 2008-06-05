@@ -8,21 +8,19 @@
 
 #include <assert.h>
 #include "kl_compiler_cfg.h"
-#include <vector>
 #include <string>
-#include <algorithm>
 
 KL_COMMON_NAMESPACE_BEGIN
 
 ///
 /// byte_coder is tool to code any kinds of c++ types into bytes.
 ///
+template <typename _Container>
 class byte_coder
 {
 public:
 	/// buffer type
-	typedef std::vector<unsigned char> buffer_type;
-
+	typedef _Container buffer_type;
 public:
 	/// constructor
 	byte_coder()
@@ -136,6 +134,7 @@ protected:
 	/// data buffer
 	buffer_type _buf;
 };
+
 
 KL_COMMON_NAMESPACE_END
 
