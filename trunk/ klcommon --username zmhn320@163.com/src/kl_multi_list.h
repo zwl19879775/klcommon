@@ -114,9 +114,15 @@ public:
 	/// if you want to pop all the data, alougth you can pop_front everytime, but that's 
 	/// not the good way because the lock/unlock will spend more time.
 	/// @param container output container contains all the data.
-	void pop_all( container_type &container )
+	void pop_all( container_type &container, bool block = true )
 	{
 		guard<mutex_type> g( _mutex );
+	
+		if( block )
+		{
+			while( _container.size() == 0 )
+				_condition.wait();
+		}
 
 		while( _container.size() > 0 )
 		{
