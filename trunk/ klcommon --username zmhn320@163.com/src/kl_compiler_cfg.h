@@ -6,6 +6,9 @@
 #ifndef ___KL_COMPILER_CFG_H_
 #define ___KL_COMPILER_CFG_H_
 
+#include <cctype>
+#include <cstddef>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
