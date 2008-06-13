@@ -12,11 +12,12 @@
 KL_COMMON_NAMESPACE_BEGIN
 
 ///
-/// This allocator can be used in STL, it's a standard stl allocator. It's underlying allocator
-/// behaviors like SGI::allocator. Yes, it uses a linked list to manage the memory.
+/// allocator adapter, adapted to the cmAllocate etc.
+/// This class must be global object so that the memory pool can be created only one time.
 ///
-template <typename _Tp>
-class allocator
+/// This class only is used internally by the allocator.
+///
+class alloc_adapter
 {
 private:
 	enum
@@ -24,7 +25,24 @@ private:
 		align = 8,
 		max_bytes = 128
 	};
+public:
+	/// to create the memory pool automatically.
+	alloc_adapter();
+	/// release the memory pool.
+	~alloc_adapter();
+	/// allocate
+	static void *allocate( std::size_t size_bytes );
+	/// deallocate
+	static void deallocate( void *p, std::size_t size_bytes );
+};
 
+///
+/// This allocator can be used in STL, it's a standard stl allocator. It's underlying allocator
+/// behaviors like SGI::allocator. Yes, it uses a linked list to manage the memory.
+///
+template <typename _Tp>
+class allocator
+{
 public:
 	typedef std::size_t size_type;
 	typedef ptrdiff_t difference_type;
@@ -43,25 +61,24 @@ public:
 
 public:
 	/// default constructor
-	allocator() : _mp( cmCreate( align, max_bytes ) )
+	allocator() 
 	{
 	}
 
 	/// copy constructor, it will be called.
-	allocator( const allocator &alloc ) : _mp( cmCreate( align, max_bytes ) )
+	allocator( const allocator &alloc )
 	{
 	}
 
 	/// copy constructor from another allocator. it also will be called.
 	template <typename _Tp2>
-	allocator( const allocator<_Tp2> &alloc ) : _mp( cmCreate( align, max_bytes ) )
+	allocator( const allocator<_Tp2> &alloc ) 
 	{
 	}
 
 	/// destructor, will free all the memory.
 	~allocator()
 	{
-		cmRelease( &_mp );
 	}
 
 	/// Returns a pointer to the value x.
@@ -86,7 +103,7 @@ public:
 	/// if failed, return 0.
 	pointer allocate( size_type n, const void *p = 0 )
 	{
-		return n != 0 ? static_cast<pointer>( cmAllocate( &_mp, (cm_size_t)sizeof( value_type ) * n )  ) : 0 ;	
+		return n != 0 ? static_cast<pointer>( alloc_adapter::allocate( sizeof( value_type ) * n )  ) : 0 ;	
 	}
 	
 	/// Deallocates the storage for n elements of the element type being used in the memory model,beginning at location p.
@@ -94,7 +111,7 @@ public:
 	/// @param p returned by allocate.
 	void deallocate( pointer p, size_type n )
 	{
-		cmDeallocate( &_mp, p, (cm_size_t)sizeof( value_type ) * n );
+		alloc_adapter::deallocate( p, sizeof( value_type ) * n );
 	}
 	
 	///	Initializes the storage of the element, pointed to by p, with the value v.
@@ -108,10 +125,6 @@ public:
 	{ 
 		p->~_Tp(); 
 	}
-
-private:
-	/// the underlying memory pool.
-	cmMemoryPool _mp;
 };
 
 /// test for allocator equality (always true)
