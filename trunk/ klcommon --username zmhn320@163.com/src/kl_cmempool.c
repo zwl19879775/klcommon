@@ -9,7 +9,7 @@
 
 #define ROUND_UP( bytes, align ) (( (bytes) + (cm_size_t)(align) - 1 ) &~ ((cm_size_t)(align) - 1 ) ) 
 #define LIST_INDEX( bytes, align ) (((bytes) + (cm_size_t)(align) - 1 ) / (cm_size_t)(align) - 1 ) 
-#define RECORD_CHUNK( chunk, p ) add_chunk( chunk, p )
+#define RECORD_CHUNK( chunk, p, node_addr ) add_chunk( chunk, p, node_addr )
 #define FREE_CHUNK( chunk ) free_chunk( chunk )
 
 #ifdef __cplusplus
@@ -20,10 +20,10 @@ extern "C"
 ///
 /// add a chunk of memory to the linked list.
 ///
-static void add_chunk( cmChunk *chunk, char *p )
+static void add_chunk( cmChunk *chunk, char *p, void *node_addr )
 {
-	// god, it's not effective for a memory pool.
-	cmChunkNode *node = (cmChunkNode*) malloc( sizeof( cmChunkNode ) );
+	// put the ChunkNode in the node_addr can make things better.:D
+	cmChunkNode *node = (cmChunkNode*) node_addr;
 	node->_next = chunk->_header ;
 	node->_pointer = p;
 	chunk->_header = node;
@@ -38,10 +38,9 @@ static void free_chunk( cmChunk *chunk )
 	cmChunkNode *tmp;
 	while( node != 0 )
 	{
-		free( node->_pointer );
 		tmp = node;
 		node = node->_next;
-		free( tmp );
+		free( tmp->_pointer );
 	}
 
 	chunk->_header = 0;
@@ -94,7 +93,8 @@ static char *chunk_alloc( cmMemoryPool *mp, cm_size_t size, int *objs )
 		}
 
 		// and now, i think the memory pool is empty, so malloc again.
-		chunk->_start_free = (char*)malloc( bytes_to_get );
+		// the extra memory is used to put cmChunkNode.
+		chunk->_start_free = (char*)malloc( bytes_to_get + sizeof( cmChunkNode ) );
 		if( chunk->_start_free == 0 )
 		{
 			// malloc failed. that means the os cannot provide our more memory resource, and now,
@@ -125,12 +125,11 @@ static char *chunk_alloc( cmMemoryPool *mp, cm_size_t size, int *objs )
 			return 0;
 		}
 		
-		// record the chunk to free.
-		RECORD_CHUNK( chunk, chunk->_start_free );
-
 		// we got memory from OS
 		chunk->_heap_size += bytes_to_get;
 		chunk->_end_free = chunk->_start_free + bytes_to_get;
+		// record the chunk to free.
+		RECORD_CHUNK( chunk, chunk->_start_free, chunk->_end_free );
 
 		return chunk_alloc( mp, size, objs );
 	}
