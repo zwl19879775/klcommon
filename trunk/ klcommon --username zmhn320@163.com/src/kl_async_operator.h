@@ -37,7 +37,7 @@ public:
 	/// start the thread and execute the operation.
 	/// @param op the callback function operate the list node.
 	/// 
-	void execute( operator_type &op, init_type &init = functor(), release_type &release = functor() )
+	void execute( operator_type &op, init_type &init = init_type(), release_type &release = release_type() )
 	{
 		_operator = op;
 		_init = init;
