@@ -1,5 +1,7 @@
 ///
-///
+/// @file kl_async_operator.h
+/// @author Kevin Lynx
+/// @date 6.25.2008
 ///
 #ifndef ___KL_ASYNC_OPERATOR_H_
 #define ___KL_ASYNC_OPERATOR_H_
