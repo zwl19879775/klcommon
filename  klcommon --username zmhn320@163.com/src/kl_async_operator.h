@@ -24,7 +24,7 @@ public:
 	/// the list.
 	typedef multi_list<node_type, Mutex, Semaphore> list_type;
 	/// operator signature
-	typedef functor<void, TYPE_LIST1( const node_type& )> operator_type;
+	typedef functor<void, TYPE_LIST1( list_type& )> operator_type;
 	/// init function signature, called when the thread starts.
 	typedef functor<void> init_type;
 	/// called before the thread exits.
@@ -82,17 +82,7 @@ private:
 				break;
 			}
 
-			list_type::container_type my_container;
-			_list.pop_all( my_container, true );
-			std::size_t size = my_container.size();
-
-			for( std::size_t i = 0; i < size; ++ i )
-			{
-				node_type node = my_container.front();
-				my_container.pop_front();
-
-				_operator( node );
-			}
+			_operator( _list );
 		}
 
 		if( _release )

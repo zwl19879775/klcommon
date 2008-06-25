@@ -164,6 +164,7 @@ private:
 
 		_thread->_func( p );
 
+		_thread->_state = TS_EXIT;
 		_endthreadex( 0 );
 		return 0;
 	}
