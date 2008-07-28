@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kl_memcached", "kl_memcached\kl_memcached.vcproj", "{9191FE8A-0D37-4152-B53F-541D0BD7C657}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{3C8FE8F8-C860-412E-991A-2C8536E7C38A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9191FE8A-0D37-4152-B53F-541D0BD7C657} = {9191FE8A-0D37-4152-B53F-541D0BD7C657}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9191FE8A-0D37-4152-B53F-541D0BD7C657}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9191FE8A-0D37-4152-B53F-541D0BD7C657}.Debug|Win32.Build.0 = Debug|Win32
+		{9191FE8A-0D37-4152-B53F-541D0BD7C657}.Release|Win32.ActiveCfg = Release|Win32
+		{9191FE8A-0D37-4152-B53F-541D0BD7C657}.Release|Win32.Build.0 = Release|Win32
+		{3C8FE8F8-C860-412E-991A-2C8536E7C38A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3C8FE8F8-C860-412E-991A-2C8536E7C38A}.Debug|Win32.Build.0 = Debug|Win32
+		{3C8FE8F8-C860-412E-991A-2C8536E7C38A}.Release|Win32.ActiveCfg = Release|Win32
+		{3C8FE8F8-C860-412E-991A-2C8536E7C38A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

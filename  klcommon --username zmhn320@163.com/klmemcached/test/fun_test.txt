@@ -1,0 +1,280 @@
+/*
+	try to write a tiny program to parse the protocol for memcached.
+	kevin lynx
+	7.16.2008
+*/
+#include <winsock2.h>
+#include <windows.h>
+#include <stdio.h>
+#include "../kl_memcached/evbuffer.h"
+
+#if _MSC_VER >= 1400
+#pragma warning( disable : 4996 )
+#endif
+
+void stats( SOCKET s )
+{
+	char cmd[] = "stats\r\n";
+	int ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		char stat_info[512];
+		ret = recv( s, stat_info, sizeof( stat_info ) - 1, 0 );
+		if( ret > 0 )
+		{
+			stat_info[ret] = 0;
+			printf( "%s\n", stat_info );
+		}
+	}
+}
+
+/**
+  The 'flush_all' command will delete all the items.
+*/
+void flush_all( SOCKET s )
+{
+	char cmd[] = "flush_all\r\n";
+	int ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		char res[256];
+		ret = recv( s, res, sizeof( res ) - 1, 0 );
+		if( ret > 0 )
+		{
+			res[ret] = 0;
+			printf( "flush_all response : %s\n", res );
+		}
+	}
+}
+
+/**
+  Store command includes 'set', 'add', 'replace', 'append', 'prepend'.
+
+  The 'set' command will store the data, if the key is not exist, it will append it, otherwise, update it.
+  The 'add' command will append an item if the item does not exist, if the item exists, this command 
+  will fail with 'NOT_STORED' response.
+  The 'replace' command will replace an item if the item does exist.Otherwise, this command will fail with 
+  'NOT_STORED' response.
+  The 'append' and the 'prepend' command only modify the item's data if the item exists.Note, these two 
+  commands are not supported until memcached 1.2.4.
+
+  The flag argument is not useful currently.I suppose it's an user data.  
+*/
+void test_store( SOCKET s, const char *store_type, const char *key, const void *data, size_t size, size_t exp_time )
+{
+	char cmd[256];
+	char res[256];
+	int ret;
+	
+	/*The 'append' and 'prepend' commands format will ignore flag and exptime.*/
+	sprintf( cmd, "%s %s 0 %d %d\r\n", store_type, key, exp_time, size );
+
+	ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		ret = send( s, (const char*)data, size, 0 );
+		ret = send( s, "\r\n", 2, 0 );
+		ret = recv( s, res, sizeof( res ) - 1, 0 );
+		if( ret > 0 )
+		{
+			res[ret] = 0;
+			printf( "%s command response : %s\n", store_type, res );
+		}
+	}
+}
+
+/**
+  The 'get' command will get data by a key.And 'gets' is not supported until memcached 1.2.4.
+*/
+void test_get( SOCKET s, const char *key )
+{
+	char cmd[256];
+	char res[256];
+	int ret ;
+
+	sprintf( cmd, "get %s\r\n", key );
+	ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		ret = recv( s, res, sizeof( res ) - 1, 0 );
+		if( ret > 0 )
+		{
+			res[ret] = 0;
+			printf( "test_get response : \nkey : %s\nvalue : \n%s\n", key, res );
+		}
+	}
+}
+
+/**
+  delete an item.
+*/
+void test_del( SOCKET s, const char *key )
+{
+	char cmd[256];
+	char res[256];
+	int ret;
+
+	sprintf( cmd, "delete %s\r\n", key );
+	ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		ret = recv( s, res, sizeof( res ) - 1, 0 );
+		if( ret > 0 )
+		{
+			res[ret] = 0;
+			printf( "test_del response : key : %s : %s\n", key, res );
+		}
+	}
+}
+
+/**
+  The 'incr' and 'decr' command is used to operate the item with numeric data like : key-21.
+  And everytime the memcached will update the data with '+' or '-' by the command argument 'value'.
+  And the response will be the new value if the item exists. 
+  i.e : TestIncr - 21, and 'incr TestIncr 10', so the result is 'TestIncr - 31', the response is '31'.
+  If the value is < 0, it will be 0.
+*/
+void test_inc_dec( SOCKET s, const char *cmd_type, const char *key, unsigned int value )
+{
+	char cmd[256];
+	char res[256];
+	int ret;
+
+	sprintf( cmd, "%s %s %u\r\n", cmd_type, key, value );
+	ret = send( s, cmd, strlen( cmd ), 0 );
+	if( ret > 0 )
+	{
+		ret = recv( s, res, sizeof( res ) - 1, 0 );
+		if( ret > 0 )
+		{
+			res[ret] = 0;
+			printf( "test_inc_dec : key : %s : %s\n", key, res );
+		}
+	}
+}
+
+int main( int argc, char **argv )
+{
+	WSADATA wd;
+	unsigned short port = atoi( argv[2] );
+	struct sockaddr_in svr_addr;
+	SOCKET s;
+	/*struct evbuffer *buffer;*/
+	int ret;
+
+	if( argc < 3 )
+	{
+		fprintf( stderr, "Usage : %s -server_ip -server_port\n", argv[0] );
+		return -1;
+	}
+
+	WSAStartup( MAKEWORD( 2, 0 ), &wd );
+
+	port = atoi( argv[2] );
+
+	memset( &svr_addr, 0, sizeof( struct sockaddr_in ) );
+	svr_addr.sin_family = AF_INET;
+	svr_addr.sin_port = htons( port );
+	svr_addr.sin_addr.s_addr = inet_addr( argv[1] );
+
+	if( svr_addr.sin_addr.s_addr == INADDR_NONE )
+	{
+		fprintf( stderr, "invalid ip address : %s\n", argv[1] );
+		return -1;
+	}
+
+	s = socket( AF_INET, SOCK_STREAM, 0 );
+	ret = connect( s, (struct sockaddr*) & svr_addr, sizeof( svr_addr ) );
+	if( ret < 0 )
+	{
+		fprintf( stderr, "connect failed.\n" );
+		exit( -1 );
+	}
+	
+	printf( "connect ok.\n" );
+
+	{
+		char data[] = "some string data";
+		size_t len = strlen( data );
+
+		stats( s );
+
+		test_get( s, "TestIncr" );
+		test_get( s, "TestSet" );
+		/*test_store( s, "set", "TestIncr", "11", 2, 0 );*/
+		/*test_inc_dec( s, "incr", "TestIncr", 10 );
+		test_get( s, "TestIncr" );
+
+		test_inc_dec( s, "decr", "TestIncr", 20 );
+		test_get( s, "TestIncr" );*/
+
+		//test_store( s, "set", "TestSet", data, len, 25 );
+		//test_get( s, "TestSet" );
+
+		//test_del( s, "TestSet" );
+		//test_get( s, "TestSet" );
+
+		//test_store( s, "add", "TestAdd", data, len, 0 );
+		//test_get( s, "TestAdd" );
+
+		//test_store( s, "replace", "TestAdd", data, len, 0 );
+		//test_get( s, "TestAdd" );
+
+		/*test_store( s, "append", "TestSet", data, len );
+		test_get( s, "TestSet" );*/
+
+		flush_all( s );
+	}
+
+	closesocket( s );
+	WSACleanup();
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <winsock2.h>
+#include <stdio.h>
+
+int main()
+{
+	WSADATA wd;
+	int ret = WSAStartup( MAKEWORD( 2, 0 ), &wd );
+	SOCKET s;
+	s = socket( AF_INET, SOCK_STREAM, 0 );
+
+	{
+		struct sockaddr_in addr;
+		memset( &addr, 0, sizeof( addr ) );
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons( 11211 );
+		addr.sin_addr.s_addr = inet_addr( "127.0.0.1" );
+
+		ret = connect( s, (struct sockaddr*) &addr, sizeof( addr ) );
+		if( ret == 0 )
+		{
+			printf( "connect ok\n" );
+		}
+
+	}
+
+	{
+		char cmd[256] ;
+		char data[] = "test data";
+		sprintf( cmd, "set TestKey 0 0 %d\r\n", strlen( data ) );
+		ret = send( s, cmd, strlen( cmd ), 0 );
+		ret = send( s, data, strlen( data ), 0 );
+		ret = send( s, "\r\n", 2, 0 );
+	}
+
+	{
+		char reply[256];
+		ret = recv( s, reply, sizeof( reply ) - 1, 0 );
+		reply[ret] = 0;
+		printf( "server reply : %s\n", reply ); 
+	}
+
+	closesocket( s );
+	WSACleanup();
+
+	return 0;
+}

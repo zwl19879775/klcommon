@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kl_net", "kl_net.vcproj", "{9430779B-08EB-4CD9-AF76-6568DECF4694}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_client", "..\test\test_client\test_client.vcproj", "{02F43F46-9979-45B3-A88B-7E9F719B1238}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_server", "..\test\test_server\test_server.vcproj", "{5BFEE8C3-BF58-4B9F-BCB8-3F4C2C1C0A72}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "chatserver", "..\test\chatserver\chatserver.vcproj", "{762C4CC6-566F-4C94-BDFA-D17FB2519B08}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9430779B-08EB-4CD9-AF76-6568DECF4694}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9430779B-08EB-4CD9-AF76-6568DECF4694}.Debug|Win32.Build.0 = Debug|Win32
+		{9430779B-08EB-4CD9-AF76-6568DECF4694}.Release|Win32.ActiveCfg = Release|Win32
+		{9430779B-08EB-4CD9-AF76-6568DECF4694}.Release|Win32.Build.0 = Release|Win32
+		{02F43F46-9979-45B3-A88B-7E9F719B1238}.Debug|Win32.ActiveCfg = Debug|Win32
+		{02F43F46-9979-45B3-A88B-7E9F719B1238}.Debug|Win32.Build.0 = Debug|Win32
+		{02F43F46-9979-45B3-A88B-7E9F719B1238}.Release|Win32.ActiveCfg = Release|Win32
+		{02F43F46-9979-45B3-A88B-7E9F719B1238}.Release|Win32.Build.0 = Release|Win32
+		{5BFEE8C3-BF58-4B9F-BCB8-3F4C2C1C0A72}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5BFEE8C3-BF58-4B9F-BCB8-3F4C2C1C0A72}.Debug|Win32.Build.0 = Debug|Win32
+		{5BFEE8C3-BF58-4B9F-BCB8-3F4C2C1C0A72}.Release|Win32.ActiveCfg = Release|Win32
+		{5BFEE8C3-BF58-4B9F-BCB8-3F4C2C1C0A72}.Release|Win32.Build.0 = Release|Win32
+		{762C4CC6-566F-4C94-BDFA-D17FB2519B08}.Debug|Win32.ActiveCfg = Debug|Win32
+		{762C4CC6-566F-4C94-BDFA-D17FB2519B08}.Debug|Win32.Build.0 = Debug|Win32
+		{762C4CC6-566F-4C94-BDFA-D17FB2519B08}.Release|Win32.ActiveCfg = Release|Win32
+		{762C4CC6-566F-4C94-BDFA-D17FB2519B08}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
