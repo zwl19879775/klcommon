@@ -86,6 +86,11 @@ void handle_request( struct http_connection *conn, const struct http_request *re
 	http_handle_request( conn->outbuf, request, file_exist, load_file );
 }
 
+void info_log( const char *msg )
+{
+	printf( "%s\n", msg );
+}
+
 volatile int is_done = 0;  
 
 /**
@@ -114,7 +119,7 @@ BOOL WINAPI Handler( DWORD ctrl_event )
 int main()
 {
 	struct http_server *httpd;
-	struct timeval timeout = { 1, 0 };	
+	struct timeval timeout = { 2, 0 };	
 #ifdef WIN32
 	{
 		WSADATA wd;
@@ -130,6 +135,7 @@ int main()
 	}
 #endif
 
+	http_set_info_log( info_log );
 	httpd = http_start( "0.0.0.0", 8080, 1024 );
 	http_set_rcb( httpd, handle_request, 0 );
 

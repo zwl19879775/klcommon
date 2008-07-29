@@ -104,14 +104,15 @@ int ts_server_poll( struct tcp_server *server, struct timeval *timeout )
 		return ret;
 	}
 
-	for( i = 0; i < server->fd_readset->fd_count; ++ i )
-	{
-		server->read_cb( (int)server->fd_readset->fd_array[i], server->arg );
-	}
-
+	/* write first and read later can avoid some bugs */
 	for( i = 0; i < server->fd_writeset->fd_count; ++ i )
 	{
 		server->write_cb( (int)server->fd_writeset->fd_array[i], server->arg );
+	}
+
+	for( i = 0; i < server->fd_readset->fd_count; ++ i )
+	{
+		server->read_cb( (int)server->fd_readset->fd_array[i], server->arg );
 	}
 
 	return ret;

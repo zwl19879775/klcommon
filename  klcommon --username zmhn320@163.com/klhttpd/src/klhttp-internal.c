@@ -199,7 +199,7 @@ int http_add_header( struct http_header_head *header_queue, char *line )
 	char *value ;
 	char *name = strchr( line, ':' );
 	struct http_header *header = NEW( struct http_header );
-	header->name = (char*) malloc( name - line );
+	header->name = (char*) malloc( name - line + 1 );
 	strncpy( header->name, line, name - line );
 	header->name[name-line] = '\0';
 
