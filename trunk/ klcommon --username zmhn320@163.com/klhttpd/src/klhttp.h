@@ -17,6 +17,16 @@ extern "C" {
 struct evbuffer;
 
 /**
+  information logger.
+*/
+typedef void (*info_log_cb)( const char *info );
+
+/**
+  set info logger.
+*/
+void http_set_info_log( info_log_cb log );
+
+/**
   http connection structure.
 */
 struct http_connection
@@ -24,7 +34,7 @@ struct http_connection
 	int fd;
 	struct evbuffer *inbuf;
 	struct evbuffer *outbuf;
-
+	
 	LIST_ENTRY( http_connection ) next;
 };
 
