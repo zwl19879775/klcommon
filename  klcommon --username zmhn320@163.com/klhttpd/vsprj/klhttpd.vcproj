@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\klhttp-cgi.c"
+				>
+			</File>
+			<File
 				RelativePath="..\src\klhttp-internal.c"
 				>
 			</File>
@@ -206,6 +210,10 @@
 			>
 			<File
 				RelativePath="..\src\evbuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\klhttp-cgi.h"
 				>
 			</File>
 			<File

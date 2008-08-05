@@ -67,6 +67,8 @@ enum
 	HTTP_GET,
 	/** only retrieve the data information */
 	HTTP_HEAD,
+	/** cgi method */
+	HTTP_POST,
 	/** unknown method, the server does not support */
 	HTTP_UNKNOWN,
 };
@@ -93,7 +95,8 @@ struct http_request
 	struct http_pro_version ver;
 	/** http headers */
 	struct http_header_head *headers;
-	/** optional bodies, currently it's not implemented. */
+	/** optional bodies, currently it's only support POST method query string. */
+	struct evbuffer *body;
 };
 
 /**
@@ -157,6 +160,14 @@ int http_handle_request( struct evbuffer *buf, const struct http_request *reques
   @param buf the output buffer, will be writen with the response.
 */
 void http_response_error( struct evbuffer *buf, int status, const char *status_str, const char *more_info );
+
+/**
+  decode uri.
+
+  You must free the memory returned by the function.
+*/
+char *http_decode_uri( const char *uri );
+
 
 #ifdef __cplusplus
 }

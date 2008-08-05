@@ -10,6 +10,7 @@
 #include "evbuffer.h"
 #include "klhttp-netbase.h"
 #include "klhttp-internal.h"
+#include "klhttp-cgi.h"
 #include <malloc.h>
 
 #ifdef WIN32
@@ -138,8 +139,26 @@ static void _read_cb( int fd, void *arg )
 		{
 			/* parse the request */
 			request = http_request_parse( conn->inbuf );
-			/* call the user-level function */
-			server->r_cb( conn, request, server->arg );
+#ifdef CGI_SUPPORT
+			if( cgi_is_query( request ) )
+			{
+				/* cgi query */
+				struct cgi_query_request *qr = cgi_query_request_get( request );
+				struct cgi_query_string_head *qsh = cgi_query_new();
+				cgi_query_parse( qsh, qr->query_string );
+
+				server->cgi_cb( conn, request, qr, qsh, server->cgi_arg );
+				/* free resources for cgi query */
+				cgi_query_free( qsh );
+				cgi_query_request_free( qr );
+			}
+			else
+#endif
+			{
+				/* static resource */
+				server->r_cb( conn, request, server->arg );
+			}
+
 			/* free the request */
 			http_request_free( request );
 		}
@@ -173,6 +192,10 @@ struct http_server *http_start( const char *ip, unsigned short port, int max_con
 	LIST_INIT( &server->conns );
 	server->r_cb = 0;
 	server->arg = 0;
+#ifdef CGI_SUPPORT
+	server->cgi_arg = 0;
+	server->cgi_cb = 0;
+#endif
 
 	ret = ts_server_startup( server->server, ip, port, max_conn, _read_cb, _write_cb, server );
 	if( ret < 0 )
@@ -190,6 +213,14 @@ void http_set_rcb( struct http_server *server, request_cb cb, void *arg )
 	server->r_cb = cb;
 	server->arg = arg;
 }
+
+#ifdef CGI_SUPPORT
+void http_set_cgi_cb( struct http_server *server, cgi_query_cb cb, void *arg )
+{
+	server->cgi_cb = cb;
+	server->cgi_arg = arg;
+}
+#endif
 
 void http_free( struct http_server *server )
 {
