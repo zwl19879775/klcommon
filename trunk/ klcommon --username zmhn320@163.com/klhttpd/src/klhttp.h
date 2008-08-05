@@ -46,6 +46,10 @@ LIST_HEAD( http_connection_head, http_connection );
 /** request handler */
 typedef void (*request_cb)( struct http_connection *conn, const struct http_request *request, void *arg );
 
+/** cgi query handler */
+typedef void (*cgi_query_cb)( struct http_connection *conn, const struct http_request *request, 
+							  struct cgi_query_request *query, struct cgi_query_string_head *qs, void *arg );
+
 /**
   http server structure.
 */
@@ -55,6 +59,11 @@ struct http_server
 	struct http_connection_head conns;
 	request_cb r_cb;
 	void *arg;
+#ifdef CGI_SUPPORT	
+	/** cgi query callback */
+	cgi_query_cb cgi_cb;
+	void *cgi_arg;
+#endif
 };
 
 /**
@@ -66,6 +75,13 @@ struct http_server *http_start( const char *ip, unsigned short port, int max_con
   set request handler.
 */
 void http_set_rcb( struct http_server *server, request_cb cb, void *arg );
+
+#ifdef CGI_SUPPORT
+/**
+  set cgi query handler.
+*/
+void http_set_cgi_cb( struct http_server *server, cgi_query_cb cb, void *arg );
+#endif
 
 /**
   run the server.

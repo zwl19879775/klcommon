@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include "evbuffer.h"
 
 #define NEW( type ) (type*) malloc( sizeof( type ) )
@@ -30,15 +32,18 @@ static int _parse_init_line( struct http_request *request, char *line )
 	{
 		request->type = HTTP_HEAD;
 	}
-	else
+	else if( strcmp( token, "POST" ) == 0 )
+	{
+		request->type = HTTP_POST;
+	}
+	else 
 	{
 		request->type = HTTP_UNKNOWN;
 	}
 
-	/* uri */
+	/* uri, should be decoded */
 	token = strtok( 0, " " );
-	request->uri = (char*) malloc( strlen( token ) + 1 );
-	strcpy( request->uri, token );
+	request->uri = http_decode_uri( token );
 
 	/* http protocol version */
 	token = strtok( 0, " " );
@@ -268,12 +273,34 @@ struct http_request *http_request_parse( struct evbuffer *buf )
 		}
 	}
 
-	/* ignore the bodies because it does not support now */
+	/* if the method is POST, read the body (query string ) */
+	request->body = NULL;
+	if( request->type == HTTP_POST )
+	{
+		/* get the Content-Lenght */
+		const char *len_str = http_get_header_value( request->headers, "Content-Length" );
+		int len = atoi( len_str );
+		char *str = (char*) malloc( len + 1 );
+		char *line;
+		evbuffer_remove( buf, str, len );
+		str[len] = 0;
+	
+		line = http_decode_uri( str );
+		request->body = evbuffer_new();
+		evbuffer_add( request->body, line, strlen( line ) );
+
+		free( str );
+	}
+
 	return request;
 }
 
 void http_request_free( struct http_request *request )
 {
+	if( request->type == HTTP_POST )
+	{
+		evbuffer_free( request->body );
+	}
 	free( request->uri );
 	http_header_free( request->headers );
 	free( request );
@@ -366,4 +393,39 @@ void http_response_error( struct evbuffer *buf, int status, const char *status_s
 	evbuffer_add( buf, content, len );
 	
 #undef ERR_FORMAT
+}
+
+char *http_decode_uri( const char *uri )
+{
+	char c, *ret;
+	int i, j, in_query = 0;
+	
+	ret = malloc( strlen( uri ) + 1 );
+	if( ret == NULL )
+	{
+		return 0;
+	}
+
+	for( i = j = 0; uri[i] != '\0'; i++ ) 
+	{
+		c = uri[i];
+		if( c == '?' )
+		{
+			in_query = 1;
+		} 
+		else if( c == '+' /*&& in_query*/ ) 
+		{
+			c = ' ';
+		} 
+		else if( c == '%' && isxdigit((unsigned char)uri[i+1]) && isxdigit((unsigned char)uri[i+2])) 
+		{
+			char tmp[] = { uri[i+1], uri[i+2], '\0' };
+			c = (char)strtol( tmp, NULL, 16 );
+			i += 2;
+		}
+		ret[j++] = c;
+	}
+	ret[j] = '\0';
+	
+	return ret;
 }

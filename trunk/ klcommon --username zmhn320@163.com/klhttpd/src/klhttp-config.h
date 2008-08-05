@@ -14,4 +14,7 @@
 #endif
 #endif
 
+/** enable cgi support */
+#define CGI_SUPPORT
+
 #endif /* ___KLHTTP_CONFIG_H_ */

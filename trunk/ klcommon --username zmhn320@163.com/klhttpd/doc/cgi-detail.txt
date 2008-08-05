@@ -1,0 +1,24 @@
+Author : Kevin Lynx
+Date : 8.5.2008
+Brief : write the detail implementing the cgi
+
+As you know, the cgi query string is a key-value string separated by '&'.The
+query string is in the uri or in the quest body when using POST method.
+
+What i should do first is to parse the query string, make a list which element
+is a key-value pair.Also, i should decode the query string because there are 
+some special character like '+' and '%'.
+
+I found a bug in klhttpd, when the request uri contain some special character,
+(yes, it will contain like '%20'), the server cannot find the resource.So i should
+decode the uri either when handling static resources.
+
+When receive a http request, the server should check the request type, if it's a cgi
+query, then the server should call cgi handler. Otherwise send the static resources.
+
+How can i detect a request is a cgi query ? First, if the method is GET but if the uri
+contain '?', then it's a cgi query; Second, if the type is POST, then it must be a cgi
+query.
+
+
+
