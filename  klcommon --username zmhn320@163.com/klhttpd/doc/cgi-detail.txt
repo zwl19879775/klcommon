@@ -20,5 +20,10 @@ How can i detect a request is a cgi query ? First, if the method is GET but if t
 contain '?', then it's a cgi query; Second, if the type is POST, then it must be a cgi
 query.
 
+reference :
+
+http://www.ietf.org/rfc/rfc3875
+http://www.cmis.brighton.ac.uk/~mas/mas/courses/html/html2.html
+http://hoohoo.ncsa.uiuc.edu/cgi/
 
 
