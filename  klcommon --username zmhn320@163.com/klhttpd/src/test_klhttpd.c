@@ -10,6 +10,9 @@
 #include <winsock2.h>
 #endif
 
+#include "klhttp-luacgi.h"
+
+
 /**
   get file size
 */
@@ -165,14 +168,24 @@ int main()
 	http_set_rcb( httpd, handle_request, 0 );
 
 #ifdef CGI_SUPPORT
+#ifdef CGI_LUA_SUPPORT
+	luaC_init( httpd );
+	luaC_set_script_cb( file_exist, load_file );
+#else
 	http_set_cgi_cb( httpd, handle_cgi_query, 0 );
 #endif
+#endif
+
 	printf( "server startup\n" );
 	
 	while( is_done == 0 )
 	{
 		http_poll( httpd, &timeout );
 	}
+
+#ifdef CGI_LUA_SUPPORT
+	luaC_release();
+#endif
 
 	http_free( httpd );
 	

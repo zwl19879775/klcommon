@@ -23,20 +23,9 @@
 static info_log_cb s_log;
 
 /**
-  helper function to support fmt.
+  write info log
 */
-static void _log( const char *fmt, ... )
-{
-	if( s_log )
-	{
-		static char info[512];
-		va_list list;
-		va_start( list, fmt );
-		vsprintf( info, fmt, list );
-		va_end( list );
-		s_log( info );
-	}
-}
+#define _log http_write_info_log
 
 /**
   get the connection object.
@@ -182,6 +171,19 @@ static void _write_cb( int fd, void *arg )
 void http_set_info_log( info_log_cb log )
 {
 	s_log = log;
+}
+
+void http_write_info_log( const char *fmt, ... )
+{
+	if( s_log )
+	{
+		static char info[512];
+		va_list list;
+		va_start( list, fmt );
+		vsprintf( info, fmt, list );
+		va_end( list );
+		s_log( info );
+	}
 }
 
 struct http_server *http_start( const char *ip, unsigned short port, int max_conn )
