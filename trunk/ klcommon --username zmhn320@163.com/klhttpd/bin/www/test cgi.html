@@ -3,11 +3,11 @@
 <title>Test CGI html</title>
 </head>
 <body>
-	<FORM ACTION="./cgi-bin/test.cgi" METHOD=POST>
+	<FORM ACTION="./cgi-bin/name.cgi" METHOD=POST>
  		<INPUT TYPE="text" NAME="name" SIZE=20 VALUE="Your name">
  	</FORM>
 	
-	<FORM ACTION="./cgi-bin/test.cgi" METHOD=GET>
+	<FORM ACTION="./cgi-bin/lag.cgi" METHOD=GET>
  	Use<BR>
  	<INPUT TYPE="checkbox" NAME="use" VALUE="Ada 95" CHECKED>Ada 95<BR>
  	<INPUT TYPE="checkbox" NAME="use" VALUE="C++" CHECKED>C++<BR>
@@ -15,7 +15,7 @@
  	<INPUT TYPE="submit" NAME="button" VALUE="Send">
  	</FORM>
 
-	<FORM ACTION="./cgi-bin/feedback">
+	<FORM ACTION="./cgi-bin/feedback.cgi">
  		<TEXTAREA NAME="feedback" ROWS=10 COLS=30>let's write cool codes...</TEXTAREA>
  		<BR>
  		<INPUT TYPE="submit" NAME="button" VALUE="Send">

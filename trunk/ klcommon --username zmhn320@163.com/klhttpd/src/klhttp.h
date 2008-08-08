@@ -27,6 +27,11 @@ typedef void (*info_log_cb)( const char *info );
 void http_set_info_log( info_log_cb log );
 
 /**
+  write info log.
+*/
+void http_write_info_log( const char *fmt, ... );
+
+/**
   http connection structure.
 */
 struct http_connection

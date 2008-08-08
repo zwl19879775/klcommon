@@ -17,4 +17,9 @@
 /** enable cgi support */
 #define CGI_SUPPORT
 
+/** enable lua cgi support */
+#ifdef CGI_SUPPORT
+#define CGI_LUA_SUPPORT
+#endif
+
 #endif /* ___KLHTTP_CONFIG_H_ */
