@@ -1,0 +1,95 @@
+Implement CGI in your httpd
+
+author : Kevin Lynx
+
+Purpose
+
+    为我们的http server加入CGI的功能，并不是要让其成为真正响应CGI query功能的web server。正如klhttpd的开发初衷一样，
+更多的时候我们需要的是一个嵌入式(embeded)的web server。
+
+    而加入CGI功能（也许它算不上真正的CGI），则是为了让我们与client拥有更多的交互能力。我们也许需要为我们的应用程序
+加入一个具有网页外观的界面，也许这才是我的目的。
+
+Brief
+
+    CGI，common gateway interface，在我看来它就是一个公共约定。客户端浏览器提交表单(form)操作结果给服务器，服务器
+解析这些操作，完成这些操作，然后创建返回信息（例如一个静态网页），返回给浏览器。
+    因为浏览器遵循了CGI发送请求的标准，那么我们所要做的就是解析收到的请求，处理我们自己的逻辑，返回信息给客户端即可。
+	
+Detail...
+ 
+    如果你要获取CGI的更多信息，你可以在网上查阅相关信息。如果你要获取web server对CGI标准的处理方式，我无法提供给你
+这些信息。不过我愿意提供我的臆测：
+    处理CGI请求通常都是由脚本去完成（当然也可以用任何可执行程序完成）。就我所获取的资料来看，只要一门语言具备基本的
+输入输出功能，它就可以被用作CGI脚本。浏览器以key-value的形式提交query string，一个典型的以GET方式提交query string的
+URL类似于：http://host/cgi-bin/some-script.cgi?name=kevin+lynx&age=22。不必拘泥于我上句话中出现的一些让你产生问号的
+名词。我可以告诉你，这里举出的URL（也许更准确的说法是URI）中问号后面的字符串即为一个query string。
+    我希望你看过我的上一篇草文<实现自己的http server>，你应该知道一个典型的GET请求时怎样的格式，应该知道什么是initial
+line，应该知道HTTP请求有很多method，例如GET、POST、HEAD等。
+    一个CGI请求通常使用GET或POST作为其request method。对于一个GET类型的CGI请求，一个典型的request类似于：
+	GET /cgi-bin/some-script.cgi?name=kevin+lynx&age=22 HTTP/1.1
+	other headers...
+	...
+	我上面举例的那个URL则可能出现在你的浏览器的地址栏中，它对我们不重要。
+	而对于POST类型的CGI请求呢？query string只是被放到了optional body里，如：
+	POST /cgi-bin/some-script.cgi HTTP/1.1
+	other heads...
+	...
+	name=kevin+lynx&age=22
+	不管我说到什么，我希望你不要陷入概念的泥潭，我希望你能明确我在brief里提到的what can we do and how to do。
+
+How about the web browser ?
+
+    我总是想引领你走在实践的路上(on the practice way)。作为一个程序员，你有理由自负，但是你没任何理由小觑任何一个
+编程问题。打开你的编译器，现在就敲下main。
+    so，我们需要知道如何利用我们的浏览器，让我们更为顺手地实践我们的想法。
+	你也许会写：<html><head><title>HTML test</title></head><body>it's a html</body></html>这样的HTML标记语言。但是
+这没有利用上CGI。check out the url in the reference section and learn how to write FORMs.
+    这个时候你应该明白：
+	<html>
+	  <head>
+	    <title>CGI test</title>
+	  </head>
+	  <body>
+	    <FORM ACTION="./cgi-bin/test.cgi">
+ 		  <INPUT TYPE="text" NAME="name" SIZE=20 VALUE="Your name">
+ 	    </FORM>
+	  </body>
+	</html>
+	
+	加入<FORM>来添加表单，加入<INPUT TYPE="text"加一个edit box控件。那么当你在里面输入名字按下回车键时，浏览器将整理
+出一个CGI query string发给服务器。
+    我希望你能在浏览器里看到以问号打头的key-value形式的字符串。
+
+So here we go...
+
+    在你自己已有的http server的代码基础上，让浏览器来请求一个包含FORM的网页，例如以上我举例的html。当浏览器将请求发
+给服务器的时候，看看服务器这边收到的request。即使你猜到了什么，我也建议你看看，这样你将看到一个真正的CGI query是怎么
+样的。
+    so you know，CGI请求本质上也就是一连串的key-value字符串。真正的http server会将这些字符串传给CGI脚本。脚本只需要
+输出处理结果信息到标准输出，服务器就会收集这些输出然后发给客户端。
+    你也许在揣摩，我们的httpd如何地exec一个外部程序或脚本，如何等待脚本执行完（需不需要异步？），然后如何收集标准输
+出上的信息，然后是否需要同步地将这些信息送往客户端。
+    这很没必要。如果我们的http server真的只是被embeded到其他程序的。我们只需要将query的逻辑处理交给上层模块即可。
+	
+What's the next..
+
+    现在你知道什么是CGI query string，你也许稍微思考下就知道接下来你该如何去做(if you smart enough)。记住我们的目标，
+只是解析CGI query string，然后处理相关逻辑，返回处理结果信息给客户端。
+    所以接下来，呃，接下来，everything is up to you：分析那些恼人的字符串，将其从&的间隔中整理出来，得到一个key-value
+的表，将这个表给你的上层模块，上层模块根据query scritp决定执行什么逻辑，根据这个表获取需要的参数，处理，将结果格式
+化为HTML之类的东西，then response。
+    就这么简单。
+
+Example...
+
+    同样，我提供了源码，从而证明我不是纸上谈兵夸夸其谈。我希望我公开源码的习惯能受到你的赞同。
+    下载带CGI的http server.
+	
+Reference:
+
+http://hoohoo.ncsa.uiuc.edu/cgi/ (获取服务器需要做的)
+http://www.ietf.org/rfc/rfc3875 (rfc cgi)
+http://www.cmis.brighton.ac.uk/~mas/mas/courses/html/html2.html (学会写带FORM的HTML)
+
+	
