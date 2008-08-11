@@ -31,9 +31,9 @@ namespace kl_common
 		template <typename _Tp>
 		struct param_traits
 		{
-			static _Tp get_param( lua_State *L, int index )
+			static lua_Number get_param( lua_State *L, int index )
 			{
-				return static_cast<_Tp>( lua_tonumber( L, index ) );
+				return lua_tonumber( L, index );
 			}
 		};
 
