@@ -1,0 +1,295 @@
+实现LUA绑定器
+
+author : Kevin Lynx
+
+Preface
+	
+	当LUA脚本调用我们注册的C函数时，我们需要逐个地从LUA栈里取出调用参数，当函数返回时，又需要一个一个地往LUA
+栈压入返回值，并且我们注册的函数只能是int()(lua_State*)类型。这很不方便，对于上层程序员来说更不方便。
+	因此我们要做的是，实现一个绑定器，可以把任意prototype的函数绑定到LUA脚本当中，并且封装取参数和压返回值时
+的诸多细节。
+	确实，世界上已经有很多库做了这件事情。但是，我们这里的需求很简单，我们只需要绑定函数，而不需要绑定C++类之
+类的东西，自己实现的才是轻量级的。
+
+What we usually do
+
+	先看下我们平时是怎么做这些事的。首先注册函数很简单：
+	
+	lua_pushcfunction( L, to_string );
+	lua_setglobal( L, "tostr" );
+	
+	然后是func的具体处理：
+	
+	/** 假设to_string在脚本中的原型是: string ()( number ) */
+	static int to_string( lua_State *L )
+	{
+		static char buf[512];
+		/* 从LUA栈中取参数 */
+		int n = (int)lua_tonumber( L, -1 );
+		sprintf( buf, "%d", n );
+		/* 压入返回值 */
+		lua_pushstring( L, buf );
+		return 1;
+	}
+	
+	这是个简单的例子，目的是展示我之前说的局限性，以及，恩，丑陋性。
+	
+How
+
+	要让事情变得优美，我们就得隐藏丑陋。
+	首先，我们看看如何改进to_string的处理，使其看起来干净。最直接也是最通用的做法是，我们自己做一个粘合层，
+充当LUA与应用层之间的粘合剂。也就是说，LUA直接回调的不再直接是应用层的函数，而是我们实现的这一层中的函数，
+我们的函数整理调用参数，然后回调到上层函数，上层返回后，我们收集上层的返回值，然后整理给LUA，最后返回。
+	这就是思路，具体实现时更为有趣。
+
+Implementing...
+
+	直觉告诉我，我需要使用C++模板来实现。模板和宏都是个好东西，因为它们是泛性的，它们给程序员带来自动性。
+	另一个直觉告诉我，尽量不要让上层保存任何东西。通过模板的实例化，编译器已经为我们添加了很多东西，我也不
+想让上层理会我太多。
+	因为，我们至少需要保存上层的函数指针（我们暂时只考虑C式的函数），我们至少还需要一个粘合层函数用以被LUA
+直接回调，所以，我得到了以下类模板：
+	
+	template <typename Prototype>
+	class lua_binder
+	{
+	public:
+		typedef Prototype func_type;
+	public:
+		static int adapter( lua_State *L )
+		{
+			return 0;
+		}
+
+	public:
+		static func_type _func;
+	};
+	template <typename Prototype> typename lua_binder<Prototype>::func_type lua_binder<Prototype>::_func = 0;
+	
+	这样，泛化了Prototype后，lua_binder可以保存任意原型的函数指针。例如：
+
+	typedef lua_binder<const char*(int)> binder_type;
+	
+	借助于模板技术，即使上层只是这样一个简单的看似不会产生任何代码的typedef，实际上也会产生出一个static的
+函数指针变量：_func。
+
+	这个时候，我们也该考虑下注册函数部分了。注意，事实上我们总共需要干两件事：封装粘合层函数、封装注册函数
+部分。同样，我们得到一个最直观的注册函数模板：
+
+	template <typename binder_type>
+	void lua_bind( lua_State *L, typename binder_type::func_type func, const char *name )
+	{
+		binder_type::_func = func;
+		lua_pushcfunction( L, binder_type::adapter );
+		lua_setgloabl( L, name );
+	}
+	
+	为什么模板参数是binder_type而不是Prototype？（最直接的想法可能会想到Prototype）因为我们需要获取func_type
+以及最重要的：设置_func的值！综合起来，lua_bind函数主要作用就是接受用户层函数指针，并相应的粘合层函数注册
+到LUA中。注意，lua_pushcfunction注册的是binder_type::adapter函数。
+
+	那么，理论上，我们现在可以这样注册一个函数：
+	
+	typedef lua_binder<const char*(_cdecl*)(int)> binder_type;
+	lua_bind<binder_type>( L, to_string, "tostr" );
+
+	（这个时候to_string为：const char* to_string( int ) )
+	
+处理函数参数的个数
+
+	事情远没有我们想象的那么简单。adapter函数中毫无实现，重要的是，该如何去实现？我们面对的首个问题是：上层
+函数参数个数不一样，那么我们的adapter该调用多少次lua_to*去从LUA栈中获取参数？
+	解决该问题的办法是，恩，很笨，但是这可以工作：为不同个数的函数都实现一个对应的adapter。没有参数的函数对
+应一个adapter，一个参数的函数对应另一个adapter，依次类推。
+	（穿插一下：ttl(tiny template library)库中使用了一个很强大的宏技术，可以自动生成这些代码，但是具体原理
+我不懂。所以只能使用这个笨办法了。）
+	这样，我们就需要区分不同参数个数的函数原型。很显然，我们需要改进lua_binder。行之有效的技术是：模板偏特化。
+改进后的lua_binder类似于：
+	
+	template <typename Prototype>
+	class lua_binder;
+
+	template <typename R, typename P1>
+	class lua_binder<R ( P1 )>
+	{
+	public:
+		typedef R result_type;
+		typedef P1 p1_type;
+		typedef result_type (*func_type)( P1 );
+	public:
+		static int adapter( lua_State *L )
+		{
+			return 0;
+		}
+	public:
+		static func_type _func;
+	};
+	template <typename R, typename P1> 
+	typename lua_binder<R( P1 )>::func_type lua_binder<R( P1 )>::_func = 0;
+
+	//...
+	
+	lua_binder主体已经是一个单纯的声明而已，它的诸多特化版本将分别对应0个参数，1个参数，2个参数等。例如以上
+列举的就是一个参数的偏特化版本。
+
+Now, we can try ??
+
+	那么，我们现在是否可以写下诸多的lua_to*函数去获取参数了？你觉得可以吗？假设现在要获取栈顶第一个参数，你
+该调用lua_tonumber还是lua_tostring？
+	问题就在于，我们并不知道该调用哪个函数。
+	解决办法是：根据不同的参数类型，调用对应的lua_to*函数。
+	不同的类型拥有不同的行为，这一点让你想起什么？那就是模板世界里的type traits，类型萃取。我想，完成本文的
+绑定器，更多的是对你模板编程能力的考验。
+	lua_to*系列函数是有限的，因此我们也只需要实现几个类型的行为即可。我们这个时候的目的就是，根据不同的类型，
+调用对应的lua_to*函数。例如，对于number(int, long, double, float, char等等)，我们就调用lua_tonumber。
+	于是得到：
+	
+	template <typename _Tp>
+	struct param_traits
+	{
+		static _Tp get_param( lua_State *L, int index )
+		{
+			return static_cast<_Tp>( lua_tonumber( L, index ) );
+		}
+	};
+
+	template <>
+	struct param_traits<const char*>
+	{
+		static const char *get_param( lua_State *L, int index )
+		{
+			return lua_tostring( L, index );
+		}
+	};
+	//...others
+	
+	param_traits主体处理所有的number(因为number类型太多，也许concept可以解决这个问题)，其他特化版本处理其他
+类型。这样，在adapter里，就可以根据参数类型获取到相应的参数了，例如：
+
+	P1 p1 = param_traits<P1>::get_param( L, -1);
+	
+	到这个时候，我们的adapter函数变为：（以一个参数的函数举例）
+	
+	static int adapter( lua_State *L )
+	{
+		p1_type p1 = param_traits<p1_type>::get_param( L, -1 );
+		_func( p1 );
+
+		return 0;
+	}
+
+And how about the result ??
+
+	是的，我们还需要处理函数返回值。我们暂时假设所有的函数都只有一个返回值。这里面对的问题同取参数一样，我
+们需要根据不同的返回值类型，调用对应的lua_push*函数压入返回值。
+	同样的type traits技术，你应该自己写得出来，例如：
+	
+	template <typename _Tp>
+	struct return_traits
+	{
+		static void set_result( lua_State *L, lua_Number r )
+		{
+			lua_pushnumber( L, r );				
+		}
+	};
+	template <>
+	struct return_traits<const char*>
+	{
+		static void set_result( lua_State *L, const char *r )
+		{
+			lua_pushstring( L, r );
+		}
+	};
+
+	到这个时候，我们的adapter函数基本成型了：
+	
+	static int adapter( lua_State *L )
+	{
+		p1_type p1 = param_traits<p1_type>::get_param( L, -1 );
+		result_type r = _func( p1 );
+		return_traits<result_type>::set_result( L, r );
+		return 0;
+	}
+
+The last 'return' ???
+
+	最碍眼的，是adapter最后一行的return。LUA手册上告诉我们，lua_CFunction必须返回函数返回值的个数。我们已经
+假设我们只支持一个返回值，那么，很好，直接返回1吧。
+	关键在于，C/C++的世界里还有个关键字：void。是的，它表示没有返回值。在用户层函数返回值为void类型时（原谅
+这矛盾的说法），我们这里需要返回0。
+	你意识到了什么？是的，我们需要根据返回值类型是否是void来设置这个return的值：1或者0。又是个type traits的
+小技术。我想你现在很熟悉了：
+	
+	template <typename _Tp>
+	struct return_number_traits
+	{
+		enum
+		{
+			count = 1
+		};
+	};
+	template <>
+	struct return_number_traits<void>
+	{
+		enum
+		{
+			count = 0
+		};
+	};
+	
+	于是，我们的adapter变为：
+	
+	static int adapter( lua_State *L )
+	{
+		p1_type p1 = param_traits<p1_type>::get_param( L, -1 );
+		result_type r = _func( p1 );
+		return_traits<result_type>::set_result( L, r );
+		return return_number_traits<result_type>::count;
+	}
+	
+Is everything OK?
+
+	我很高兴我能流畅地写到这里，同样我希望我不仅向你展示了某个应用的实现，而是展示了模板编程的思想。
+	但是，问题在于，当你要注册一个返回值为void的函数时：
+	
+	typedef lua_binder<void(int)> binder_type;
+	lua_bind<binder_type>( L, my_fn, "fn" );
+	
+	你可能会被编译器告知：非法使用void类型。
+	是的，好好省视下你的代码，当你的binder_type::result_type为void时，在adapter函数中，你基本上也就写下了
+void r = something 的代码。这是个语法错误。
+
+	同样的问题还有：当返回值是void时，我们也没有必要调用return_traits的set_result函数。
+	
+	我想你觉察出来，又一个type traits技术。我们将根据result_type决定不同的处理方式。于是，我写了一个caller：
+	
+	template <typename _Tp>
+	struct caller
+	{
+		static void call( lua_State *L, p1_type &p1 )
+		{
+			result_type r = _func( p1 );
+			return_traits<result_type>::set_result( L, r );
+		}
+	};
+
+	template <>
+	struct caller<void>
+	{
+		static void call( lua_State *L, p1_type &p1 )
+		{
+			_func( p1 );
+		}
+	};
+
+	caller将根据不同的返回值类型决定如何去回调_func。比较遗憾的是，我们需要为每一个lua_binder编写这么一个
+caller，因为caller要调用_func，并且_func的参数个数不同。
+
+END
+
+	最后一段的标题不带问号，所以这就结束了。下载看看我的代码吧，为了给不同参数个数的函数写binder，始终需要
+粘贴复制的手工劳动。
+	值得注意的是，在最终的代码里，我使用了以前实现的functor，将函数类型泛化。这样，lua_binder就可以绑定类
+成员函数，当然，还有operator()。
+
+	
