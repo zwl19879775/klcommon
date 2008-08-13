@@ -29,7 +29,9 @@ TimerHandlerList gTimerHandlers;
 void onTimerOut( void *arg )
 {
 	lua_State *L = (lua_State*) arg;
-	lua_resume( L, 0 );
+	/* push return value and the script can get it */
+	lua_pushnumber( L, 101 );
+	lua_resume( L, 1 );
 }
 
 extern "C"
