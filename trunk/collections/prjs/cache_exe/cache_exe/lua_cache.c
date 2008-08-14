@@ -23,6 +23,29 @@ struct cached_Script
 	char name[NAME_LEN];
 };
 
+struct cached_Script *gCS;
+
+int cached_get_script( struct cached_Script *c, const char *name );
+
+/**
+  extend function for lua to import other script files.
+*/
+static int import( lua_State *L )
+{
+	/* get the chunk cached script name */
+	const char *str = luaL_checkstring( L, -1 );
+	/* get the cached script on the stack */
+	if( cached_get_script( gCS, str ) != 0 )
+	{
+		fprintf( stderr, "script error : import an unknown cached script ; %s\n", str );
+		return 0;
+	}
+	/* run it */
+	lua_pcall( L, 0, 0, 0 );
+
+	return 0;
+}
+
 void cached_init( struct cached_Script *c, const char *name )
 {
 	c->L = lua_open();
@@ -32,6 +55,9 @@ void cached_init( struct cached_Script *c, const char *name )
 	/* create a table that holds the cache script table on the registry table */
 	lua_newtable( c->L );
 	lua_setfield( c->L, LUA_REGISTRYINDEX, c->name );
+
+	/* register some functions */
+	lua_register( c->L, "import_cached", import );
 }
 
 void cached_deinit( struct cached_Script *c )
@@ -167,8 +193,19 @@ int cached_call( struct cached_Script *c, const char *name )
 		return -1;
 	}
 
-	/* run it */
-	return lua_pcall( c->L, 0, 0, 0 );
+	/* run it from ai function , note : here is a trick : 
+	    First : we run the whole script so that we can find some functions later;
+		Second : find the functions which we want to call in the global table;
+		Third : run the function we get 
+	*/
+	/* run the whole script */
+	lua_pcall( c->L, 0, 0, 0 );
+	/* and now, the functions in the script will be put in the global table , we can get it */
+	lua_getglobal( c->L, "ai" );
+	/* push the argument */
+	lua_pushstring( c->L, name );
+	/* and run the function */
+	return lua_pcall( c->L, 1, 0, 0 );
 }
 
 int main()
@@ -184,7 +221,8 @@ int main()
 		fprintf( stderr, "load 'config.ini' failed\n" );
 		exit( -1 );
 	}
-	
+	gCS = &c;
+
 	printf( "load all scripts in memory, and cached them ok\n" );
 	printf( "input any script name you configed and run it\n" );
 
