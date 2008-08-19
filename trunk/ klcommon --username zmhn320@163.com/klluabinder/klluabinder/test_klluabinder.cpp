@@ -3,6 +3,7 @@
 /// 
 ///
 #include "kllua-binder.h"
+#include "kllua-caller.h"
 #include <stdio.h>
 
 void my_fn()
@@ -61,6 +62,11 @@ int main()
 	kl_common::lua_bind<param3_fn>( L, param3_fn::func_type( my_fn3 ), "fn3" );
 
 	test_function( L );
+
+	/* test call lua function */
+	kl_common::lua_caller<void( int, const char* )> fn1( L, "fn_lua" );
+	fn1( 11, "kevin" );
+	
 	lua_close( L );
 	return 0;
 }
