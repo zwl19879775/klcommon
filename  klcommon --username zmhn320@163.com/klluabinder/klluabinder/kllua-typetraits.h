@@ -173,6 +173,23 @@ namespace kl_common
 				count = 0
 			};
 		};
+
+		///
+		/// these codes below is used for calling lua function from c++.
+		///
+		/// Because these codes is similar with lua_binder, so i #define them to make everything simple.
+		/// I'm lazy to write these codes which i already wrote.
+		///
+		
+		/// 
+		/// push arguments onto lua stack.
+		///
+		#define CALLER_PUSH_PARAM( type, L, p ) ::kl_common::lua::return_traits<type>::set_result( L, p )
+
+		///
+		/// get return value from lua function.
+		///
+		#define CALLER_GET_RESULT( type, L ) ::kl_common::lua::param_traits<type>::get_param( L, -1 )
 	}
 }
 

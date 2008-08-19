@@ -10,3 +10,7 @@ a = mem_fn( 1, 2 )
 print( a )
 
 fn3( 1, 2, 3 )
+
+function fn_lua( age, name )
+	print( "lua : fn  : ", name, age )
+end

@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\klluabinder\kllua-caller.h"
+				>
+			</File>
+			<File
 				RelativePath=".\klluabinder\kllua-typetraits.h"
 				>
 			</File>
