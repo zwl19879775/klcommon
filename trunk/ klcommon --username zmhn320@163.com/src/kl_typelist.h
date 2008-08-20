@@ -36,6 +36,11 @@ namespace kl_common
 #define TYPE_LIST8( T1, T2, T3, T4, T5, T6, T7, T8 ) ::kl_common::type_list<T1, TYPE_LIST7( T2, T3, T4, T5, T6, T7, T8 ) >
 #define TYPE_LIST9( T1, T2, T3, T4, T5, T6, T7, T8, T9 ) ::kl_common::type_list<T1, TYPE_LIST8( T2, T3, T4, T5, T6, T7, T8, T9 ) >
 #define TYPE_LIST10( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10 ) ::kl_common::type_list<T1, TYPE_LIST9( T2, T3, T4, T5, T6, T7, T8, T9, T10 ) >
+#define TYPE_LIST11( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ) ::kl_common::type_list<T1, TYPE_LIST10( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11 ) >
+#define TYPE_LIST12( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12 ) ::kl_common::type_list<T1, TYPE_LIST11( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12 ) >
+#define TYPE_LIST13( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13 ) ::kl_common::type_list<T1, TYPE_LIST12( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13 ) >
+#define TYPE_LIST14( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14 ) ::kl_common::type_list<T1, TYPE_LIST13( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14 ) >
+#define TYPE_LIST15( T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15 ) ::kl_common::type_list<T1, TYPE_LIST14( T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15 ) >
 
 }
 
