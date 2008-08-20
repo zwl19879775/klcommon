@@ -43,6 +43,9 @@ void test_function( lua_State *L )
 	}
 }
 
+#define TO_STRING( x ) TO_STRING1( x )
+#define TO_STRING1( x ) #x
+
 int main()
 {
 	lua_State *L = lua_open();
