@@ -1,0 +1,390 @@
+Macro Recursion
+author: Kevin Lynx
+
+Preface
+
+    本文可能是<代码自动生成-宏带来的奇技淫巧>的续写。我尽力阐述如何让宏递归（或者说重复）地有规律地产生一
+些符号，而让我们少写很多重复代码，也许这些代码只有那么一点点的不同。将这项小技巧用于底层库的编写，会让代码
+看起来干净不少，同时文件尺寸也会骤然下降。
+    
+Problem
+    如果你曾经写过functor，那么你肯定对某些代码进行粘贴复制然后修改。更让人郁闷的是，这些代码基本是一样的。
+例如，一个典型的functor可能为：
+    template <typename Prototype>
+    class functor;
+    
+    template <typename R, typename P1>
+    class functor<R(P1)>;
+    
+    template <typename R, typename P1, typename P2>
+    class functor<R(P1,P2)>;
+    
+    //好，接下去你可能厌烦了，可能会复制一个带有两个参数的functor，然后修改为处理3个参数的。
+    
+    这只是一个很简单的问题。宏不是c++里的东西，本文自然也不是讨论各种花哨的模板技术的。如果我之前那篇关于
+宏的文章只是让你去分析问题以及更深层次地认识宏，那么现在我将分享我的这部分思想给你。
+    关于上面的问题，我们期待得到这样的解决方案：
+    
+    template <typename R, DEF_PARAM( 2 )>
+    class functor<R( DEF_ARG( 2 ) )>;
+    
+    那么，它将自动生成：
+    
+    template <typename R, typename P1, typename P2>
+    class functor<R(P1,P2)>;
+
+    也就是说，DEF_PARAM(n)这个宏将根据n值自动生成一串符号，例如DEF_PARAM(2)就生成typename P1, typename P2。
+同样，DEF_ARG(n)也会根据参数生成类似于P1,P2,...,Pn的符号串。
+
+思考
+
+    仔细思考下，我们可以看出DEF_PARAM和DEF_ARG这样的宏具有一种递归的特性（其实说成重复可能更合适）：每次展
+开的内容基本一样，不断调用自身直到遇到终止条件。
+  
+    那么，我们的目标锁定于，用宏来实现递归。
+    
+Pre-Implement
+
+    在开始之前，我需要告诉你一些基本的东西：
+    在阅读一个宏时，你最好按照预处理的处理方式去逐个展开。当我说到展开时，我的意思是把宏替换为宏体。预处理器
+展开宏的过程大致为：如果宏参数也是个宏，那么先将宏参数全部展开，再展开该宏；这个时候会扫描展开后的宏，如果
+遇到其他宏，则继续展开。例如有一下宏：
+
+#define PI 3.14
+#define MUL_PI( n ) n * PI
+#define TWO 2
+  
+    当我们写下MUL_PI( TWO )时，预处理发现MUL_PI的参数TWO 是个宏，那么先将TWO展开得到2，然后将2放进宏体展开
+得到 2 * PI；预处理器对 2 * PI 进行扫描，发现还有宏PI，于是对PI做展开，得到 2 * 3.14。这个过程是递归的。
+    但是也有例外，如果MUL_PI对宏参数进行了#或者##，那么该宏参数不会被展开。（参见以前那篇文章吧）
+    
+    任何时候，你可以通过以下宏去查看某个宏展开后的样子，可以方便你调试你的宏：
+
+#define TO_STRING( x ) TO_STRING1( x )
+#define TO_STRING1( x ) #x
+
+    （为什么要写个TO_STRING1，因为这是为了让x充分展开，避免上面提到的那个例外）    
+
+    其他规则我会在文中需要的地方提出来。
+    
+实现
+
+    就像大部分介绍递归函数时候给的例子，这里我也将阶乘作为例子。考虑如下典型的阶乘函数：
+    
+    int fac( int n )
+    {
+        if( n == 1 ) return 1;
+        return n * fac( n - 1 );
+    }
+
+    其核心部分在于 n * fac( n - 1 )，我们假设我们的宏也可以写成这样的的形式：
+    
+    #define FAC( n ) n * FAC( n - 1 )
+    
+    但是这样的宏是有问题的：
+    当宏被展开时，如果遇到了自身，那么将被处理为一般符号，例如展开FAC( 3 )时，会遇到 FAC( 2 )，那么就把FAC
+( 2 )中的FAC当成了一搬符号。
+    
+    这样的限制注定了我们无法让宏真正地调用自身来实现递归。于是，我们不得不写下以下丑陋的符号，从而去模拟递
+归的每一次符号调用：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * FAC_##(n-1)( n - 1 )
+#define FAC_3( n ) n * FAC_##(n-1)( n - 1 )
+
+    这系列宏有点别扭（如果你足够细心），因为我们明显知道FAC_2返回的将是2，而FAC_3返回的当时6。我们这里只是
+模拟，同样，这使得我们可以把FAC_1作为递归的终止条件。
+    我们的预想是，当调用FAC_3时，它把n-1的值2合并到FAC_中，从而调用FAC_2，以此类推。
+    但是这依然有问题，编译器会提示‘找不到符号FAC_’。导致这个问题的原因在于：宏展开只是单纯的字符替换，是我们
+想太多了，预处理器并不会去计算( n - 1 )的值是多少，也就是我们无法得到FAC_2这个宏。
+
+    所以，FAC_3( 3 ) 会被初次替换为 3 * FAC_(3-1)( 3 - 1 )。这个时候编译器就把FAC_当成了一个普通符号。我们可以
+自己定义个FAC_来证明这一点：
+
+#define FAC_( n ) T
+
+    那么，FAC_3( 3 )就被替换为 3 * T(3-1)( 3 - 1 )。
+
+    解决这个问题的办法关键在于，让预处理器自动计算出( n - 1 )。记住，我们解决问题的唯一办法是：字符替换。
+所以，我们可以写下如下代码：
+
+#define DEC_1 0
+#define DEC_2 1
+#define DEC_3 2
+
+#define DEC( n ) DEC_##n
+
+    通过，DEC( n )这个宏，我们可以获取到一个( n -1 )的数。例如，DEC( 3 )被替换为 DEC_3，继续替换为 2。
+
+    于是，我们新的FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * FAC_##DEC( n )( n - 1 )
+#define FAC_3( n ) n * FAC_##DEC( n )( n - 1 )
+
+    不好意思，这样依然是不正确的！预处理器直接把FAC_和DEC( n )连接成符号了，而不是单个地先处理他们，最后再
+合并他们。
+
+    OK，先解决这个问题：先处理FAC_和DEC( n )，再合并他们，而不是先合并他们。要解决这个问题，可以通过第三个宏
+来实现：
+
+#define CHR( x, y ) x##y
+
+    作为连接两个符号为一个符号的宏，这个宏显然是不正确的，因为宏展开还有个规则：如果宏体对宏参数使用了#或##，
+那么宏参数不会被展开，也就是说：如果CHR( FAC_, DEC( 3 ) 那么得到的只会是 FAC_DEC( 3 )。通常情况下我们是
+再写个宏：
+
+#define CHR( x, y ) CHR1( x, y )
+#define CHR1( x, y ) x##y
+
+    从而可以保证在正式连接x和y前，x和y都被完全展开。
+
+    这个时候，我们的FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * CHR( FAC_, DEC( n ) )( n - 1 )
+#define FAC_3( n ) n * CHR( FAC_, DEC( n ) )( n - 1 )
+
+    结果呢？结果还是有问题。= =
+    我们假设CHR( FAC_, DEC( n ) )已经真的按我们预想展开为 FAC_2了，那么FAC_3( 3 )会被展开为什么呢？
+被展开为 3 * FAC_2( 3 - 1 )。这是错误的，传给 FAC_2 的参数是 3 - 1就意味着错误。我们又臆想预处理器会
+帮我们计算 3 - 1的结果了。我们必须保证传给 FAC_2的参数是个数字2。解决这个问题的办法就是通过DEC(n)宏。
+
+   于是，FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * CHR( FAC_, DEC( n ) )( DEC( n ) )
+#define FAC_3( n ) n * CHR( FAC_, DEC( n ) )( DEC( n ) )
+
+    这个时候，FAC_3( 3 )将会被替换为：3*2*1。这就是我们要的结果。
+
+In practice
+
+    以上只是向你展示一个过程，用宏去计算阶乘，就像用模板去计算阶乘（模板元编程）一样，只是一个用于展示的东西，
+没有什么实际价值。接下来我们开始有实际的工作，完成之前的预想：
+
+template <typename R, typename P1, typename P2, typename P3>
+class functor<R (P1, P2, P3)>
+
+    直接:
+
+template <typename R, PARAM( 3 )>
+class functor<R (ARG( 3 ))>
+
+    先考虑PARAM宏，该宏的任务就是生成类似于：typename P1, typename P2, typename P3这样的符号。我们假象它每一次
+递归都生成 typename Pn, 的字符串，那么当他递归完时，可能就生成typename P1, typename P2, typename P3, 结果
+多了个逗号，也许最后一次结果不该有逗号。
+
+    ARG宏和PARAM宏本质上相同，只是重复的符号不是typename Pn，而是Pn。
+
+    最直接想到的是：
+
+#define PARAM_1( n ) typename P##n
+#define PARAM_2( n ) CHR( PARAM_, DEC( n ) )( DEC( n ) )##,typename P##n
+#define PARAM_3( n ) CHR( PARAM_, DEC( n ) )( DEC( n ) )##,typename P##n
+
+    结果我们得到了个错误的展开结果：
+ 
+typename PDEC( 2 ),typename PDEC( 3 ),typename P3
+
+    这个问题出在：PARAM_3( 3 )当替换为 PARAM_2( DEC( n ) )时，因为PARAM_2(n)宏对于宏参数n使用了##，也就是那个
+typename P##n，所以这里不会把 DEC( n )展开，而是直接接到P后面。所以就成了typename PDEC( 3 )。
+
+    为了消除这个问题，我们改进PARAM为：
+
+#define TYPE( n ) ,typename P##n
+#define PARAM_1( n ) CHR( typename P, n )
+#define PARAM_2( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+#define PARAM_3( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+
+    之所以加入TYPE(n)，是因为 ,typename P##n 这个宏本身存在逗号，将其直接用于宏体会出现问题。
+
+    于是，我们得到了正确的结果。
+
+    其实，PARAM系列宏宏体基本是一样的，除了终止条件那个宏，为什么我们要写这么多呢？理由在于宏体不能自己调用
+自己，所以才有了PARAM_3, PARAM_2。
+
+    我们可以将上面的一系列宏抽象化，使其具有可复用性：
+
+#define PARAM( n ) ,typename P##n
+#define PARAM_END typename P
+
+#define ARG( n ) ,P##n
+#define ARG_END P
+
+#define PARAM_1( n ) CHR( typename P, n )
+#define PARAM_2( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+#define PARAM_3( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+
+#define REPEAT_1( n, f, e ) CHR( e, n )
+#define REPEAT_2( n, f, e ) CHR( CHR( REPEAT_, DEC( n ) )( DEC( n ), f, e ), f( n ) )
+#define REPEAT_3( n, f, e ) CHR( CHR( REPEAT_, DEC( n ) )( DEC( n ), f, e ), f( n ) )
+
+#define DEF_PARAM( n ) REPEAT_##n( n, PARAM, PARAM_END )
+#define DEF_ARG( n ) REPEAT_##n( n, ARG, ARG_END )
+
+
+    我们创建了可重用的REPEAT系列宏，用于创建诸如typename P1, typename P2, typename P3或者P1,P2,P3之类的符号，
+通过更上层的DEF_PARAM(n)和DEF_ARG(n)，就可以直接创建出我们上面所需要的符号串，例如：
+
+    DEF_PARAM( 3 ) 就得到 typename P1, typename P2, typename P3
+    DEF_ARG( 3 ) 就得到 P1, P2, P3
+
+More in practice
+
+    下载中提供了我使用这个宏递归技术写的lua_binder(如果你看过<实现自己的LUA绑定器-一个模板编程挑战 >)，你
+可以与上一个版本做一下比较，代码少了很多。
+    同样，我希望你也能获取这种宏递归的思想。    
+    
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    每一次调用，都是类似这样的形式：3 * fac( 2 )；
+从最后一次调用到最初的调用看，每一次表达式 fac( n )返回的都是一个结果。
+而对于宏，我们也可以这样看：我们可以把宏参数看作一次函数调用，并且要求该宏参数会返回展开后的值，
+事实上，宏参数本身就会被替换为宏体再放进宏进行其他展开操作。（当然有例外）
+
+我们假设可以写下这样的宏：
+#define FAC( n ) n * FAC( n - 1 )
+但是这样的宏是有问题的：
+当宏被展开时，如果遇到了自身，那么将被处理为一般符号，例如展开FAC( 3 )时，会遇到 FAC( 2 )，那么就把FAC( 2 )
+中的FAC当成了一搬符号。
+
+这样的限制注定了我们无法让宏真正地调用自身来实现递归。于是，我们不得不写下以下丑陋的符号，从而去模拟递归
+的每一次符号调用：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * FAC_##(n-1)( n - 1 )
+#define FAC_3( n ) n * FAC_##(n-1)( n - 1 )
+
+这系列宏有点别扭（如果你足够细心），因为我们明显知道FAC_2返回的将是2，而FAC_3返回的当时6。我们这里只是模拟，
+因此FAC_1被作为递归的终止条件。
+
+但是这依然有问题，编译器会提示‘找不到符号FAC_’。导致这个问题的原因在于：宏展开只是单纯的字符替换，是我们
+想太多了，预处理器并不会去计算( n - 1 )的值是多少。
+
+所以，FAC_3( 3 ) 会被初次替换为 3 * FAC_(3-1)( 3 - 1 )。这个时候编译器就把FAC_当成了一个普通符号。我们可以
+自己定义个FAC_来证明这一点：
+
+#define FAC_( n ) T
+
+那么，FAC_3( 3 )就被替换为 3 * T(3-1)( 3 - 1 )。
+
+解决这个问题的办法关键在于，让预处理器自动计算出( n - 1 )。记住，我们解决问题的唯一办法是：字符替换。
+所以，我们可以写下如下代码：
+
+#define DEC_1 0
+#define DEC_2 1
+#define DEC_3 2
+
+#define DEC( n ) DEC_##n
+
+通过，DEC( n )这个宏，我们可以获取到一个( n -1 )的数。例如，DEC( 3 )被替换为 DEC_3，继续替换为 2。
+
+于是，我们新的FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * FAC_##DEC( n )( n - 1 )
+#define FAC_3( n ) n * FAC_##DEC( n )( n - 1 )
+
+
+不好意思，这样依然是不正确的！预处理器直接把FAC_和DEC( n )连接成符号了，而不是单个地先处理他们，最后再
+合并他们。
+
+OK，先解决这个问题：先处理FAC_和DEC( n )，再合并他们，而不是先合并他们。要解决这个问题，可以通过第三个宏
+来实现：
+
+#define CHR( x, y ) x##y
+
+作为连接两个符号为一个符号的宏，这个宏显然是不正确的，因为宏展开还有个规则：如果宏体对宏参数使用了#或##，
+那么宏参数不会被展开，也就是说：如果CHR( FAC_, DEC( 3 ) 那么得到的只会是 FAC_DEC( 3 )。通常情况下我们是
+再写个宏：
+
+#define CHR( x, y ) CHR1( x, y )
+#define CHR1( x, y ) x##y
+从而可以保证在正式连接x和y前，x和y都被完全展开。
+
+这个时候，我们的FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * CHR( FAC_, DEC( n ) )( n - 1 )
+#define FAC_3( n ) n * CHR( FAC_, DEC( n ) )( n - 1 )
+
+结果呢？结果还是有问题。= =
+我们假设CHR( FAC_, DEC( n ) )已经真的按我们预想展开为 FAC_2了，那么FAC_3( 3 )会被展开为什么呢？
+被展开为 3 * FAC_2( 3 - 1 )。这是错误的，传给 FAC_2 的参数是 3 - 1就意味着错误。我们又臆想预处理器会
+帮我们计算 3 - 1的结果了。我们必须保证传给 FAC_2的参数是个数字2。解决这个问题的办法就是通过DEC(n)宏。
+
+于是，FAC系列宏变为：
+
+#define FAC_1( n ) 1
+#define FAC_2( n ) n * CHR( FAC_, DEC( n ) )( DEC( n ) )
+#define FAC_3( n ) n * CHR( FAC_, DEC( n ) )( DEC( n ) )
+
+这个时候，FAC_3( 3 )将会被替换为：3*2*1。这就是我们要的结果。
+
+以上只是向你展示一个过程，用宏去计算阶乘，就像用模板去计算阶乘（模板元编程）一样，只是一个用于展示的东西，
+没有什么实际价值。接下来我们开始有实际的工作，完成之前的预想：
+
+template <typename R, typename P1, typename P2, typename P3>
+class functor<R (P1, P2, P3)>
+
+直接:
+template <typename R, PARAM( 3 )>
+class functor<R (ARG( 3 ))>
+
+先考虑PARAM宏，该宏的任务就是生成类似于：typename P1, typename P2, typename P3这样的符号。我们假象它每一次
+递归都生成 typename Pn, 的字符串，那么当他递归完时，可能就生成typename P1, typename P2, typename P3, 结果
+多了个逗号，也许最后一次结果不该有逗号。
+
+ARG宏和PARAM宏本质上相同，只是重复的符号不是typename Pn，而是Pn。
+
+最直接想到的是：
+
+#define PARAM_1( n ) typename P##n
+#define PARAM_2( n ) CHR( PARAM_, DEC( n ) )( DEC( n ) )##,typename P##n
+#define PARAM_3( n ) CHR( PARAM_, DEC( n ) )( DEC( n ) )##,typename P##n
+    
+
+typename PDEC( 2 ),typename PDEC( 3 ),typename P3
+
+这个问题出在：PARAM_3( 3 )当替换为 PARAM_2( DEC( n ) )时，因为PARAM_2(n)宏对于宏参数n使用了##，也就是那个
+typename P##n，所以这里不会把 DEC( n )展开，而是直接接到P后面。所以就成了typename PDEC( 3 )。
+
+为了消除这个问题，我们改进PARAM为：
+
+#define TYPE( n ) ,typename P##n
+#define PARAM_1( n ) CHR( typename P, n )
+#define PARAM_2( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+#define PARAM_3( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+
+之所以加入TYPE(n)，是因为 ,typename P##n 这个宏本身存在逗号，将其直接用于宏体会出现问题。
+
+于是，我们得到了结果。
+
+其实，PARAM系列宏宏体基本是一样的，除了终止条件那个宏，为什么我们要写这么多呢？理由在于宏体不能自己调用
+自己，所以才有了PARAM_3, PARAM_2。
+
+我们可以将上面的一系列宏抽象化，使其具有可复用性：
+
+#define PARAM( n ) ,typename P##n
+#define PARAM_END typename P
+
+#define ARG( n ) ,P##n
+#define ARG_END P
+
+#define PARAM_1( n ) CHR( typename P, n )
+#define PARAM_2( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+#define PARAM_3( n ) CHR( CHR( PARAM_, DEC( n ) )( DEC( n ) ), TYPE( n ) )
+
+#define REPEAT_1( n, f, e ) CHR( e, n )
+#define REPEAT_2( n, f, e ) CHR( CHR( REPEAT_, DEC( n ) )( DEC( n ), f, e ), f( n ) )
+#define REPEAT_3( n, f, e ) CHR( CHR( REPEAT_, DEC( n ) )( DEC( n ), f, e ), f( n ) )
+
+#define DEF_PARAM( n ) REPEAT_##n( n, PARAM, PARAM_END )
+#define DEF_ARG( n ) REPEAT_##n( n, ARG, ARG_END )
+
+我们创建了可重用的REPEAT系列宏，用于创建诸如typename P1, typename P2, typename P3或者P1,P2,P3之类的符号，
+通过更上层的DEF_PARAM(n)和DEF_ARG(n)，就可以直接创建出我们上面所需要的符号串，例如：
+
+DEF_PARAM( 3 ) 就得到 typename P1, typename P2, typename P3
+DEF_ARG( 3 ) 就得到 P1, P2, P3
