@@ -189,6 +189,18 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\src\kl_macro_params.h"
+				>
+			</File>
+			<File
+				RelativePath="..\src\kl_macro_repeat.h"
+				>
+			</File>
+			<File
+				RelativePath=".\klluabinder\kl_static_typelist.h"
+				>
+			</File>
+			<File
 				RelativePath=".\klluabinder\kllua-binder.h"
 				>
 			</File>
