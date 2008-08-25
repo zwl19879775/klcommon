@@ -29,7 +29,7 @@ namespace kl_common
 	/// For example :
 	/// Here you have a function which prototype is : int my_fn( const char * ), and now, you make 
 	/// a typedef :
-	///    typedef kl_common::lua_binder<int (const char*)> my_prototype;
+	///    typedef kl_common::lua_binder<int (const char*), 1> my_prototype;
 	/// And then, you call lua_bind function to bind :
 	///   kl_common::lua_bind( L, my_prototype::func_type( my_fn ), "fn" ); which L is your lua_State, and fn 
 	/// is the function name in lua script. Whatever, the second arugment is a kl_common:functor.So you can 
@@ -38,7 +38,13 @@ namespace kl_common
 	/// If you want your function to return more than one result to lua, you can archieve this by
 	/// return a lua table, and you can extend lua::result_traits.
 	///
-	template <typename Prototype>
+	/// 8.25.2008
+	/// bug fix : And now, i add id to lua_binder, because these lua_binders which have the same prototype
+	/// only have on _func member, so if you bind two functions with the same prototype, the second will
+	/// overwrite the first one, and lua script will call wrong function. So i add an id parameter to partition
+	/// these functions with the same prototype.
+	///
+	template <typename Prototype, long id>
 	class lua_binder;
 
 #define RESULT_COUNT \
@@ -58,8 +64,8 @@ namespace kl_common
 	/// The macro template is to create lua_binder.( 1 -- n parameters )
 	///
 #define CREATE_LUA_BINDER( n ) \
-	template <typename R, DEF_PARAM( n ) > \
-	class lua_binder<R ( DEF_ARG( n ) )> \
+	template <typename R, DEF_PARAM( n ), long id > \
+	class lua_binder<R ( DEF_ARG( n ) ), id> \
 	{ \
 	public: \
 		typedef R result_type; \
@@ -94,14 +100,14 @@ namespace kl_common
 	public: \
 		static func_type _func; \
 	}; \
-	template <typename R, DEF_PARAM( n ) > \
-	typename lua_binder<R ( DEF_ARG( n ) )>::func_type lua_binder<R ( DEF_ARG( n ) )>::_func 
+	template <typename R, DEF_PARAM( n ), long id > \
+	typename lua_binder<R ( DEF_ARG( n ) ), id>::func_type lua_binder<R ( DEF_ARG( n ) ), id>::_func 
 
 	///
 	/// 0 parameter.
 	///
-	template <typename R>
-	class lua_binder<R ()>
+	template <typename R, long id>
+	class lua_binder<R (), id>
 	{
 	public:
 		typedef R result_type;
@@ -149,8 +155,8 @@ namespace kl_common
 	public:
 		static func_type _func;
 	};
-	template <typename R>
-	typename lua_binder<R ()>::func_type lua_binder<R ()>::_func;
+	template <typename R, long id>
+	typename lua_binder<R (), id>::func_type lua_binder<R (), id>::_func;
 
 	CREATE_LUA_BINDER( 1 );
 	CREATE_LUA_BINDER( 2 );
@@ -185,6 +191,7 @@ namespace kl_common
 		lua_pushcfunction( L, binder_type::lua_adapter );
 		lua_setglobal( L, name );
 	}
+
 }
 
 #endif // ___KL_LUA_BINDER_H_

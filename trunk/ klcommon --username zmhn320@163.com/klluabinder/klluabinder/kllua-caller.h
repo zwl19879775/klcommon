@@ -22,11 +22,32 @@ namespace kl_common
 	namespace lua
 	{
 		///
+		/// check whether the lua function is global or local in a table.
+		///
+		inline std::string::size_type is_table_fn( const std::string &fn_name )
+		{
+			return fn_name.find( '.' ) ;
+		}
+
+		///
 		/// The reason i wrap these lua api is to make more error checking when necessary.
 		///
 		inline void get_func( lua_State *L, const std::string &fn_name )
 		{
-			lua_getglobal( L, fn_name.c_str() );
+			std::string::size_type dot_pos = is_table_fn( fn_name );
+			if( dot_pos != std::string::npos )
+			{
+				std::string t_name( fn_name.begin(), fn_name.begin() + dot_pos );
+				std::string f_name( fn_name.begin() + dot_pos + 1, fn_name.end() );
+
+				lua_getglobal( L, t_name.c_str() );
+				lua_pushstring( L, f_name.c_str() );
+				lua_gettable( L, -2 );
+			}
+			else
+			{
+				lua_getglobal( L, fn_name.c_str() );
+			}
 		}
 
 		inline void call_func( lua_State *L, int nargs, int nrets )
@@ -84,12 +105,30 @@ namespace kl_common
 	public: \
 		typedef R result_type; \
 		DEF_PARAM_TYPE( n ); \
+		typedef lua_caller<R( DEF_ARG( n ) )> self_type; \
 		enum { param_count = n }; \
 	public: \
+		lua_caller() : _L( 0 ) \
+		{ \
+		} \
 		lua_caller( lua_State *L, const std::string &fn_name ) : _L( L ), _fn( fn_name ) \
 		{ \
 		} \
-		result_type operator() ( DEF_FUNC_PARAM( n ) ) \
+		lua_caller( const self_type &other ) : _L( other._L ), _fn( other._fn ) \
+		{ \
+		} \
+		self_type &operator= ( const self_type &other ) \
+		{ \
+			_L = other._L; \
+			_fn = other._fn; \
+			return *this; \
+		} \
+		void set( lua_State *L, const std::string &fn_name ) \
+		{ \
+			_L = L; \
+			_fn = fn_name; \
+		} \
+		result_type operator() ( DEF_FUNC_PARAM( n ) ) const \
 		{ \
 			lua::get_func( _L, _fn ); \
 			DEF_SET_PARAM( n ); \
@@ -98,7 +137,7 @@ namespace kl_common
 		} \
 	private: \
 		lua_State *_L; \
-		const std::string _fn; \
+		std::string _fn; \
 	}
 
 	///
@@ -109,12 +148,34 @@ namespace kl_common
 	{
 	public:
 		typedef R result_type;
+		typedef lua_caller<R()> self_type;
 	public:
+		lua_caller() : _L( 0 )
+		{
+		}
+
 		lua_caller( lua_State *L, const std::string &fn_name ) : _L( L ), _fn( fn_name )
 		{
 		}
 
-		result_type operator() ()
+		lua_caller( const self_type &other ) : _L( other._L ), _fn( other._fn )
+		{
+		}
+
+		self_type &operator= ( const self_type &other ) 
+		{
+			_L = other._L;
+			_fn = other._fn;
+			return *this;
+		}
+
+		void set( lua_State *L, const std::string &fn_name )
+		{
+			_L = L;
+			_fn = fn_name;
+		}
+
+		result_type operator() () const
 		{
 			lua::get_func( _L, _fn );
 			lua::call_func( _L, 0, RESULT_COUNT );
@@ -122,7 +183,7 @@ namespace kl_common
 		}
 	private:
 		lua_State *_L;
-		const std::string _fn;
+		std::string _fn;
 	};
 
 	CREATE_LUA_CALLER( 1 );

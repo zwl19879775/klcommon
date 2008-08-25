@@ -14,3 +14,8 @@ fn3( 1, 2, 3 )
 function fn_lua( age, name )
 	print( "lua : fn  : ", name, age )
 end
+
+t = {}
+t.test = function()
+	print( "lua : t.test" )
+end
