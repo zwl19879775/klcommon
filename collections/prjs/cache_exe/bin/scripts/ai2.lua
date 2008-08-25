@@ -12,4 +12,3 @@ import_cached( "scripts/ai1.lua" )
 function on_dead()
 	print( "on_dead2" )
 end
-

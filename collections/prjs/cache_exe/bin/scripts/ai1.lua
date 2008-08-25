@@ -7,3 +7,4 @@ end
 function on_dead()
 	print( "on_dead1" )
 end
+
