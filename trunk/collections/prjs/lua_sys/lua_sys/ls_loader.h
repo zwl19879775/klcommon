@@ -35,7 +35,7 @@ namespace lua_sys
 		/// @param suffix the suffix string of a file.
 		/// @return the number of files loaded.
 		///
-		std::size_t load( ScriptHolder &holder, const std::string &path, const std::string &suffix = "lua" );
+		static std::size_t load( ScriptHolder &holder, const std::string &path, const std::string &suffix = "lua" );
 
 		///
 		/// Encode a script holder to raw data.
@@ -44,7 +44,7 @@ namespace lua_sys
 		/// @param raw [out] to hold the encode data.
 		/// @return the number of bytes added into raw.
 		///
-		std::size_t encode( const ScriptHolder &holder, RawType &raw );
+		static std::size_t encode( const ScriptHolder &holder, RawType &raw );
 
 		///
 		/// Decode a script holder from raw data.
@@ -54,7 +54,7 @@ namespace lua_sys
 		/// @param offset the offset from raw, default value is zero.
 		/// @return the number of bytes it decoded.
 		///
-		std::size_t decode( const RawType &raw, ScriptHolder &holder, std::size_t offset = 0 );
+		static std::size_t decode( const RawType &raw, ScriptHolder &holder, std::size_t offset = 0 );
 	};
 }
 

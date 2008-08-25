@@ -8,31 +8,17 @@
 #include "ls_script_holder.h"
 
 #ifdef __FLOWER_PUBLIC
-#include "public.h"
-#include "rfile.h"
-#include "tools.h"
+#include "../public/public.h"
+#include "../public/rfile.h"
+#include "../public/tools.h"
 #include <deque>
 #include <list>
 using namespace std;
-#include "ClientResource.h"
+#include "../public/ClientResource.h"
 
 
 namespace lua_sys
 {
-	///
-	/// Because there's not a function behaviors like this, so i write myself.
-	///
-	static std::size_t _GetStringFromByteArray( unsigned char *raw, std::size_t size, std::string &str )
-	{
-		std::size_t i;
-		for( i = 0; i < size && raw[i] != 0; ++ i )
-		{
-			str.push_back( (char)raw[i] );
-		}
-
-		return i; 
-	}
-
 	std::size_t ScriptLoader::load( ScriptHolder &holder, const std::string &path, const std::string &suffix )
 	{
 		// get the file name list.
@@ -69,9 +55,9 @@ namespace lua_sys
 			// name
 			_AddToByteArray( &raw, it->first.c_str() );
 			// file size
-			_AddToByteArray( &raw, (long) it->second._size );
+			_AddToByteArray( &raw, (long) it->second->_size );
 			// file content
-			_AddToByteArray( &raw, it->second._content, (long) it->second._size );
+			_AddToByteArray( &raw, it->second->_content, (long) it->second->_size );
 		}
 
 		return raw.size() - ret;
@@ -80,21 +66,21 @@ namespace lua_sys
 	std::size_t ScriptLoader::decode( const ScriptLoader::RawType &raw, ScriptHolder &holder, std::size_t offset )
 	{
 		std::size_t init_off = offset;
-		std::string name;
+		char name[256];
 		std::size_t size;
 		char *content;
 
 		// file count
-		long count = _GetLongFromByteArray( (unsigned char*) &raw[offset], (long&) offset );
+		long count = _GetLongFromByteArray( (unsigned char*) &raw[0], (long&) offset );
 		for( long i = 0; i < count; ++ i )
 		{
 			// name
-			offset += _GetStringFromByteArray( (unsigned char*) &raw[offset], raw.size() - offset, name );
+			_GetStringFromByteArray( (unsigned char*) &raw[0],(long&)offset, name );
 			// file size
-			size = (std::size_t) _GetLongFromByteArray( (unsigned char*) &raw[offset], (long&)offset );
+			size = (std::size_t) _GetLongFromByteArray( (unsigned char*) &raw[0], (long&)offset );
 			// file content
 			content = (char*) malloc( size );
-			_GetBufferFromByteArray( (unsigned char*) &raw[offset], (long&)offset, content, (long)size );
+			_GetBufferFromByteArray( (unsigned char*) &raw[0], (long&)offset, content, (long)size );
 
 			// and save it
 			holder.add_file( name, size, content );

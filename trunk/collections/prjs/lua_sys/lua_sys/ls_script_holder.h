@@ -27,9 +27,15 @@ namespace lua_sys
 			std::size_t _size;
 			/// file content, the raw data.
 			char *_content;
+			/// imported to lua state
+			bool _imported;
+
+			FileInfo() : _imported( false ), _content( 0 ), _size( 0 )
+			{
+			}
 		};
 		/// the script file list.
-		typedef std::map<std::string, FileInfo> FileList;
+		typedef std::map<std::string, FileInfo*> FileList;
 
 	public:
 		ScriptHolder()
@@ -59,8 +65,21 @@ namespace lua_sys
 		/// clear the holder, it will free all memory.
 		void clear();
 
+		/// get the specified file
+		FileInfo *get_file( const std::string &name )
+		{
+			FileList::iterator it = _files.find( name );
+			return it != _files.end() ? it->second : 0; 
+		}
+
 		/// get the file list
 		const FileList &get_file_list() const
+		{
+			return _files;
+		}
+		
+		/// get the write-able file list
+		FileList &get_file_list() 
 		{
 			return _files;
 		}
@@ -70,6 +89,11 @@ namespace lua_sys
 		{
 			return _files.size();
 		}
+
+#ifdef _DEBUG
+		/// dump all script files to the script_holder folder
+		void dump() const;
+#endif
 
 	private:
 		/// the file list
