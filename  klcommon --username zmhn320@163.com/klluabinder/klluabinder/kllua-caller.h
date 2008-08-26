@@ -83,6 +83,7 @@ namespace kl_common
 					return false;
 				}
 			}
+			return true;
 		}
 
 		inline void call_func( lua_State *L, int nargs, int nrets )
