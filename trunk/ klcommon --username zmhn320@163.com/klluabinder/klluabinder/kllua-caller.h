@@ -50,6 +50,41 @@ namespace kl_common
 			}
 		}
 
+		///
+		/// safe function to determine whether a function exists.
+		///
+		inline bool func_exist( lua_State *L, const std::string &fn_name )
+		{
+			std::string::size_type dot_pos = is_table_fn( fn_name );
+			if( dot_pos != std::string::npos )
+			{
+				std::string t_name( fn_name.begin(), fn_name.begin() + dot_pos );
+				std::string f_name( fn_name.begin() + dot_pos + 1, fn_name.end() );
+
+				lua_getglobal( L, t_name.c_str() );
+				if( !lua_istable( L, -1 ) )
+				{
+					lua_pop( L, 1 );
+					return false;
+				}
+				lua_pushstring( L, f_name.c_str() );
+				lua_gettable( L, -2 );
+				if( !lua_isfunction( L, -1 ) )
+				{
+					lua_pop( L, 2 );
+					return false;
+				}
+			}
+			else
+			{
+				lua_getglobal( L, fn_name.c_str() );
+				if( !lua_isfunction( L, -1 ) )
+				{
+					return false;
+				}
+			}
+		}
+
 		inline void call_func( lua_State *L, int nargs, int nrets )
 		{
 			lua_pcall( L, nargs, nrets, 0 );
