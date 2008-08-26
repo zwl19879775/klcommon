@@ -113,6 +113,18 @@ namespace kl_common
 		};
 
 		///
+		/// const user data
+		///
+		template <typename _Tp>
+		struct return_traits<const _Tp*>
+		{
+			static void set_result( lua_State *L, const _Tp *r )
+			{
+				lua_pushlightuserdata( L, const_cast<_Tp*>( r ) );
+			}
+		};
+
+		///
 		/// strings
 		///
 		template <>
