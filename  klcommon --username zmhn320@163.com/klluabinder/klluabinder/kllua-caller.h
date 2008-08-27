@@ -164,6 +164,10 @@ namespace kl_common
 			_L = L; \
 			_fn = fn_name; \
 		} \
+		bool valid() const \
+		{ \
+			return lua::func_exist( _L, _fn ); \
+		} \
 		result_type operator() ( DEF_FUNC_PARAM( n ) ) const \
 		{ \
 			lua::get_func( _L, _fn ); \
@@ -209,6 +213,11 @@ namespace kl_common
 		{
 			_L = L;
 			_fn = fn_name;
+		}
+
+		bool valid() const
+		{
+			return lua::func_exist( _L, _fn );
 		}
 
 		result_type operator() () const

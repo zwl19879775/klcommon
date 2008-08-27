@@ -183,15 +183,15 @@ namespace kl_common
 	/// @param L lua_State, must be initialized already.
 	/// @param func the function wrapped by functor, which will be binded.
 	/// @param name the function name in lua script.
+	/// @param idx the module table index
 	///
 	template <typename binder_type>
-	void lua_bind( lua_State *L, typename binder_type::func_type &func, const char *name )
+	void lua_bind( lua_State *L, typename binder_type::func_type &func, const char *name, int idx = LUA_GLOBALSINDEX )
 	{
 		binder_type::_func = func;
 		lua_pushcfunction( L, binder_type::lua_adapter );
-		lua_setglobal( L, name );
+		lua_setfield( L, idx, name );
 	}
-
 }
 
 #endif // ___KL_LUA_BINDER_H_
