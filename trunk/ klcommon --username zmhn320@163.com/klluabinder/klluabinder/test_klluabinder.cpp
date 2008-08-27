@@ -57,6 +57,36 @@ int lua_error_handler( lua_State *L )
 	return 0;
 }
 
+void dump_stack( lua_State *L )
+{
+	int top = lua_gettop( L );
+	int i ;
+
+	printf( "******************** stack ********************\n" );
+	for( i = top; i >= 1; -- i )
+	{
+		int t = lua_type( L, i );
+		switch( t )
+		{
+		case LUA_TSTRING:
+			printf( "%s\n", lua_tostring( L, t ) );
+			break;
+
+		case LUA_TBOOLEAN:
+			printf( lua_toboolean( L, t ) ? "true\n" : "false\n" );
+			break;
+		
+		case LUA_TNUMBER:
+			printf( "%g\n", lua_tonumber( L, t ) );
+			break;
+
+		default:
+			printf( "%s\n", lua_typename( L, t ) );
+		}
+	}
+	printf( "******************** end stack ****************\n" );
+}
+
 int main()
 {
 	lua_State *L = lua_open();
@@ -64,21 +94,31 @@ int main()
 	lua_atpanic( L, lua_error_handler );
 	luaL_openlibs( L );
 
+	/* bind functions to the specify table */
+	lua_newtable( L );
+	lua_pushvalue( L, -1 );
+	lua_setglobal( L, "mylib" );
+	int idx = -2;
+
+	dump_stack( L );
+
 	typedef kl_common::lua_binder< void (), 1 > none_param_fn;
-	kl_common::lua_bind<none_param_fn>( L, none_param_fn::func_type( my_fn ), "fn" );
+	kl_common::lua_bind<none_param_fn>( L, none_param_fn::func_type( my_fn ), "fn", idx );
+
+	dump_stack( L );
 
 	typedef kl_common::lua_binder< void (), 2 > none_param_fn2;
-	kl_common::lua_bind<none_param_fn2>( L, none_param_fn2::func_type( my_fn_t ), "fn_t" );
+	kl_common::lua_bind<none_param_fn2>( L, none_param_fn2::func_type( my_fn_t ), "fn_t", idx );
 
 	typedef kl_common::lua_binder< int ( const char* ), 3 > one_param_fn;
-	kl_common::lua_bind<one_param_fn>( L, one_param_fn::func_type( my_fn2 ), "fn2" );
+	kl_common::lua_bind<one_param_fn>( L, one_param_fn::func_type( my_fn2 ), "fn2", idx );
 
 	Game game;
 	typedef kl_common::lua_binder< const char* ( int, int ), 4 > mem_fn;
-	kl_common::lua_bind<mem_fn>( L, mem_fn::func_type( game, &Game::get_str ), "mem_fn" );	
+	kl_common::lua_bind<mem_fn>( L, mem_fn::func_type( game, &Game::get_str ), "mem_fn", idx );	
 
 	typedef kl_common::lua_binder< void ( int, int, int ), 5 > param3_fn;
-	kl_common::lua_bind<param3_fn>( L, param3_fn::func_type( my_fn3 ), "fn3" );
+	kl_common::lua_bind<param3_fn>( L, param3_fn::func_type( my_fn3 ), "fn3", idx );
 
 	test_function( L );
 
