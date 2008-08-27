@@ -1,15 +1,15 @@
 -- test kl-lua-binder
 
-a = fn()
+a = mylib.fn()
 --print( a )
-a = fn2( "lua script" )
+a = mylib.fn2( "lua script" )
 print( a )
 
 -- test member function
-a = mem_fn( 1, 2 )
+a = mylib.mem_fn( 1, 2 )
 print( a )
 
-fn3( 1, 2, 3 )
+mylib.fn3( 1, 2, 3 )
 
 function fn_lua( age, name )
 	print( "lua : fn  : ", name, age )
