@@ -1,5 +1,7 @@
 ///
-///
+/// @file ls_system.cpp
+/// @author Kevin Lynx
+/// @brief the interface wrapped the lua system.
 ///
 #define _CRT_SECURE_NO_WARNINGS
 #include <assert.h>

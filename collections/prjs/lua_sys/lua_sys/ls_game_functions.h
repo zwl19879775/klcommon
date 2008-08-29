@@ -1,5 +1,6 @@
 ///
-///
+/// @file ls_game_functions.h
+/// @author Kevin Lynx
 ///
 #ifndef ___LS_GAME_FUNCTIONS_H_
 #define ___LS_GAME_FUNCTIONS_H_
