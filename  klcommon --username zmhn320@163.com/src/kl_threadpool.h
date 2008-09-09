@@ -100,6 +100,15 @@ namespace kl_common
 		}
 
 		///
+		/// Check whether the thread pool is ready to shutdown.This function is a helerp function to 
+		/// help your job function to return.
+		///
+		bool is_shutdown() const
+		{
+			return _shutdown;
+		}
+
+		///
 		/// Add a free thread in the pool.
 		///
 		bool add_thread()
@@ -125,17 +134,20 @@ namespace kl_common
 		///
 		void dispatch( thread_func &func, void *arg = 0 )
 		{
+			_mutex.acquire();
 			if( _free_threads.empty() )
 			{
+				_mutex.release();
 				add_thread();
+				_mutex.acquire();
 			}
-			guard<Mutex> g( _mutex );
 			thread_t *t = _free_threads.front();
 			t->_func = func;
 			t->_arg = arg;
 			_free_threads.pop_front();
 			_busy_threads.push_back( t );
 			thread_resume( t->_self );
+			_mutex.release();
 		}
 
 	private:
