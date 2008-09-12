@@ -42,6 +42,36 @@ namespace kl_common
 	{
 		delete obj;
 	}
+
+	///
+	/// A tiny macro to make your map::find.It will expand some codes to find something in map.
+	///
+	/// usage :
+	/// Obj *MyClass::GetObj( const long id )
+	/// {
+	///      MAP_FIND_FUNC( ObjMap, m_Objs, id, NULL );
+	/// }
+	///
+#define MAP_FIND_FUNC( type, container, key, null ) \
+	do { \
+	type::iterator it = container.find( key ); \
+	if( it != container.end() ) \
+	{ \
+		return it->second; \
+	} \
+	return null; \
+	} while( 0 ) 
+
+#define MAP_FIND_CONST_FUNC( type, container, key, null ) \
+	do { \
+	type::const_iterator it = container.find( key ); \
+	if( it != container.end() ) \
+	{ \
+		return it->second; \
+	} \
+	return null; \
+	} while( 0 ) \
+
 }
 
 #endif // ___KL_TP_UTILITY_H_
