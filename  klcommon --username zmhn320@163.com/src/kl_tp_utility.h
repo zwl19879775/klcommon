@@ -72,6 +72,62 @@ namespace kl_common
 	return null; \
 	} while( 0 ) \
 
+	///
+	/// map_func_first is such a component that can be used to for_each a map container.And visit
+	/// the key of the map item.
+	/// i.e :
+	///
+	///   void IDHandler( int id )
+	///   {
+	///   }
+	///   std::map<int, std::string> IDString;
+	///   for_each( IDString.begin(), IDString.end(), map_func_first( IDHandler ) );
+	///
+	template <typename _Func>
+	struct _map_func_first
+	{
+		_map_func_first( _Func func ) : _func( func )
+		{
+		}
+		template <typename _Elem>
+		void operator() ( _Elem &item )
+		{
+			_func( item.first );
+		}
+
+		_Func _func;
+	};
+
+	template <typename _Func>
+	_map_func_first<_Func> map_func_first( _Func func )
+	{
+		return _map_func_first<_Func>( func );
+	}
+
+	///
+	/// It's almost the same as map_func_first, but it visit the value of the map item.
+	///
+	template <typename _Func>
+	struct _map_func_second
+	{
+		_map_func_second( _Func func ) : _func( func )
+		{
+		}
+		template <typename _Elem>
+		void operator() ( _Elem &item )
+		{
+			_func( item.second );
+		}
+
+		_Func _func;
+	};
+
+	template <typename _Func>
+	_map_func_second<_Func> map_func_second( _Func func )
+	{
+		return _map_func_second<_Func>( func );
+	}
+
 }
 
 #endif // ___KL_TP_UTILITY_H_
