@@ -9,27 +9,13 @@
 namespace kl_common
 {
 	///
-	/// The kl_cast is primary to remove the warning from static_cast<bool>( int )
+	/// The bool_cast is primary to remove the warning from static_cast<bool>( int )
 	///
-	template <typename _Tp>
-	struct kl_cast
+	template <typename _Other>
+	bool bool_cast( _Other &other )
 	{
-		template <typename _Other>
-		_Tp operator() ( const _Other &v )
-		{
-			return static_cast<_Tp>( v );
-		}
-	};
-
-	template <>
-	struct kl_cast<bool>
-	{
-		template <typename _Other>
-		bool operator() ( const _Other &v )
-		{
-			return v ? true : false;
-		}
-	};
+		return other ? true : false;
+	}
 
 	///
 	/// deletor is used to help std::for_each to delete stl container items.And it makes you

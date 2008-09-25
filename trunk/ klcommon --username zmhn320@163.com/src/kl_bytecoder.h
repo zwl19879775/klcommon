@@ -77,6 +77,12 @@ public:
 		add( (char) 0 );
 	}
 
+	/// add a string in the buffer.
+	void add( const char *str )
+	{
+		add( std::string( str ) );
+	}
+
 	/// add raw buffer .
 	void add( const void *buf, std::size_t size )
 	{
