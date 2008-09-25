@@ -114,6 +114,50 @@ namespace kl_common
 		return _map_func_second<_Func>( func );
 	}
 
+	///
+	/// map_func_first_pred can be used for any predicator such as find_if.
+	///
+	template <typename _Func>
+	struct _map_func_first_pred
+	{
+		_map_func_first_pred( _Func func ) : _func( func )
+		{
+		}
+		template <typename _Elem>
+		bool operator() ( _Elem &item )
+		{
+			return _func( item.first );
+		}
+
+		_Func _func;
+	};
+
+	template <typename _Func>
+	_map_func_first_pred<_Func> map_func_first_pred( _Func func )
+	{
+		return _map_func_first_pred<_Func>( func );
+	}
+
+	template <typename _Func>
+	struct _map_func_second_pred
+	{
+		_map_func_second_pred( _Func func ) : _func( func )
+		{
+		}
+		template <typename _Elem>
+		bool operator() ( _Elem &item )
+		{
+			return _func( item.second );
+		}
+
+		_Func _func;
+	};
+	
+	template <typename _Func>
+	_map_func_second_pred<_Func> map_func_second_pred( _Func func )
+	{
+		return _map_func_second_pred<_Func>( func );
+	}
 }
 
 #endif // ___KL_TP_UTILITY_H_
