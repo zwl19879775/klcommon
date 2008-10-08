@@ -48,6 +48,12 @@ namespace kl_common
 			_objs[id] = obj;
 		}
 		
+		/// remove an object from the container.
+		void remove( id_type id )
+		{
+			_objs.erase( id );
+		}
+
 		/// get a write-able object.
 		obj_type get( id_type id )
 		{
