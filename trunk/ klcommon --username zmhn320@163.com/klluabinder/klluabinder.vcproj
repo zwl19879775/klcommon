@@ -42,6 +42,7 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="../src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				GeneratePreprocessedFile="1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
