@@ -1,31 +1,37 @@
-# makefile for xml parser
+# makefile for xml_parser
+# author : Kevin Lynx
+SRCDIR = .\src
+TMPDIR = .\tmp
+BINDIR = .\bin
 CC = gcc
-BINDIR = ./bin
-TMPDIR = ./tmp
-COPTION = -c 
+LINK = gcc
+CFLAG = -c -o
+LINKFLAG = -o
 
-all: test_scanner.exe test_parser.exe test_helper.exe
-xml_helper.o: xml_helper.c xml_helper.h xml_parser.h xml_scan.h
-	${CC} ${COPTION} xml_helper.c
-xml_parser.o: xml_parser.c xml_parser.h xml_scan.h
-	${CC} ${COPTION} xml_parser.c
-xml_scan.c: xml.l
-	flex -oxml_scan.c xml.l
-xml_scan.o: xml_scan.c xml_scan.h
-	${CC} ${COPTION} xml_scan.c
-tests_scanner.o: xml_scan.h tests_scanner.c
-	${CC} ${COPTION} tests_scanner.c
-test_parser.o: test_parser.c xml_parser.h xml_scan.h
-	${CC} ${COPTION} test_parser.c
-test_xmlhelper.o: test_xmlhelper.c xml_helper.h xml_parser.h xml_scan.h
-	${CC} ${COPTION} test_xmlhelper.c
-test_parser.exe: xml_scan.o xml_parser.o test_parser.o
-	${CC} -o test_parser.exe xml_scan.o xml_parser.o test_parser.o
-test_scanner.exe: xml_scan.o tests_scanner.o
-	${CC} -o test_scanner.exe xml_scan.o tests_scanner.o 
-test_helper.exe: test_xmlhelper.o xml_helper.o xml_helper.o xml_scan.o
-	${CC} -o test_helper.exe test_xmlhelper.o xml_helper.o xml_parser.o xml_scan.o
+all: ${TMPDIR} ${BINDIR}/test_scan.exe ${BINDIR}/test_parser.exe ${BINDIR}/test_helper.exe 
+
+${TMPDIR}:
+	mkdir tmp
+${TMPDIR}/xml_scan.o: ${SRCDIR}/xml_scan.c ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $<
+${TMPDIR}/xml_parser.o: ${SRCDIR}/xml_parser.c ${SRCDIR}/xml_parser.h ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $<
+${TMPDIR}/xml_helper.o: ${SRCDIR}/xml_helper.c ${SRCDIR}/xml_parser.h ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $<
+${TMPDIR}/test_scan.o: ${SRCDIR}/tests_scanner.c ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $< 
+${BINDIR}/test_scan.exe: ${TMPDIR}/test_scan.o ${TMPDIR}/xml_scan.o
+	${LINK} ${LINKFLAG} $@ $^
+${TMPDIR}/test_parser.o: ${SRCDIR}/test_parser.c ${SRCDIR}/xml_parser.h ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $< 
+${BINDIR}/test_parser.exe: ${TMPDIR}/test_parser.o ${TMPDIR}/xml_parser.o ${TMPDIR}/xml_scan.o
+	${LINK} ${LINKFLAG} $@ $^
+${TMPDIR}/test_helper.o: ${SRCDIR}/test_xmlhelper.c ${SRCDIR}/xml_parser.h ${SRCDIR}/xml_scan.h
+	${CC} ${CFLAG} $@ $<
+${BINDIR}/test_helper.exe: ${TMPDIR}/test_helper.o ${TMPDIR}/xml_helper.o ${TMPDIR}/xml_parser.o ${TMPDIR}/xml_scan.o
+	${LINK} ${LINKFLAG} $@ $^
+
 clean:
-	del *.o xml_scan.c test_scanner.exe test_parser.exe test_helper.exe
-
-
+	-rmdir /Q /S ${TMPDIR}
+	-del ${BINDIR}\*.exe
+rebuild: clean all
