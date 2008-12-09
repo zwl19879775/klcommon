@@ -1,0 +1,9 @@
+<Node index="1" name="node name">
+	<Child id="1" />
+	<Child id="2">
+	</Child>
+	<Child id="3">
+		<Son name="k"/>
+	</Child>
+</Node>
+
