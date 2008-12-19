@@ -1,0 +1,135 @@
+
+1.变量
+  kl的变量不分类型，但是分为两种属性：数字和字符串。
+  kl的变量也不需要事先定义。但是变量具有作用域的概念。作用域包括：全局和局部。
+  变量的首次出现将决定其作用域。离开了该作用域后，该作用域的变量将销毁。
+  kl支持数组变量，但要求其定长。
+  kl变量支持动态改变属性，也就是说一个数字变量可以在运行期保存字符串。
+
+2.运算符
+  运算符包括：+, -, *, /, %, (, ), <, >, ==, !=, =。对于字符串属性的变量而言，
+  仅支持'+'运算，用于将两个字符串连接。如果参与运算的变量有数字变量，kl解释器
+  将试图把这些变量转换为字符串。
+
+3.代码结构
+  kl有函数的概念。你可以定义自己的函数。因此kl的代码结构将被分为一个一个的函数。
+  kl程序将从一个名为main的函数开始运行。
+  所有函数体外被称为全局作用域，而函数体内为局部作用域。
+  kl有代码块的概念，但是代码块里的作用域和代码块所在函数的作用域相同。
+
+4.语句：
+
+  kl的每一条语句都以";"结束。
+
+1).赋值：
+   赋值运算符为‘=’，如：a=10;
+
+2).判断：
+   if( expression )
+   {
+       block
+   }
+   else
+   {
+       block
+   }
+
+3).循环
+   while( expression )
+   {
+       block
+   }
+
+   do
+   {
+       block
+   } while( expression );
+
+4).函数
+
+   function function_name( param list )
+   {
+       block
+       [return]
+   }
+
+   function_name( argument list );
+
+5).TODO : add more
+
+5.实现：
+
+1).词法分析
+
+  Digit [0-9]
+  Letter [a-zA-Z_]
+  ID {Letter}+({Digit}|{Letter})*
+  Num {Digit}+
+  Float {Num}"."{Num}
+  Newline \n
+  Whitespace [ \t]+
+  Char '({Letter}|{Digit})'
+  String \"([^\"])*\"
+
+  if
+  else
+  while
+  do
+  return
+  break
+  =
+  !=
+  >
+  <
+  >=
+  <=
+  ==
+  [
+  ]
+  (
+  )
+  {
+  }
+  +
+  -
+  *
+  /
+  %
+  ,
+  ||
+  &&
+  !
+  ;
+
+6.BNF文法
+  program -> definition-list
+  definition-list -> definition-list | definition
+  definition -> var-definition | fun-definition
+  var-definition ->  ID; | ID[NUM];
+  fun-definition -> ID ( params ) compound-stmt
+  params -> params-list | empty 
+  params-list -> params-list, param | param
+  param -> ID | ID[NUM]
+  compound-stmt -> { statement-list }
+  statement-list -> statement-list statement | empty
+  statement -> expressioin-stmt | compound-stmt | selection-stmt | iteration-stmt |
+               return-stmt
+  expression-stmt -> expression; | ;
+  selectioin-stmt -> if( expression ) statement |
+                     if ( expression ) statement else statement
+  iteration-stmt -> while( expression ) statement
+  return-stmt -> return; | return expression;
+  expression -> var = expression | simple-expression
+  var -> ID | ID[expression]
+  simple-expression -> additive-expression relop additive-expression |
+                       additive-expression
+  relop -> <= | < | > | >= | == | !=
+  additive-expression -> additive-expression addop term | term
+  addop -> + | -
+  term -> term mulop factor | factor
+  mulop -> * | /
+  factor -> (expression) | var | call | NUM 
+  call -> ID( args )
+  args -> arg-list | empty
+  arg-list -> arg-list, expression | expression
+

@@ -12,6 +12,7 @@
 - p : to print some variables value
 - display : to display some variables value automatically when the program stops
 - finish : to execute until the function returns
+- break address if condition : break if the condition is true
 
 
 
