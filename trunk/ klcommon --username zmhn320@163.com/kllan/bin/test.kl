@@ -1,0 +1,11 @@
+function main()
+{
+	a = 123;
+	b = "a string";
+	c = 'c';
+	if( c == 'c' || a != 123 )
+	{
+		d = 2.34;
+		return;
+	}
+}
