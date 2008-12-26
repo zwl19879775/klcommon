@@ -106,7 +106,7 @@
   definition-list -> definition-list | definition
   definition -> var-definition | fun-definition
   var-definition ->  ID; | ID[NUM];
-  fun-definition -> ID ( params ) compound-stmt
+  fun-definition -> function ID ( params ) compound-stmt
   params -> params-list | empty 
   params-list -> params-list, param | param
   param -> ID | ID[NUM]
