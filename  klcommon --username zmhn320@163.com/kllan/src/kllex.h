@@ -28,7 +28,7 @@ struct lexState;
 /**
  * lex error function prototype
  */
-typedef void (*lex_errorfn)( struct lexState *ls, const char *msg );
+typedef void (*lex_errorfn)( struct lexState *ls, const char *msg, ... );
 
 /**
  * token type
@@ -55,12 +55,12 @@ struct lexState
 /**
  * return the current token
  */
-#define lex_current( ls ) ( (struct lexState*)(ls)->token.type )
+#define lex_current( ls ) ( ( (struct lexState*)(ls) )->token.type )
 
 /**
  * return the current token string 
  */
-#define lex_current_str( ls ) ( (struct lexState*)(ls)->token.string )
+#define lex_current_str( ls ) ( ( (struct lexState*)(ls) )->token.string )
 
 /**
  * scan the next token and save it to the lexState.

@@ -3,10 +3,17 @@
  */
 #include <stdio.h>
 #include "kllex.h"
+#include <stdarg.h>
 
-void lex_error( struct lexState *ls, const char *msg )
+void lex_error( struct lexState *ls, const char *format, ... )
 {
-	fprintf( stderr, ">>lex error [#%u]: %s\n", ls->lineno, msg );
+	char buf[1024];
+	va_list list;
+	va_start( list, format );
+	vsprintf( buf, format, list );
+	va_end( list );
+	
+	fprintf( stderr, ">>lex error [#%u]: %s\n", ls->lineno, buf );
 }
 
 void test_lex( const char *file )
