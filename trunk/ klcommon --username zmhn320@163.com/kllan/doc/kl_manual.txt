@@ -119,7 +119,7 @@
                      if ( expression ) statement else statement
   iteration-stmt -> while( expression ) statement
   return-stmt -> return; | return expression;
-  expression -> var = expression | simple-expression
+  expression -> simple-expression
   var -> ID | ID[expression]
   simple-expression -> additive-expression relop additive-expression |
                        additive-expression
@@ -133,3 +133,10 @@
   args -> arg-list | empty
   arg-list -> arg-list, expression | expression
 
+几个比较特殊的：
+
+- 对于函数调用，在解释执行时，执行一个表达式时，发现一个ID，会在符号表里
+  查找该符号。符号表里保存了该符号的属性，如果发现属性为函数名，则进行
+  函数调用，否则直接取值。
+- 对于赋值，因为赋值表达式也会返回值，所以赋值表达式并没有作为statement，
+  而是作为普通的expression。

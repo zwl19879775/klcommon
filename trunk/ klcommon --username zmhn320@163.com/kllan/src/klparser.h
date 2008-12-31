@@ -6,6 +6,8 @@
 #ifndef ___KL_PARSER_H_
 #define ___KL_PARSER_H_
 
+struct lexState ;
+
 /**
  * generic value 
  */
@@ -31,7 +33,8 @@ typedef enum
 {
 	ST_VAR_DEF,
 	ST_FUNC_DEF, ST_PARAM_DEF,
-	ST_IF, ST_WHILE, ST_ASSIGN
+	ST_IF, ST_WHILE, /*ST_ASSIGN*/
+	ST_RETURN,
 } StmtType;
 
 /**
@@ -41,6 +44,7 @@ typedef enum
 {
 	ET_OP,
 	ET_CONST,
+	ET_STRING, /* const string */
 	ET_ID,
 	ET_FUNC_CALL
 } ExpType;
