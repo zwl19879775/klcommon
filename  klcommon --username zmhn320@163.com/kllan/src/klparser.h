@@ -9,15 +9,6 @@
 struct lexState ;
 
 /**
- * generic value 
- */
-typedef union
-{
-	double dval;
-	char *sval;
-} Value;
-
-/**
  * syntax tree node type
  */
 typedef enum
@@ -69,7 +60,11 @@ struct treeNode
 	{
 		/* operation type */
 		int op;
-		Value val;
+		union
+		{
+			double dval;
+			char *sval;
+		} val;
 	} attr;
 
 	struct treeNode *child[MAXCHILDREN];
