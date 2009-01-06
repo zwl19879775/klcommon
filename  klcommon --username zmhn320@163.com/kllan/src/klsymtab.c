@@ -21,7 +21,7 @@ static int sym_hash( const char *key )
 struct symTable *sym_new()
 {
 	struct symTable *st = (struct symTable*) malloc( sizeof( struct symTable ) );
-	memset( st->table, SYM_SIZE * sizeof( st->table[0] ), 0 );
+	memset( st->table, 0, SYM_SIZE * sizeof( st->table[0] ) );
 	return st;
 }
 
@@ -29,17 +29,13 @@ void sym_free( struct symTable *st )
 {
 }
 
-int sym_insert( struct symTable *st, const char *name, union Value val, SymType type )
+int sym_insert( struct symTable *st, const char *name, struct Value val )
 {
 	int index = sym_hash( name );
 	struct Symbol *head = st->table[index];
 	struct Symbol *sb = sym_lookup( st, name );
 	if( sb != 0 )
 	{
-		if( sb->type != type )
-		{
-			return -1;
-		}
 		/* the symbol exists, update its value */
 		sb->val = val;
 	}
@@ -50,7 +46,6 @@ int sym_insert( struct symTable *st, const char *name, union Value val, SymType 
 		new_sb->name = (char*) malloc( strlen( name ) + 1 );
 		strcpy( new_sb->name, name );
 		new_sb->val = val;
-		new_sb->type = type;
 		new_sb->next = head;
 		st->table[index] = new_sb;
 	}
@@ -68,6 +63,5 @@ struct Symbol *sym_lookup( struct symTable *st, const char *name )
 	}
 	return sb;
 }
-
 
 
