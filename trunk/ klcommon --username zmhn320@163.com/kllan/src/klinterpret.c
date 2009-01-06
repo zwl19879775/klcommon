@@ -10,14 +10,35 @@
 #include <stdio.h>
 
 /**
+ * function executed result type
+ */
+enum
+{
+	ER_NORMAL,
+	ER_RETURN,
+};
+
+/**
+ * function executed result
+ */
+struct FuncRet
+{
+	struct Value val;
+	int type;
+};
+
+/**
  * build the global symbol table
  */
 static void inter_build_global_st( struct interEnv *env, struct treeNode *root );
 static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *name );
-static union Value inter_op_exp( struct interEnv *env, struct treeNode *node );
-static union Value inter_expression( struct interEnv *env, struct treeNode *node );
+static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node );
+static struct Value inter_expression( struct interEnv *env, struct treeNode *node );
 static void inter_exp_stmt( struct interEnv *env, struct treeNode *tree );
-static union Value inter_function( struct interEnv *env, struct treeNode *tree );
+static struct Value inter_function( struct interEnv *env, struct treeNode *tree );
+static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node );
+static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *node );
+static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *node );
 
 static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 {
@@ -28,15 +49,16 @@ static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 		{
 			if( node->subtype.stmt == ST_VAR_DEF )
 			{
-				union Value val;
+				struct Value val;
 			    val	= inter_expression( env, node->child[0] );
-				sym_insert( env->global_st, node->attr.val.sval, val, SB_VAR );				
+				sym_insert( env->global_st, node->attr.val.sval, val );				
 			}
 			else if( node->subtype.stmt == ST_FUNC_DEF )
 			{
-				union Value val;
+				struct Value val;
 				val.address = node;
-				sym_insert( env->global_st, node->attr.val.sval, val, SB_FUNC );
+				val.type = SB_FUNC;
+				sym_insert( env->global_st, node->attr.val.sval, val );
 			}
 			else
 			{
@@ -61,10 +83,11 @@ static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *nam
 	return sb;
 }
 
-static union Value inter_op_exp( struct interEnv *env, struct treeNode *node )
+static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 {
-	union Value ret, left, right;
+	struct Value ret, left, right;
 	ret.address = 0;
+	ret.type = SB_VAR_NUM;
 	/* two operator operation */
 	if( node->child[0] == 0 || node->child[1] == 0 )
 	{
@@ -78,61 +101,131 @@ static union Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 	right = inter_expression( env, node->child[1] );
 	switch( node->attr.op )
 	{
+		/* these operations below do not handle the type of the two opertions */
+		case TK_OR:
+			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval || right.dval );
+			}
+			break;
+
+		case TK_AND:
+			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval && right.dval );
+			}
+			break;
+
 		case TK_LE:
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval <= right.dval ? 1 : 0 );	
 			}
 			break;
 
 		case TK_GE:
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval >= right.dval ? 1 : 0 );
 			}
 			break;
 
 		case TK_EQ:
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval == right.dval ? 1 : 0 );
 			}
 			break;
 
 		case TK_NE:
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval != right.dval ? 1 : 0 );
 			}
 			break;
 
 		case '<':
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval < right.dval ? 1 : 0 );
 			}
 			break;
 
 		case '>':
 			{
-
+				ret.type = SB_VAR_NUM;
+				ret.dval = ( left.dval > right.dval ? 1 : 0 );
 			}
 			break;
 
 		case '+':
 			{
-
+				if( left.type == SB_VAR_NUM && right.type == SB_VAR_NUM )
+				{
+					ret.type = SB_VAR_NUM;
+					ret.dval = left.dval + right.dval;
+				}
+				else if( left.type == SB_VAR_STRING || right.type == SB_VAR_STRING )
+				{
+					char *str = 0;
+					ret.type = SB_VAR_STRING;
+					if( left.type == SB_VAR_STRING )
+					{
+						char tmp[STRING_MAX_LEN];
+						sprintf( tmp, "%s%lf", left.sval, right.dval );
+						ret.sval = (char*)malloc( strlen( tmp ) + 1 );
+						strcpy( ret.sval, tmp );
+					}
+					else if( right.type == SB_VAR_STRING )
+					{
+						char tmp[STRING_MAX_LEN];
+						sprintf( tmp, "%lf%s", left.dval, right.sval );
+						ret.sval = (char*)malloc( strlen( tmp ) + 1 );
+						strcpy( ret.sval, tmp );
+					}	
+				}
 			}
 			break;
 
 		case '-':
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = left.dval - right.dval;
 			}
 			break;
 
 		case '*':
 			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = left.dval * right.dval;
 			}
 			break;
 
 		case '/':
 			{
+				if( right.dval == 0 )
+				{
+					env->inter_log( "runtime error->divied by 0" );
+				}
+				else
+				{
+					ret.type = SB_VAR_NUM;
+					ret.dval = left.dval / right.dval;
+				}
 			}
 			break;
 
 		case '%':
 			{
-
+				if( right.dval == 0 )
+				{
+					env->inter_log( "runtime error->divied by 0" );
+				}
+				else
+				{
+					ret.type = SB_VAR_NUM;
+					ret.dval = (int)left.dval % (int)right.dval;
+				}
 			}
 			break;
 
@@ -142,23 +235,25 @@ static union Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 				struct Symbol *sb = sym_lookup( env->global_st, l_node->attr.val.sval );
 				if( sb == 0 )
 				{
-					sym_insert( env->local_st, l_node->attr.val.sval, right, SB_VAR );
+					sym_insert( env->local_st, l_node->attr.val.sval, right );
 				}	
 				else
 				{
-					sym_insert( env->global_st, l_node->attr.val.sval, right, SB_VAR );
+					sym_insert( env->global_st, l_node->attr.val.sval, right );
 				}
+				ret = right;
 			}
 			break;
 
 		default:
 			env->inter_log( "runtime error->unsupport operation" );
 	}
+	return ret;
 }
 
-static union Value inter_expression( struct interEnv *env, struct treeNode *node )
+static struct Value inter_expression( struct interEnv *env, struct treeNode *node )
 {
-	union Value ret ;
+	struct Value ret ;
 
 	switch( node->subtype.exp )
 	{
@@ -167,10 +262,12 @@ static union Value inter_expression( struct interEnv *env, struct treeNode *node
 
 		case ET_CONST:
 			ret.dval = node->attr.val.dval;
+			ret.type = SB_VAR_NUM;
 		    return ret;
 
 		case ET_STRING:
 			ret.sval = node->attr.val.sval;
+			ret.type = SB_VAR_STRING;
 			return ret;
 
 		case ET_ID:
@@ -180,8 +277,9 @@ static union Value inter_expression( struct interEnv *env, struct treeNode *node
 				if( sb == 0 )
 				{
 					/* not exist, create a new symbol */
-					ret.address = 0;
-					sym_insert( env->local_st, node->attr.val.sval, ret, SB_VAR ); 
+					ret.dval = 0;
+					ret.type = SB_VAR_NUM;
+					sym_insert( env->local_st, node->attr.val.sval, ret ); 
 					return ret;
 				}
 				return sb->val;
@@ -196,6 +294,7 @@ static union Value inter_expression( struct interEnv *env, struct treeNode *node
 			env->inter_log( "" );	
 	}
 	ret.address = 0;
+	ret.type = SB_VAR_NUM;
 	return ret;
 }
 
@@ -204,34 +303,94 @@ static void inter_exp_stmt( struct interEnv *env, struct treeNode *tree )
 	inter_expression( env, tree );
 }
 
-static union Value inter_function( struct interEnv *env, struct treeNode *tree )
+static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *tree )
 {
-	struct treeNode *node = tree;
-	union Value ret;
-	env->local_st = sym_new();
-	for( node = tree; node != 0; node = node->sibling )
+	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct Value exp = inter_expression( env, tree->child[0] );
+	if( (int)exp.dval )
+	{
+		ret = inter_statements( env, tree->child[1] );	
+	}
+	else if( tree->child[2] != 0 )
+	{
+		ret = inter_statements( env, tree->child[2] );
+	}
+	return ret;
+}
+
+static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *tree )
+{
+	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct Value exp = inter_expression( env, tree->child[0] );
+	struct treeNode *node = 0;
+	while( (int)exp.dval )
+	{
+		ret = inter_statements( env, tree->child[1] );
+		if( ret.type == ER_RETURN )
+		{
+			break;
+		}
+		exp = inter_expression( env, tree->child[0] );
+	}
+	return ret;	
+}
+
+static struct FuncRet inter_return_stmt( struct interEnv *env, struct treeNode *node )
+{
+	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_RETURN };
+	ret.val = inter_expression( env, node->child[0] );
+	return ret;
+}
+
+static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node )
+{
+	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	for( ; node != 0; node = node->sibling )
 	{
 		if( node->type == NT_STMT )
 		{
 			switch( node->subtype.stmt )
 			{
 				case ST_IF:
+					ret = inter_if_stmt( env, node );
 					break;
 
 				case ST_WHILE:
+					ret = inter_while_stmt( env, node );
 					break;
 
 				case ST_RETURN:
+					ret = inter_return_stmt( env, node );
 					break;
 
 				default:
-					inter_exp_stmt( env, node );
+					break;	
+			}
+
+			if( ret.type == ER_RETURN )
+			{
+				break;
 			}
 		}	
+		else if( node->type == NT_EXP )
+		{
+			/* expression statement*/
+			inter_exp_stmt( env, node );
+		}
 	}
+	
+	return ret;
+}
+
+static struct Value inter_function( struct interEnv *env, struct treeNode *tree )
+{
+	struct treeNode *node;
+	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	env->local_st = sym_new();
+	/* TODO: build the argument symbols */
+	ret = inter_statements( env, tree->child[1] );
 	sym_free( env->local_st );
-	ret.address = 0;
-	return ret;	
+	return ret.val;	
 }
 
 int inter_execute( struct treeNode *root, inter_log_func log_func )
@@ -244,6 +403,7 @@ int inter_execute( struct treeNode *root, inter_log_func log_func )
 	main = sym_lookup( env->global_st, "main" );
 	if( main != 0 )
 	{
+		/* TODO: to remove the arguments of main */	
 		inter_function( env, (struct treeNode*) main->val.address );
 	}
 	sym_free( env->global_st );

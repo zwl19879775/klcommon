@@ -7,25 +7,30 @@
 #define ___KL_SYMTAB_H_
 
 /**
- * generic value 
- */
-union Value
-{
-	double dval;
-	char *sval;
-	/* used for functions */
-	void *address;
-};
-
-/**
  * symbol type
  */
 typedef enum
 {
 	SB_FUNC,
-	SB_VAR,
-	SB_STRING
+	SB_VAR_NUM,
+	SB_VAR_STRING
 } SymType;
+
+/**
+ * generic value 
+ */
+struct Value
+{
+	union
+	{	
+		double dval;
+		char *sval;
+		/* used for functions */
+		void *address;
+	};
+	SymType type;
+};
+
 
 /**
  * symbol
@@ -33,8 +38,7 @@ typedef enum
 struct Symbol 
 {
 	char *name;
-	union Value val;
-	SymType type;
+	struct Value val;
 	struct Symbol *next;
 };
 
@@ -62,7 +66,7 @@ void sym_free( struct symTable *st );
  * insert or update a symbol into the symbol table, if the symbol exists,
  * update its value, otherwise create a new symbol in the table.
  */
-int sym_insert( struct symTable *st, const char *name, union Value val, SymType type );
+int sym_insert( struct symTable *st, const char *name, struct Value val );
 
 /**
  * lookup whether a symbol is in the symbol table
