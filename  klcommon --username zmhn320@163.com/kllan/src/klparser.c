@@ -426,6 +426,7 @@ static struct treeNode *syn_factor( struct lexState *ls )
 				node = syn_var( ls );
 				if( lex_current( ls ) == '(' )
 				{
+					node->subtype.exp = ET_FUNC_CALL;
 					syn_match( ls, '(' );
 					/* function call, child[0] is the index of the id if it's a syntax error */
 					node->child[1] = syn_args( ls );

@@ -7,6 +7,7 @@
 #include "klparser.h"
 #include "kllex.h"
 #include "klsymtab.h"
+#include "kllib.h"
 #include <stdio.h>
 
 /**
@@ -33,12 +34,14 @@ struct FuncRet
 static void inter_build_global_st( struct interEnv *env, struct treeNode *root );
 static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *name );
 static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node );
+static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *node );
 static struct Value inter_expression( struct interEnv *env, struct treeNode *node );
 static void inter_exp_stmt( struct interEnv *env, struct treeNode *tree );
 static struct Value inter_function( struct interEnv *env, struct treeNode *tree );
 static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node );
 static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *node );
 static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *node );
+static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNode *arg_node, struct Value *ret );
 
 static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 {
@@ -251,6 +254,109 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 	return ret;
 }
 
+static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *node )
+{
+	struct Value ret = { 0, SB_VAR_NUM }, arg;
+	struct symTable *st = 0, *tmp_st = 0;
+	struct treeNode *func_node = 0, *param_node = 0, *arg_node = 0;
+	struct Symbol *func = 0;
+	if( _kl_run_plugin( env, node->attr.val.sval, node->child[1], &ret ) == 0 )
+	{
+		return ret;
+	}
+
+	func = sym_lookup( env->global_st, node->attr.val.sval );
+	if( func == 0 || func->val.type != SB_FUNC )
+	{
+		env->inter_log( "runtime error->the function [%s] is not exist", node->attr.val.sval );
+		return ret;
+	}
+	
+	func_node = (struct treeNode*) func->val.address;
+	st = sym_new();
+	/* compute the arguments value and insert them into the symbol table */
+	for( arg_node = node->child[1], param_node = func_node->child[0]; 
+			arg_node != 0 && param_node != 0;
+			arg_node = arg_node->sibling, param_node = param_node->sibling )
+	{
+		arg = inter_expression( env, arg_node );
+		sym_insert( st, param_node->attr.val.sval, arg );
+	}
+
+	tmp_st = env->local_st;
+	env->local_st = st;
+	ret = inter_function( env, func_node );
+	sym_free( st );
+	env->local_st = tmp_st;
+	return ret;
+}
+
+static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNode *arg_node, struct Value *ret )
+{
+	kl_func func;
+	struct Symbol *func_s = 0;
+	struct Value arg;
+	struct TValue *tval = 0, *tprev = 0, tret;
+	if( env->plugin_st == 0 )
+	{
+		return -1;
+	}
+	func_s = sym_lookup( env->plugin_st, name );
+	if( func_s == 0 )
+	{
+		return -1;
+	}
+	func = (kl_func)func_s->val.address;
+	for( ; arg_node != 0; arg_node = arg_node->sibling )
+	{
+		struct TValue *t = (struct TValue*) malloc( sizeof( struct TValue ) );
+		arg = inter_expression( env, arg_node );
+		if( arg.type == SB_VAR_NUM )
+		{
+			t->dval = arg.dval;
+			t->type = NUMBER;
+		}
+		else if( arg.type == SB_VAR_STRING )
+		{
+			t->sval = (char*) malloc( strlen( arg.sval ) + 1 );
+			strcpy( t->sval, arg.sval );
+			t->type = STRING;
+		}
+		if( tval == 0 )
+		{
+			tval = tprev = t;
+		}
+		else
+		{
+			tprev->next = t;
+			tprev = t;
+		}
+	}
+	tret = func( tval );
+	for( tprev = tval; tprev != 0; )
+	{
+		struct TValue *tmp = tprev;
+		if( tprev->type == STRING )
+		{
+			free( tprev->sval );
+		}
+		tprev = tprev->next;
+		free( tmp );	
+	}
+	
+	if( tret.type == NUMBER )
+	{
+		(*ret).type = SB_VAR_NUM;
+		(*ret).dval = tret.dval;
+	}
+	else if( tret.type == STRING )
+	{
+		(*ret).type = SB_VAR_STRING;
+		(*ret).sval = tret.sval;
+	}
+	return 0;
+}
+		
 static struct Value inter_expression( struct interEnv *env, struct treeNode *node )
 {
 	struct Value ret ;
@@ -287,6 +393,7 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 
 		case ET_FUNC_CALL:
 			{
+				return inter_func_call_exp( env, node );
 			}
 			break;	
 
@@ -386,25 +493,24 @@ static struct Value inter_function( struct interEnv *env, struct treeNode *tree 
 {
 	struct treeNode *node;
 	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
-	env->local_st = sym_new();
-	/* TODO: build the argument symbols */
 	ret = inter_statements( env, tree->child[1] );
-	sym_free( env->local_st );
 	return ret.val;	
 }
 
-int inter_execute( struct treeNode *root, inter_log_func log_func )
+int inter_execute( struct treeNode *root, inter_log_func log_func, struct symTable *plugin_st )
 {
 	struct Symbol *main;
 	struct interEnv *env = (struct interEnv*) malloc( sizeof( struct interEnv ) );
 	env->inter_log = log_func;
 	env->global_st = sym_new();
+	env->plugin_st = plugin_st;
 	inter_build_global_st( env, root );
 	main = sym_lookup( env->global_st, "main" );
 	if( main != 0 )
 	{
-		/* TODO: to remove the arguments of main */	
+		env->local_st = sym_new();
 		inter_function( env, (struct treeNode*) main->val.address );
+		sym_free( env->local_st );
 	}
 	sym_free( env->global_st );
 	free( env );

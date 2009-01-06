@@ -18,12 +18,13 @@ struct interEnv
 {
 	struct symTable *global_st;
 	struct symTable *local_st;
+	struct symTable *plugin_st;
 	inter_log_func inter_log; 
 };
 
 /**
  * execute a syntax tree. 
  */
-int inter_execute( struct treeNode *root, inter_log_func log_func );
+int inter_execute( struct treeNode *root, inter_log_func log_func, struct symTable *plugin_st );
 
 #endif 
