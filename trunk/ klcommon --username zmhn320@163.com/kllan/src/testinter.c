@@ -130,7 +130,7 @@ void test_inter( const char *file )
 		lex_setinput( &ls, buf, lex_error );
 		tree = syn_parse( &ls );
 		print_tree( tree );
-		inter_execute( tree, env_log );
+		inter_execute( tree, env_log, 0 );
 	}
 
 	free( buf );
