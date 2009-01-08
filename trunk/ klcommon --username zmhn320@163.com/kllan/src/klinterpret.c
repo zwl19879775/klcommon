@@ -310,6 +310,7 @@ static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNo
 	for( ; arg_node != 0; arg_node = arg_node->sibling )
 	{
 		struct TValue *t = (struct TValue*) malloc( sizeof( struct TValue ) );
+		t->next = 0;
 		arg = inter_expression( env, arg_node );
 		if( arg.type == SB_VAR_NUM )
 		{
