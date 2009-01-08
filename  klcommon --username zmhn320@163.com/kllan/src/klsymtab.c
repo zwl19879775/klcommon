@@ -27,6 +27,20 @@ struct symTable *sym_new()
 
 void sym_free( struct symTable *st )
 {
+	int i;
+	for( i = 0; i < SYM_SIZE; ++ i )
+	{
+		struct Symbol *sl = st->table[i] ;
+		for( ; sl != 0; sl = sl->next )
+		{
+			free( sl->name );
+			if( sl->val.type == SB_VAR_STRING )
+			{
+				free( sl->val.sval );
+			}
+		}
+	}
+	free( st );
 }
 
 int sym_insert( struct symTable *st, const char *name, struct Value val )

@@ -71,6 +71,10 @@ static void syn_match( struct lexState *ls, int token )
 {
 	if( lex_current( ls ) == token )
 	{
+		if( token != TK_ID && token != TK_STRING && lex_current_str( ls ) != 0 )
+		{
+			free( lex_current_str( ls ) );
+		}
 		lex_token( ls );
 	}
 	else if( lex_current( ls ) != TK_ERROR )
@@ -491,4 +495,31 @@ struct treeNode *syn_parse( struct lexState *ls )
 	return syn_definition( ls );
 }
 
+void syn_free_tree( struct treeNode *tree )
+{
+	int i;
+	if( tree->type == NT_STMT )
+	{
+		int stmt = tree->subtype.stmt;
+		if( stmt == ST_VAR_DEF || stmt == ST_FUNC_DEF || stmt == ST_PARAM_DEF )
+		{
+			free( tree->attr.val.sval );
+		}
+	}
+	else if( tree->type == NT_EXP )
+	{
+		int exp = tree->subtype.exp;
+		if( exp == ET_ID || exp == ET_FUNC_CALL )
+		{
+			free( tree->attr.val.sval );
+		}	
+	}
+	
+	for( i = 0; i < MAXCHILDREN; ++ i )
+	{
+		syn_free_tree( tree->child[i] );
+	}
+	syn_free_tree( tree->sibling );
+	free( tree );
+}
 

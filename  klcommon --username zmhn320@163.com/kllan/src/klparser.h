@@ -43,7 +43,7 @@ typedef enum
 /**
  * max children of a node
  */
-#define MAXCHILDREN 16
+#define MAXCHILDREN 3
 
 /**
  * syntax tree node
@@ -72,8 +72,14 @@ struct treeNode
 };
 
 /**
+ * parse a lexState and returns the syntax tree
  *
  */
 struct treeNode *syn_parse( struct lexState *ls );
+
+/**
+ * free a syntax tree
+ */
+void syn_free_tree( struct treeNode *tree );
 
 #endif
