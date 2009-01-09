@@ -1,6 +1,6 @@
 function main()
 {
-	a = 123;
+	a = '\n';
 }
 
 

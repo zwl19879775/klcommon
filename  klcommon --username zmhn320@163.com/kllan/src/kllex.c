@@ -66,11 +66,15 @@ static void lex_settoken( struct lexState *ls, int type, const char *str )
 static int lex_read_char( struct lexState *ls )
 {
 	char c = lex_next( ls );
-	if( c != '\'' && lex_next( ls ) == '\'' )
+	cahr next = lex_next( ls );
+	if( c != '\'' && next == '\'' )
 	{
 		ls->token.type = TK_CHAR;
 		ls->token.string = (char*) malloc( sizeof( char ) * 2 );
 		sprintf( ls->token.string, "%c", c );
+	}
+	else if( c == '\\' && ( next == 'n' || next == 't' ) && lex_next( ls ) == '\'' )
+	{
 	}
 	else
 	{
