@@ -62,5 +62,6 @@ int kl_run( struct klState *kl, char *source )
 	lex_setinput( &ls, source, lex_error );
 	tree = syn_parse( &ls );
 	inter_execute( tree, env_log, kl->st );
+	syn_free_tree( tree );
 	return 0;
 }

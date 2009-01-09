@@ -386,14 +386,15 @@ static struct treeNode *syn_add_exp( struct lexState *ls )
 {
 	struct treeNode *node = syn_term( ls );
 	int token = lex_current( ls );
-	if( token == '+' || token == '-' )
+	while( token == '+' || token == '-' )
 	{
 		struct treeNode *op_node = syn_new_exp_node( ET_OP );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
 		op_node->child[1] = syn_term( ls );
-		return op_node;
+		node = op_node;
+		token = lex_current( ls );
 	}
 	return node;
 }
@@ -402,14 +403,15 @@ static struct treeNode *syn_term( struct lexState *ls )
 {
 	struct treeNode *node = syn_factor( ls );
 	int token = lex_current( ls );
-	if( token == '*' || token == '/' || token == '%' )
+	while( token == '*' || token == '/' || token == '%' )
 	{	
 		struct treeNode *op_node = syn_new_exp_node( ET_OP );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
 		op_node->child[1] = syn_factor( ls );
-		return op_node;
+		node = op_node;
+		token = lex_current( ls );
 	}
 	return node;
 }
@@ -498,6 +500,10 @@ struct treeNode *syn_parse( struct lexState *ls )
 void syn_free_tree( struct treeNode *tree )
 {
 	int i;
+	if( tree == 0 )
+	{
+		return ;
+	}
 	if( tree->type == NT_STMT )
 	{
 		int stmt = tree->subtype.stmt;
