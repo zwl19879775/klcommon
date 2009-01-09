@@ -34,9 +34,10 @@ static struct treeNode *syn_param( struct lexState *ls );
 static struct treeNode *syn_factor( struct lexState *ls );
 static struct treeNode *syn_term( struct lexState *ls );
 static struct treeNode *syn_add_exp( struct lexState *ls );
+static struct treeNode *syn_relop_exp( struct lexState *ls );
 static struct treeNode *syn_simple_exp( struct lexState *ls );
 static struct treeNode *syn_var( struct lexState *ls );
-static struct treeNode *syn_assign_exp( struct lexState *ls );
+static struct treeNode *syn_logic_exp( struct lexState *ls );
 static struct treeNode *syn_expression( struct lexState *ls );
 static struct treeNode *syn_exp_stmt( struct lexState *ls );
 static struct treeNode *syn_statement( struct lexState *ls );
@@ -342,14 +343,6 @@ static struct treeNode *syn_expression( struct lexState *ls )
 	return syn_simple_exp( ls );
 }
 
-static struct treeNode *syn_assign_exp( struct lexState *ls )
-{
-	struct treeNode *id_node = syn_var( ls );
-	syn_match( ls, '=' );
-	id_node->child[0] = syn_expression( ls );
-	return id_node;
-}
-
 static struct treeNode *syn_var( struct lexState *ls )
 {
 	struct treeNode *node = syn_new_exp_node( ET_ID );
@@ -366,18 +359,52 @@ static struct treeNode *syn_var( struct lexState *ls )
 
 static struct treeNode *syn_simple_exp( struct lexState *ls )
 {
+	struct treeNode *node = syn_logic_exp( ls );
+	int token = lex_current( ls );
+	while( token == '=' )
+	{
+		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		op_node->attr.op = token;
+		op_node->child[0] = node;
+		syn_match( ls, token );
+		op_node->child[1] = syn_logic_exp( ls );
+		node = op_node;
+		token = lex_current( ls );
+	}
+	return node;
+}
+
+static struct treeNode *syn_logic_exp( struct lexState *ls )
+{
+	struct treeNode *node = syn_relop_exp( ls );
+	int token = lex_current( ls );
+	while( token == TK_OR || token == TK_AND )
+	{
+		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		op_node->attr.op = token;
+		op_node->child[0] = node;
+		syn_match( ls, token );
+		op_node->child[1] = syn_relop_exp( ls );
+		node = op_node;
+		token = lex_current( ls );
+	}
+	return node;
+}
+
+static struct treeNode *syn_relop_exp( struct lexState *ls )
+{
 	struct treeNode *node = syn_add_exp( ls );
 	int token = lex_current( ls );
-	if( token == '<' || token == '>' || token == TK_LE || token == TK_GE || 
-			token == TK_NE || token == TK_EQ || token == TK_OR || token == TK_AND || 
-			token == '=' )
+	while( token == '<' || token == '>' || token == TK_LE || token == TK_GE || 
+			token == TK_NE || token == TK_EQ )
 	{
 		struct treeNode *op_node = syn_new_exp_node( ET_OP );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
 		op_node->child[1] = syn_add_exp( ls );
-		return op_node;
+		node = op_node;
+		token = lex_current( ls );
 	}
 	return node;
 }

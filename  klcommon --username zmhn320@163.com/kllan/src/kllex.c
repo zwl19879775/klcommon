@@ -66,7 +66,7 @@ static void lex_settoken( struct lexState *ls, int type, const char *str )
 static int lex_read_char( struct lexState *ls )
 {
 	char c = lex_next( ls );
-	cahr next = lex_next( ls );
+	char next = lex_next( ls );
 	if( c != '\'' && next == '\'' )
 	{
 		ls->token.type = TK_CHAR;
@@ -75,6 +75,19 @@ static int lex_read_char( struct lexState *ls )
 	}
 	else if( c == '\\' && ( next == 'n' || next == 't' ) && lex_next( ls ) == '\'' )
 	{
+		ls->token.type = TK_CHAR;
+		ls->token.string = (char*) malloc( sizeof( char ) * 2 );
+		switch( next )
+		{
+			case 'n':
+				ls->token.string[0] = (char)10;
+				break;
+
+			case 't':
+				ls->token.string[0] = (char)9;
+				break;
+		}
+		ls->token.string[1] = 0;
 	}
 	else
 	{
@@ -89,9 +102,27 @@ static int lex_read_string( struct lexState *ls )
 	char tmp[STRING_MAX_LEN + 1];
 	size_t pos = 0;
 	char c = lex_next( ls );
+	char prev_c = 0;
 	while( c != '\n' && c != '"' && pos < STRING_MAX_LEN )
 	{
-		tmp[pos++] = c;
+		if( ( c == 'n' || c == 't' ) && prev_c == '\\' )
+		{
+			switch( c )
+			{
+				case 'n':
+					tmp[pos-1] = (char)10;
+					break;
+
+				case 't':
+					tmp[pos-1] = (char)9;
+					break;
+			}
+		}
+		else
+		{
+			tmp[pos++] = c;
+		}
+		prev_c = c;
 		c = lex_next( ls );
 	}
 	if( pos >= STRING_MAX_LEN )
