@@ -11,12 +11,12 @@
 /**
  * create a new expression node 
  */
-static struct treeNode *syn_new_exp_node( ExpType t );
+static struct treeNode *syn_new_exp_node( ExpType t, size_t lineno );
 
 /**
  * create a new statement node 
  */
-static struct treeNode *syn_new_stmt_node( StmtType t );
+static struct treeNode *syn_new_stmt_node( StmtType t, size_t lineno );
 
 /**
  * match the current token to the expected token, if matched ok, get the next token.
@@ -45,46 +45,51 @@ static struct treeNode *syn_compound_stmt( struct lexState *ls );
 static struct treeNode *syn_if_stmt( struct lexState *ls );
 static struct treeNode *syn_while_stmt( struct lexState *ls );
 static struct treeNode *syn_return_stmt( struct lexState *ls );
+static struct treeNode *syn_break_stmt( struct lexState *ls );
 static struct treeNode *syn_args( struct lexState *ls );
 
 /*************************************************************************************/
-static struct treeNode *syn_new_exp_node( ExpType t )
+static struct treeNode *syn_new_exp_node( ExpType t, size_t lineno )
 {
 	struct treeNode *node = (struct treeNode*) malloc( sizeof( struct treeNode ) );
 	node->type = NT_EXP;
 	node->subtype.exp = t;
 	node->sibling = 0;
+	node->lineno = lineno;
 	memset( node->child, 0, sizeof( node->child[0] ) * MAXCHILDREN );
 	return node;
 }
 
-static struct treeNode *syn_new_stmt_node( StmtType t )
+static struct treeNode *syn_new_stmt_node( StmtType t, size_t lineno )
 {
 	struct treeNode *node = (struct treeNode*) malloc( sizeof( struct treeNode ) );
 	node->type = NT_STMT;
 	node->subtype.stmt = t;
 	node->sibling = 0;
+	node->lineno = lineno;
 	memset( node->child, 0, sizeof( node->child[0] ) * MAXCHILDREN );
 	return node;
 }
 
 static void syn_match( struct lexState *ls, int token )
 {
+	if( token != TK_ID && token != TK_STRING && lex_current_str( ls ) != 0 )
+	{
+		free( lex_current_str( ls ) );
+	}
 	if( lex_current( ls ) == token )
 	{
-		if( token != TK_ID && token != TK_STRING && lex_current_str( ls ) != 0 )
-		{
-			free( lex_current_str( ls ) );
-		}
 		lex_token( ls );
 	}
 	else if( lex_current( ls ) != TK_ERROR )
 	{
-		ls->lex_error( ls, "syntax error : unexpcted token -> %s", lex_current_str( ls ) );
+		ls->lex_error( ls->lineno, ">>syntax error->unexpcted token -> %s", lex_current_str( ls ) );
+		lex_token( ls );
 	}
 	else
 	{
-		ls->lex_error( ls, "lex error" );
+		ls->lex_error( ls->lineno, ">>syntax error->unknown token -> %d", lex_current( ls ) );
+		lex_token( ls );
 	}
 }
 
@@ -128,7 +133,8 @@ static struct treeNode *syn_definition( struct lexState *ls )
 		}
 		else
 		{
-			ls->lex_error( ls, "unexpected token : %s", lex_current_str( ls ) );
+			ls->lex_error( ls->lineno, ">>syntax error->unexpected token -> %s", lex_current_str( ls ) );
+			syn_match( ls, lex_current( ls ) );
 		}
 
 		if( root == 0 )
@@ -147,7 +153,7 @@ static struct treeNode *syn_definition( struct lexState *ls )
 
 static struct treeNode *syn_var_def( struct lexState *ls )
 {
-	struct treeNode *node = syn_new_stmt_node( ST_VAR_DEF );
+	struct treeNode *node = syn_new_stmt_node( ST_VAR_DEF, ls->lineno );
 	/* not necessary to copy the string, free the token string later */
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
@@ -164,7 +170,7 @@ static struct treeNode *syn_var_def( struct lexState *ls )
 
 static struct treeNode *syn_func_def( struct lexState *ls )
 {
-	struct treeNode *node = syn_new_stmt_node( ST_FUNC_DEF );
+	struct treeNode *node = syn_new_stmt_node( ST_FUNC_DEF, ls->lineno );
 	syn_match( ls, TK_FUNCTION );
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
@@ -201,7 +207,7 @@ static struct treeNode *syn_param_list( struct lexState *ls )
 
 static struct treeNode *syn_param( struct lexState *ls )
 {
-	struct treeNode *node = syn_new_stmt_node( ST_PARAM_DEF );
+	struct treeNode *node = syn_new_stmt_node( ST_PARAM_DEF, ls->lineno );
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
 	if( lex_current( ls ) == '[' )
@@ -245,6 +251,9 @@ static struct treeNode *syn_statement( struct lexState *ls )
 			case TK_RETURN:
 				node = syn_return_stmt( ls );
 				break;
+			case TK_BREAK:
+				node = syn_break_stmt( ls );
+				break;
 
 			default:
 				node = syn_exp_stmt( ls );
@@ -266,7 +275,7 @@ static struct treeNode *syn_statement( struct lexState *ls )
 
 static struct treeNode *syn_if_stmt( struct lexState *ls )
 {
-	struct treeNode *if_node = syn_new_stmt_node( ST_IF );
+	struct treeNode *if_node = syn_new_stmt_node( ST_IF, ls->lineno );
 	syn_match( ls, TK_IF );
 	syn_match( ls, '(' );
 	if_node->child[0] = syn_expression( ls );
@@ -297,7 +306,7 @@ static struct treeNode *syn_if_stmt( struct lexState *ls )
 
 static struct treeNode *syn_while_stmt( struct lexState *ls )
 {
-	struct treeNode *it_node = syn_new_stmt_node( ST_WHILE );
+	struct treeNode *it_node = syn_new_stmt_node( ST_WHILE, ls->lineno );
 	syn_match( ls, TK_WHILE );
 	syn_match( ls, '(' );
 	it_node->child[0] = syn_expression( ls );
@@ -316,7 +325,7 @@ static struct treeNode *syn_while_stmt( struct lexState *ls )
 
 static struct treeNode *syn_return_stmt( struct lexState *ls )
 {
-	struct treeNode *rnode = syn_new_stmt_node( ST_RETURN );
+	struct treeNode *rnode = syn_new_stmt_node( ST_RETURN, ls->lineno );
 	syn_match( ls, TK_RETURN );
 	if( lex_current( ls ) == '(' )
 	{
@@ -329,6 +338,14 @@ static struct treeNode *syn_return_stmt( struct lexState *ls )
 	}
 
 	return rnode;
+}
+
+static struct treeNode *syn_break_stmt( struct lexState *ls )
+{
+	struct treeNode *node = syn_new_stmt_node( ST_BREAK, ls->lineno );
+	syn_match( ls, TK_BREAK );
+	syn_match( ls, ';' );
+	return node;
 }
 
 static struct treeNode *syn_exp_stmt( struct lexState *ls )
@@ -345,7 +362,7 @@ static struct treeNode *syn_expression( struct lexState *ls )
 
 static struct treeNode *syn_var( struct lexState *ls )
 {
-	struct treeNode *node = syn_new_exp_node( ET_ID );
+	struct treeNode *node = syn_new_exp_node( ET_ID, ls->lineno );
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
 	if( lex_current( ls ) == '[' )
@@ -363,7 +380,7 @@ static struct treeNode *syn_simple_exp( struct lexState *ls )
 	int token = lex_current( ls );
 	while( token == '=' )
 	{
-		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		struct treeNode *op_node = syn_new_exp_node( ET_OP, ls->lineno );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
@@ -380,7 +397,7 @@ static struct treeNode *syn_logic_exp( struct lexState *ls )
 	int token = lex_current( ls );
 	while( token == TK_OR || token == TK_AND )
 	{
-		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		struct treeNode *op_node = syn_new_exp_node( ET_OP, ls->lineno );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
@@ -398,7 +415,7 @@ static struct treeNode *syn_relop_exp( struct lexState *ls )
 	while( token == '<' || token == '>' || token == TK_LE || token == TK_GE || 
 			token == TK_NE || token == TK_EQ )
 	{
-		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		struct treeNode *op_node = syn_new_exp_node( ET_OP, ls->lineno );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
@@ -415,7 +432,7 @@ static struct treeNode *syn_add_exp( struct lexState *ls )
 	int token = lex_current( ls );
 	while( token == '+' || token == '-' )
 	{
-		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		struct treeNode *op_node = syn_new_exp_node( ET_OP, ls->lineno );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
@@ -432,7 +449,7 @@ static struct treeNode *syn_term( struct lexState *ls )
 	int token = lex_current( ls );
 	while( token == '*' || token == '/' || token == '%' )
 	{	
-		struct treeNode *op_node = syn_new_exp_node( ET_OP );
+		struct treeNode *op_node = syn_new_exp_node( ET_OP, ls->lineno );
 		op_node->attr.op = token;
 		op_node->child[0] = node;
 		syn_match( ls, token );
@@ -473,7 +490,7 @@ static struct treeNode *syn_factor( struct lexState *ls )
 		case TK_CHAR:
 			{
 				
-				node = syn_new_exp_node( ET_CONST );
+				node = syn_new_exp_node( ET_CONST, ls->lineno );
 				syn_to_const( node, ls );	
 				syn_match( ls, lex_current( ls ) );
 			}
@@ -481,14 +498,25 @@ static struct treeNode *syn_factor( struct lexState *ls )
 
 		case TK_STRING:
 			{
-				node = syn_new_exp_node( ET_STRING );
+				node = syn_new_exp_node( ET_STRING, ls->lineno );
 				syn_to_const( node, ls );
 				syn_match( ls, lex_current( ls ) );
 			}
 			break;
-		
+	
+		case '-':
+		case '!':
+			{
+				node = syn_new_exp_node( ET_OP, ls->lineno );
+				node->attr.op = lex_current( ls ) ;
+				syn_match( ls, lex_current( ls ) );
+				node->child[1] = syn_factor( ls );
+			}
+			break;	
+	
 		default:
-			ls->lex_error( ls, "unexpected token-> %c", lex_current( ls ) );
+			ls->lex_error( ls->lineno, ">>syntax error->unexpected token-> %c", lex_current( ls ) );
+			syn_match( ls, lex_current( ls ) );
 	}
 
 	return node;

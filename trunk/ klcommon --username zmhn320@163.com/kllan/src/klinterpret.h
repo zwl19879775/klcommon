@@ -6,10 +6,12 @@
 #ifndef ___KL_INTERPRET_H_
 #define ___KL_INTERPRET_H_
 
+#include <stddef.h>
+
 struct treeNode;
 struct symTable;
 
-typedef void (*inter_log_func)( const char *fmt, ... );
+typedef void (*inter_log_func)( size_t lineno, const char *fmt, ... );
 
 /** 
  * interpret environment

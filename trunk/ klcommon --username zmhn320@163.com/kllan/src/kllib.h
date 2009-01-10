@@ -6,6 +6,8 @@
 #ifndef ___KL_LIB_H_
 #define ___KL_LIB_H_
 
+#include <stddef.h>
+
 struct symTable;
 struct klState;
 
@@ -26,6 +28,13 @@ struct TValue
 	struct TValue *next;
 };
 
+/**
+ * the plugin function arguments type
+ * i.e:
+ * struct TValue my_plugin_func( ArgType arg )
+ */
+typedef struct TValue* ArgType;
+
 #define kl_next_arg( arg ) ( arg = arg->next )
 
 /**
@@ -36,7 +45,7 @@ typedef struct TValue (*kl_func)( struct TValue *arg_list );
 /**
  * kl log function prototype
  */
-typedef void (*kl_log)( struct klState *kl, const char *fmt, ... );
+typedef void (*kl_log)( size_t lineno, const char *fmt, ... );
 
 /**
  * kl state

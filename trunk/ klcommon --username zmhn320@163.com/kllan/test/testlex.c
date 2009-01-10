@@ -5,7 +5,7 @@
 #include "kllex.h"
 #include <stdarg.h>
 
-void lex_error( struct lexState *ls, const char *format, ... )
+void lex_error( size_t lineno, const char *format, ... )
 {
 	char buf[1024];
 	va_list list;
@@ -13,7 +13,9 @@ void lex_error( struct lexState *ls, const char *format, ... )
 	vsprintf( buf, format, list );
 	va_end( list );
 	
-	fprintf( stderr, ">>lex error [#%u]: %s\n", ls->lineno, buf );
+	fprintf( stderr, "# %u ", lineno ); 
+	fprintf( stderr, buf );
+	fprintf( stderr, "\n" );
 }
 
 void test_lex( const char *file )

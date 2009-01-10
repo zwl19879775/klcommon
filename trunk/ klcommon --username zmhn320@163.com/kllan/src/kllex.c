@@ -180,7 +180,7 @@ static int lex_read_id( struct lexState *ls, char c )
 
 void lex_setinput( struct lexState *ls, char *source, lex_errorfn lex_error )
 {
-	ls->lineno = 0;
+	ls->lineno = 1;
 	ls->source = source;
 	ls->current = 0;
 	ls->token.type = TK_ERROR;
@@ -262,6 +262,7 @@ int lex_token( struct lexState *ls )
 					}
 					else
 					{
+						lex_back( ls );
 						lex_settoken( ls, '!', "!" );
 					}
 				}
@@ -276,7 +277,7 @@ int lex_token( struct lexState *ls )
 					else
 					{
 						lex_settoken( ls, TK_ERROR, 0 );
-						ls->lex_error( ls, "expect '|'" );
+						ls->lex_error( ls->lineno, ">>lex error->expect '|'" );
 					}
 				}
 				break;
@@ -290,7 +291,7 @@ int lex_token( struct lexState *ls )
 					else
 					{
 						lex_settoken( ls, TK_ERROR, 0 );
-						ls->lex_error( ls, "expect '&'" );
+						ls->lex_error( ls->lineno, ">>lex error->expect '&'" );
 					}
 				}
 				break;
@@ -321,7 +322,7 @@ int lex_token( struct lexState *ls )
 					int t = lex_read_char( ls );
 					if( t == TK_ERROR )
 					{
-						ls->lex_error( ls, "read char constant error" );
+						ls->lex_error( ls->lineno, ">>lex error->read char constant error" );
 					}
 				}
 				break;
@@ -331,7 +332,7 @@ int lex_token( struct lexState *ls )
 					int t = lex_read_string( ls );
 					if( t == TK_ERROR )
 					{
-						ls->lex_error( ls, "read string constant error" );
+						ls->lex_error( ls->lineno, ">>lex error->read string constant error" );
 					}
 				}
 				break;
@@ -355,7 +356,7 @@ int lex_token( struct lexState *ls )
 					else 
 					{
 						lex_settoken( ls, TK_ERROR, 0 );
-						ls->lex_error( ls, "unknown token character" );
+						ls->lex_error( ls->lineno, ">>lex error->unknown token character" );
 					}
 				}	
 		}	

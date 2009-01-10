@@ -11,26 +11,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-static void lex_error( struct lexState *ls, const char *format, ... )
-{
-	char buf[1024];
-	va_list list;
-	va_start( list, format );
-	vsprintf( buf, format, list );
-	va_end( list );	
-	fprintf( stderr, ">>lex error [#%u]: %s\n", ls->lineno, buf );
-}
-
-static void env_log( const char *format, ... )
-{
-	char buf[1024];
-	va_list list;
-	va_start( list, format );
-	vsprintf( buf, format, list );
-	va_end( list );
-	fprintf( stderr, buf );
-}
-
 struct klState *kl_new( kl_log l )
 {
 	struct klState *kl = (struct klState*) malloc( sizeof( struct klState ) );
@@ -59,9 +39,9 @@ int kl_run( struct klState *kl, char *source )
 	struct lexState ls;
 	struct treeNode *tree;
 	int t;
-	lex_setinput( &ls, source, lex_error );
+	lex_setinput( &ls, source, kl->log );
 	tree = syn_parse( &ls );
-	inter_execute( tree, env_log, kl->st );
+	inter_execute( tree, kl->log, kl->st );
 	syn_free_tree( tree );
 	return 0;
 }
