@@ -25,7 +25,7 @@ typedef enum
 	ST_VAR_DEF,
 	ST_FUNC_DEF, ST_PARAM_DEF,
 	ST_IF, ST_WHILE, /*ST_ASSIGN*/
-	ST_RETURN,
+	ST_RETURN, ST_BREAK
 } StmtType;
 
 /**
@@ -66,7 +66,7 @@ struct treeNode
 			char *sval;
 		} val;
 	} attr;
-
+	int lineno;
 	struct treeNode *child[MAXCHILDREN];
 	struct treeNode *sibling;
 };

@@ -17,6 +17,7 @@ enum
 {
 	ER_NORMAL,
 	ER_RETURN,
+	ER_BREAK
 };
 
 /**
@@ -65,12 +66,12 @@ static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 			}
 			else
 			{
-				env->inter_log( "runtime error->error statement in global scope" );
+				env->inter_log( node->lineno, ">>runtime error->error statement in global scope" );
 			}
 		}
 		else
 		{
-			env->inter_log( "runtime error->global scope must be var/func def" );
+			env->inter_log( node->lineno, ">>runtime error->global scope must be var/func def" );
 		}
 	}
 }
@@ -88,16 +89,17 @@ static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *nam
 
 static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 {
-	struct Value ret, left, right;
-	ret.address = 0;
-	ret.type = SB_VAR_NUM;
+	struct Value ret, left, right = { 0, SB_VAR_NUM };
+	ret = left = right;
 	/* two operator operation */
-	if( node->child[0] == 0 || node->child[1] == 0 )
+	if( ( node->child[0] == 0 || node->child[1] == 0 ) && node->attr.op != '-' && 
+			node->attr.op != '!' )
 	{
-		env->inter_log( "runtime error->expect an expression" );
+		env->inter_log( node->lineno, ">>runtime error->expect an expression" );
+		return ret;
 	}
 
-	if( node->attr.op != '=' )
+	if( node->attr.op != '=' && node->child[0] != 0 )
 	{
 		left = inter_expression( env, node->child[0] );
 	}
@@ -116,6 +118,13 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 			{
 				ret.type = SB_VAR_NUM;
 				ret.dval = ( left.dval && right.dval );
+			}
+			break;
+
+		case '!':
+			{
+				ret.type = SB_VAR_NUM;
+				ret.dval = !(right.dval);
 			}
 			break;
 
@@ -168,6 +177,13 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 					ret.type = SB_VAR_NUM;
 					ret.dval = left.dval + right.dval;
 				}
+				else if( left.type == SB_VAR_STRING && right.type == SB_VAR_STRING )
+				{
+					ret.type = SB_VAR_STRING;
+					ret.sval = (char*) malloc( strlen( left.sval ) + strlen( right.sval ) + 1 );
+					strcpy( ret.sval, left.sval );
+					strcat( ret.sval, right.sval );
+				}
 				else if( left.type == SB_VAR_STRING || right.type == SB_VAR_STRING )
 				{
 					char *str = 0;
@@ -208,7 +224,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 			{
 				if( right.dval == 0 )
 				{
-					env->inter_log( "runtime error->divied by 0" );
+					env->inter_log( node->lineno, ">>runtime error->divied by 0" );
 				}
 				else
 				{
@@ -222,7 +238,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 			{
 				if( right.dval == 0 )
 				{
-					env->inter_log( "runtime error->divied by 0" );
+					env->inter_log( node->lineno, ">>runtime error->divied by 0" );
 				}
 				else
 				{
@@ -249,7 +265,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 			break;
 
 		default:
-			env->inter_log( "runtime error->unsupport operation" );
+			env->inter_log( node->lineno, ">>runtime error->unsupport operation" );
 	}
 	return ret;
 }
@@ -268,7 +284,7 @@ static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *
 	func = sym_lookup( env->global_st, node->attr.val.sval );
 	if( func == 0 || func->val.type != SB_FUNC )
 	{
-		env->inter_log( "runtime error->the function [%s] is not exist", node->attr.val.sval );
+		env->inter_log( node->lineno, ">>runtime error->the function [%s] is not exist", node->attr.val.sval );
 		return ret;
 	}
 	
@@ -399,7 +415,7 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 			break;	
 
 		default:
-			env->inter_log( "" );	
+			env->inter_log( node->lineno, ">>runtime error->unsupport exp type" );	
 	}
 	ret.address = 0;
 	ret.type = SB_VAR_NUM;
@@ -434,7 +450,7 @@ static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *t
 	while( (int)exp.dval )
 	{
 		ret = inter_statements( env, tree->child[1] );
-		if( ret.type == ER_RETURN )
+		if( ret.type == ER_RETURN || ret.type == ER_BREAK )
 		{
 			break;
 		}
@@ -471,11 +487,15 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 					ret = inter_return_stmt( env, node );
 					break;
 
+				case ST_BREAK:
+					ret.type = ER_BREAK;
+					break;
+
 				default:
 					break;	
 			}
 
-			if( ret.type == ER_RETURN )
+			if( ret.type == ER_RETURN || ret.type == ER_BREAK )
 			{
 				break;
 			}

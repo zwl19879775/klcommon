@@ -1,9 +1,11 @@
 #makefile for kl interpred language
 CC = gcc
 LINK = gcc
-CFLAG = -c -g -o
+CFLAG = -c -g -I.\src -I.\plugin -o
 LINKFLAG = -o
 SRCDIR = .\src
+TESTDIR = .\test
+PLUGINDIR = .\plugin
 TMPDIR = .\tmp
 BINDIR = .\bin
 
@@ -28,16 +30,19 @@ ${TMPDIR}/klinterpret.o: ${SRCDIR}/klinterpret.c ${SRCDIR}/klinterpret.h ${SRCDI
 ${TMPDIR}/kllib.o: ${SRCDIR}/kllib.c ${SRCDIR}/kllib.h ${SRCDIR}/klinterpret.h ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
 	${CC} ${CFLAG} $@ $<
 
-${TMPDIR}/testlex.o: ${SRCDIR}/testlex.c ${SRCDIR}/kllex.h
+${TMPDIR}/testlex.o: ${TESTDIR}/testlex.c ${SRCDIR}/kllex.h
 	${CC} ${CFLAG} $@ $<
 
-${TMPDIR}/testsyntax.o: ${SRCDIR}/testsyntax.c ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
+${TMPDIR}/testsyntax.o: ${TESTDIR}/testsyntax.c ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
 	${CC} ${CFLAG} $@ $<
 
-${TMPDIR}/testinter.o: ${SRCDIR}/testinter.c ${SRCDIR}/klinterpret.h ${SRCDIR}/klsymtab.h ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
+${TMPDIR}/testinter.o: ${TESTDIR}/testinter.c ${SRCDIR}/klinterpret.h ${SRCDIR}/klsymtab.h ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
 	${CC} ${CFLAG} $@ $<
 
-${TMPDIR}/testplugin.o: ${SRCDIR}/testklplugin.c ${SRCDIR}/kllib.h  ${SRCDIR}/klinterpret.h ${SRCDIR}/klsymtab.h ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
+${TMPDIR}/testplugin.o: ${TESTDIR}/testklplugin.c ${PLUGINDIR}/kllibbase.h ${SRCDIR}/kllib.h  ${SRCDIR}/klinterpret.h ${SRCDIR}/klsymtab.h ${SRCDIR}/klparser.h ${SRCDIR}/kllex.h
+	${CC} ${CFLAG} $@ $<
+
+${TMPDIR}/kllibbase.o: ${PLUGINDIR}/kllibbase.c ${PLUGINDIR}/kllibbase.h ${SRCDIR}/kllib.h
 	${CC} ${CFLAG} $@ $<
 
 ${BINDIR}/testlex.exe: ${TMPDIR}/kllex.o ${TMPDIR}/testlex.o
@@ -49,7 +54,8 @@ ${BINDIR}/testsyntax.exe: ${TMPDIR}/testsyntax.o ${TMPDIR}/kllex.o ${TMPDIR}/klp
 ${BINDIR}/testinter.exe: ${TMPDIR}/testinter.o ${TMPDIR}/klinterpret.o ${TMPDIR}/klsymtab.o ${TMPDIR}/klparser.o ${TMPDIR}/kllex.o
 	${LINK} ${LINKFLAG} $@ $^
 
-${BINDIR}/testplugin.exe: ${TMPDIR}/testplugin.o ${TMPDIR}/kllib.o ${TMPDIR}/klinterpret.o ${TMPDIR}/klsymtab.o ${TMPDIR}/klparser.o ${TMPDIR}/kllex.o
+${BINDIR}/testplugin.exe: ${TMPDIR}/testplugin.o ${TMPDIR}/kllib.o ${TMPDIR}/klinterpret.o ${TMPDIR}/klsymtab.o ${TMPDIR}/klparser.o ${TMPDIR}/kllex.o \
+	${TMPDIR}/kllibbase.o
 	${LINK} ${LINKFLAG} $@ $^
 
 clean: 

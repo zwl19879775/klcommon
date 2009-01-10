@@ -21,14 +21,14 @@ enum
 	TK_EOF,
 	TK_ID, TK_NUM, TK_FLOAT, TK_CHAR, TK_STRING,
 	TK_IF, TK_ELSE, TK_WHILE, TK_DO, TK_RETURN, TK_BREAK, TK_FUNCTION,
-    TK_NE, TK_EQ, TK_LE, TK_GE, TK_OR, TK_AND,  
+    TK_NE, TK_EQ, TK_LE, TK_GE, TK_OR, TK_AND
 };
 
 struct lexState;
 /**
  * lex error function prototype
  */
-typedef void (*lex_errorfn)( struct lexState *ls, const char *msg, ... );
+typedef void (*lex_errorfn)( size_t lineno, const char *msg, ... );
 
 /**
  * token type

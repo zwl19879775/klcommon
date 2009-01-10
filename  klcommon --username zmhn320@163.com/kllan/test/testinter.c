@@ -84,25 +84,16 @@ void print_tree( struct treeNode *node )
 	UNINDENT;
 }
 
-void lex_error( struct lexState *ls, const char *format, ... )
+void env_log( size_t lineno, const char *format, ... )
 {
 	char buf[1024];
 	va_list list;
 	va_start( list, format );
 	vsprintf( buf, format, list );
 	va_end( list );
-	
-	fprintf( stderr, ">>lex error [#%u]: %s\n", ls->lineno, buf );
-}
-
-void env_log( const char *format, ... )
-{
-	char buf[1024];
-	va_list list;
-	va_start( list, format );
-	vsprintf( buf, format, list );
-	va_end( list );
+	fprintf( stderr, "# %u ", lineno ); 
 	fprintf( stderr, buf );
+	fprintf( stderr, "\n" );
 }
 
 void test_inter( const char *file )
@@ -127,7 +118,7 @@ void test_inter( const char *file )
 		struct lexState ls;
 		struct treeNode *tree;
 		int t;
-		lex_setinput( &ls, buf, lex_error );
+		lex_setinput( &ls, buf, env_log );
 		tree = syn_parse( &ls );
 		print_tree( tree );
 		inter_execute( tree, env_log, 0 );

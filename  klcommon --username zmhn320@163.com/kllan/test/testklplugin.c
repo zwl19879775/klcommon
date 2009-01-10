@@ -2,37 +2,20 @@
  * test kl plugin
  */
 #include "kllib.h"
+#include "kllibbase.h"
 #include <stdio.h>
 #include <stdarg.h>
 
-void log( struct klState *kl, const char *format, ... )
+void _log( size_t lineno, const char *format, ... )
 {
 	char buf[1024];
 	va_list list;
 	va_start( list, format );
 	vsprintf( buf, format, list );
 	va_end( list );
+	fprintf( stderr, "# %u ", lineno ); 
 	fprintf( stderr, buf );
-}
-
-struct TValue print( struct TValue *arg_list )
-{
-	struct TValue ret = { 0, NUMBER, 0 };
-	if( arg_list->type == NUMBER )
-	{
-		printf( "%lf", arg_list->dval );
-	} else if( arg_list->type == STRING )
-	{
-		printf( arg_list->sval );
-	}
-	return ret;
-}
-
-struct TValue printc( struct TValue *arg_list )
-{
-	struct TValue ret = { 0, NUMBER, 0 };
-	putc( (char)arg_list->dval, stdout );
-	return ret;
+	fprintf( stderr, "\n" );
 }
 
 void test_plugin( const char *file )
@@ -54,9 +37,8 @@ void test_plugin( const char *file )
 	buf[size] = 0;
 	fclose( fp );
 	{
-		struct klState *kl = kl_new( log );
-		kl_register( kl, print, "print" );	
-		kl_register( kl, printc, "putc" );
+		struct klState *kl = kl_new( _log );
+		kllib_open_base( kl );
 		kl_run( kl, buf );	
 		kl_free( kl );
 	}

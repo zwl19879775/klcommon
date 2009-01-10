@@ -1,0 +1,17 @@
+function main()
+{
+	n = input( "%d" );
+	print( "fac(" + n + ") = " + fac( n ) );
+}
+
+function fac( n )
+{
+	if( n == 1 )
+	{
+		return 1;
+	}
+	else
+	{
+		return fac( n - 1 ) * n;
+	}
+}
