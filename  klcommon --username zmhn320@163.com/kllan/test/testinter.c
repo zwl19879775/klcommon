@@ -118,10 +118,13 @@ void test_inter( const char *file )
 		struct lexState ls;
 		struct treeNode *tree;
 		int t;
+		struct interEnv *env = inter_env_new( env_log, 0 );
 		lex_setinput( &ls, buf, env_log );
 		tree = syn_parse( &ls );
 		print_tree( tree );
-		inter_execute( tree, env_log, 0 );
+		inter_build_global_st( env, tree );
+		inter_execute( env );
+		inter_env_free( env );
 	}
 
 	free( buf );

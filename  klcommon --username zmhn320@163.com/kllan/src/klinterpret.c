@@ -32,7 +32,6 @@ struct FuncRet
 /**
  * build the global symbol table
  */
-static void inter_build_global_st( struct interEnv *env, struct treeNode *root );
 static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *name );
 static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node );
 static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *node );
@@ -44,7 +43,7 @@ static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *node
 static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *node );
 static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNode *arg_node, struct Value *ret );
 
-static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
+void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 {
 	struct treeNode *node;
 	for( node = root; node != 0; node = node->sibling )
@@ -601,7 +600,7 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 	return ret;
 }
 
-static struct Value inter_function( struct interEnv *env, struct treeNode *tree )
+struct Value inter_function( struct interEnv *env, struct treeNode *tree )
 {
 	struct treeNode *node;
 	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
@@ -609,14 +608,14 @@ static struct Value inter_function( struct interEnv *env, struct treeNode *tree 
 	return ret.val;	
 }
 
-int inter_execute( struct treeNode *root, inter_log_func log_func, struct symTable *plugin_st )
+struct Value inter_call_func( struct interEnv *env, struct treeNode *root )
+{
+	return inter_function( env, root );
+}
+
+int inter_execute( struct interEnv *env )
 {
 	struct Symbol *main;
-	struct interEnv *env = (struct interEnv*) malloc( sizeof( struct interEnv ) );
-	env->inter_log = log_func;
-	env->global_st = sym_new();
-	env->plugin_st = plugin_st;
-	inter_build_global_st( env, root );
 	main = sym_lookup( env->global_st, "main" );
 	if( main != 0 )
 	{
@@ -624,9 +623,23 @@ int inter_execute( struct treeNode *root, inter_log_func log_func, struct symTab
 		inter_function( env, (struct treeNode*) main->val.address );
 		sym_free( env->local_st );
 	}
+	return 0;
+}
+
+struct interEnv *inter_env_new( inter_log_func log_func, struct symTable *plugin_st )
+{
+	struct interEnv *env = (struct interEnv*) malloc( sizeof( struct interEnv ) );
+	env->inter_log = log_func;
+	env->global_st = sym_new();
+	env->plugin_st = plugin_st;
+	env->local_st = 0;
+	return env;
+}
+
+void inter_env_free( struct interEnv *env )
+{
 	sym_free( env->global_st );
 	free( env );
-	return 0;
 }
 
 
