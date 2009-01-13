@@ -2,7 +2,7 @@ function main()
 {
 	dim a[3];
 	a[0] = 1;
-	a[1] = 2;
+	a[1] = "a string";
 	a[2] = 3;
 	while( i < 3 )
 	{
@@ -12,3 +12,8 @@ function main()
 	}
 }
 
+function func( a, b )
+{
+	print( "script -> " + a + "\n" + b + "\t" );
+	return 10;
+}

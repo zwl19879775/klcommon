@@ -7,9 +7,9 @@
 #define ___KL_INTERPRET_H_
 
 #include <stddef.h>
+#include "klsymtab.h"
 
 struct treeNode;
-struct symTable;
 
 typedef void (*inter_log_func)( size_t lineno, const char *fmt, ... );
 
@@ -25,8 +25,28 @@ struct interEnv
 };
 
 /**
- * execute a syntax tree. 
+ * create a new interpret environment
  */
-int inter_execute( struct treeNode *root, inter_log_func log_func, struct symTable *plugin_st );
+struct interEnv *inter_env_new( inter_log_func log_func, struct symTable *plugin_st );
+
+/**
+ * free an interpret environment
+ */
+void inter_env_free( struct interEnv *env );
+
+/**
+ * execute a function. 
+ */
+struct Value inter_call_func( struct interEnv *env, struct treeNode *root );
+
+/**
+ * a helper function to call 'main' function.
+ */
+int inter_execute( struct interEnv *env );
+
+/**
+ * build the global symbol table.
+ */
+void inter_build_global_st( struct interEnv *env, struct treeNode *root );
 
 #endif 

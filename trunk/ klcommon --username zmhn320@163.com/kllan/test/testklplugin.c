@@ -40,6 +40,17 @@ void test_plugin( const char *file )
 		struct klState *kl = kl_new( _log );
 		kllib_open_base( kl );
 		kl_run( kl, buf );	
+		{
+			/* test call script function */
+			struct TValue ret;
+			ArgType arg_list;
+			kl_new_arg( arg_list );
+			kl_add_number( arg_list, 1 );
+			kl_add_string( arg_list, "a string from c" );
+			ret = kl_call( kl, "func", arg_list );
+			printf( "\nfunc returns %lf\n", ret.dval );
+			kl_free_arg( arg_list );
+		}
 		kl_free( kl );
 	}
 
