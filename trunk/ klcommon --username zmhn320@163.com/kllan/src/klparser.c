@@ -28,6 +28,7 @@ static void syn_match( struct lexState *ls, int token );
  */
 static struct treeNode *syn_definition( struct lexState *ls );
 static struct treeNode *syn_var_def( struct lexState *ls );
+static struct treeNode *syn_array_def( struct lexState *ls );
 static struct treeNode *syn_func_def( struct lexState *ls );
 static struct treeNode *syn_param_list( struct lexState *ls );
 static struct treeNode *syn_param( struct lexState *ls );
@@ -127,6 +128,10 @@ static struct treeNode *syn_definition( struct lexState *ls )
 		{
 			node = syn_var_def( ls );
 		}
+		else if( token == TK_ARRAY )
+		{
+			node = syn_array_def( ls );
+		}
 		else if( token == TK_FUNCTION )
 		{
 			node = syn_func_def( ls );
@@ -154,17 +159,23 @@ static struct treeNode *syn_definition( struct lexState *ls )
 static struct treeNode *syn_var_def( struct lexState *ls )
 {
 	struct treeNode *node = syn_new_stmt_node( ST_VAR_DEF, ls->lineno );
-	/* not necessary to copy the string, free the token string later */
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
-	if( lex_current( ls ) == '[' )
-	{
-		syn_match( ls, '[' );
-		node->child[0] = syn_expression( ls );
-		syn_match( ls, ']' );
-	}
 	syn_match( ls, ';' );
 
+	return node;
+}
+
+static struct treeNode *syn_array_def( struct lexState *ls )
+{
+	struct treeNode *node = syn_new_stmt_node( ST_ARRAY_DEF, ls->lineno );
+	syn_match( ls, TK_ARRAY );
+	node->attr.val.sval = lex_current_str( ls );
+	syn_match( ls, TK_ID );
+	syn_match( ls, '[' );
+	node->child[0] = syn_expression( ls );
+	syn_match( ls, ']' );
+	syn_match( ls, ';' );
 	return node;
 }
 
@@ -251,8 +262,13 @@ static struct treeNode *syn_statement( struct lexState *ls )
 			case TK_RETURN:
 				node = syn_return_stmt( ls );
 				break;
+		
 			case TK_BREAK:
 				node = syn_break_stmt( ls );
+				break;
+
+			case TK_ARRAY:
+				node = syn_array_def( ls );
 				break;
 
 			default:
@@ -365,12 +381,6 @@ static struct treeNode *syn_var( struct lexState *ls )
 	struct treeNode *node = syn_new_exp_node( ET_ID, ls->lineno );
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
-	if( lex_current( ls ) == '[' )
-	{
-		syn_match( ls, '[' );
-		node->child[0] = syn_expression( ls );
-		syn_match( ls, ']' );
-	}
 	return node;
 }
 
@@ -481,6 +491,13 @@ static struct treeNode *syn_factor( struct lexState *ls )
 					/* function call, child[0] is the index of the id if it's a syntax error */
 					node->child[1] = syn_args( ls );
 					syn_match( ls, ')' );
+				}
+				else if( lex_current( ls ) == '[' )
+				{
+					node->subtype.exp = ET_ARRAY;
+					syn_match( ls, '[' );
+					node->child[0] = syn_expression( ls );
+					syn_match( ls, ']' );
 				}
 			}
 			break;

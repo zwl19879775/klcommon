@@ -37,6 +37,9 @@ void print_tree( struct treeNode *node )
 				case ST_FUNC_DEF:
 					printf( "func def : %s\n", node->attr.val.sval );
 					break;
+				case ST_ARRAY_DEF:
+					printf( "array def : %s\n", node->attr.val.sval );
+					break;
 				case ST_PARAM_DEF:
 					printf( "param def : %s\n", node->attr.val.sval );
 					break;
@@ -66,6 +69,9 @@ void print_tree( struct treeNode *node )
 				   break;
 				case ET_ID:
 				   printf( "id : %s\n", node->attr.val.sval );
+				   break;
+				case ET_ARRAY:
+				   printf( "array access : %s\n", node->attr.val.sval );
 				   break;
 			}
 		}

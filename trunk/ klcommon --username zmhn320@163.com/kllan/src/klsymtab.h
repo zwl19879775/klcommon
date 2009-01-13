@@ -6,6 +6,8 @@
 #ifndef ___KL_SYMTAB_H_
 #define ___KL_SYMTAB_H_
 
+#include <stddef.h>
+
 /**
  * symbol type
  */
@@ -13,7 +15,8 @@ typedef enum
 {
 	SB_FUNC,
 	SB_VAR_NUM,
-	SB_VAR_STRING
+	SB_VAR_STRING,
+	SB_VAR_ARRAY
 } SymType;
 
 /**
@@ -27,6 +30,12 @@ struct Value
 		char *sval;
 		/* used for functions */
 		void *address;
+		/* used for arrays */
+		struct 
+		{
+			struct Value *aval;
+			size_t size;
+		};
 	};
 	SymType type;
 };
@@ -72,5 +81,11 @@ int sym_insert( struct symTable *st, const char *name, struct Value val );
  * lookup whether a symbol is in the symbol table
  */
 struct Symbol *sym_lookup( struct symTable *st, const char *name );
+
+/**
+ * insert an array symbol into the symbol table
+ * @return -1 to indicate error
+ */
+int sym_insert_array( struct symTable *st, const char *name, size_t size );
 
 #endif 

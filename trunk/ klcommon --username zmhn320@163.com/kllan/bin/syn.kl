@@ -1,7 +1,14 @@
 function main()
 {
-	a = "var" + "=";
-	print( a );
+	dim a[3];
+	a[0] = 1;
+	a[1] = 2;
+	a[2] = 3;
+	while( i < 3 )
+	{
+		print( a[i] );
+		putc( '\n' );
+		i = i + 1;
+	}
 }
-
 

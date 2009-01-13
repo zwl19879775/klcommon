@@ -38,6 +38,17 @@ void sym_free( struct symTable *st )
 			{
 				free( sl->val.sval );
 			}
+			else if( sl->val.type == SB_VAR_ARRAY )
+			{
+				size_t j;
+				for( j = 0; j < sl->val.size; ++ j )
+				{
+					if( sl->val.aval[j].type == SB_VAR_STRING )
+					{
+						free( sl->val.aval[j].sval );
+					}
+				}
+			}
 		}
 	}
 	free( st );
@@ -78,4 +89,37 @@ struct Symbol *sym_lookup( struct symTable *st, const char *name )
 	return sb;
 }
 
+int sym_insert_array( struct symTable *st, const char *name, size_t size )
+{
+	struct Symbol *sb = sym_lookup( st, name );
+	if( sb != 0 )
+	{
+		return -1;
+	}
+	else
+	{
+		int i;
+		int index = sym_hash( name );
+		struct Symbol *head = st->table[index];
+		struct Symbol *new_sb = (struct Symbol*) malloc( sizeof( struct Symbol ) );
+		new_sb->name = (char*) malloc( strlen( name ) + 1 );
+		strcpy( new_sb->name, name );
+		new_sb->val.type = SB_VAR_ARRAY;
+		new_sb->val.size = size;
+		new_sb->val.aval = (struct Value *) malloc( sizeof( struct Value ) * size );
+		for( i = 0; i < size; ++ i )
+		{
+			new_sb->val.aval[i].type = SB_VAR_NUM;
+			new_sb->val.aval[i].dval = 0;
+		}
+		new_sb->next = head;
+		st->table[index] = new_sb;	
+	}
 
+	return 0;
+}
+
+struct Value *sym_lookup_array( struct symTable *st, const char *name, size_t index )
+{
+	return 0;
+}
