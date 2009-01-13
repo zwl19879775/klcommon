@@ -22,7 +22,7 @@ typedef enum
  */
 typedef enum
 {
-	ST_VAR_DEF,
+	ST_VAR_DEF, ST_ARRAY_DEF,
 	ST_FUNC_DEF, ST_PARAM_DEF,
 	ST_IF, ST_WHILE, /*ST_ASSIGN*/
 	ST_RETURN, ST_BREAK
@@ -36,6 +36,7 @@ typedef enum
 	ET_OP,
 	ET_CONST,
 	ET_STRING, /* const string */
+	ET_ARRAY,
 	ET_ID,
 	ET_FUNC_CALL
 } ExpType;

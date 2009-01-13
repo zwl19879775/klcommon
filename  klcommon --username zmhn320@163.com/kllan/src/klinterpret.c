@@ -57,6 +57,19 @@ static void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 			    val	= inter_expression( env, node->child[0] );
 				sym_insert( env->global_st, node->attr.val.sval, val );				
 			}
+			else if( node->subtype.stmt == ST_ARRAY_DEF )
+			{
+				struct Value val;
+				val = inter_expression( env, node->child[0] );
+				if( val.type != SB_VAR_NUM || val.dval <= 0 )
+				{
+					env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array size" );
+				}
+				else
+				{
+					sym_insert_array( env->global_st, node->attr.val.sval, (size_t)val.dval );
+				}
+			}
 			else if( node->subtype.stmt == ST_FUNC_DEF )
 			{
 				struct Value val;
@@ -251,14 +264,49 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 		case '=':
 			{
 				struct treeNode *l_node = node->child[0];
-				struct Symbol *sb = sym_lookup( env->global_st, l_node->attr.val.sval );
-				if( sb == 0 )
+				if( l_node->subtype.exp == ET_ID )
 				{
-					sym_insert( env->local_st, l_node->attr.val.sval, right );
-				}	
-				else
+					struct Symbol *sb = sym_lookup( env->global_st, l_node->attr.val.sval );
+					if( sb == 0 )
+					{
+						sb = sym_lookup( env->local_st, l_node->attr.val.sval );
+						if( sb != 0 && sb->val.type == SB_VAR_ARRAY )
+						{
+							env->inter_log( l_node->lineno, ">>runtime error->cannot write array address" );						
+						}
+						else
+						{
+							sym_insert( env->local_st, l_node->attr.val.sval, right );
+						}
+					}	
+					else if( sb->val.type == SB_VAR_ARRAY )
+					{
+						env->inter_log( l_node->lineno, ">>runtime error->cannot write array address" );						
+					}
+					else
+					{
+						sym_insert( env->global_st, l_node->attr.val.sval, right );
+					}
+				}
+				else if( l_node->subtype.exp == ET_ARRAY )
 				{
-					sym_insert( env->global_st, l_node->attr.val.sval, right );
+					struct Symbol *sb = inter_lookup_symbol( env, l_node->attr.val.sval );
+					if( sb == 0 )
+					{
+						env->inter_log( l_node->lineno, ">>runtime error->undefined array" );
+					}
+					else
+					{
+						struct Value index = inter_expression( env, l_node->child[0] );
+						if( index.type != SB_VAR_NUM || index.dval < 0 || index.dval >= sb->val.size )
+						{
+							env->inter_log( l_node->child[0]->lineno, ">>runtime error->invalid array index" );
+						}
+						else
+						{
+							sb->val.aval[(size_t)index.dval] = right;
+						}
+					}
 				}
 				ret = right;
 			}
@@ -405,7 +453,33 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 					sym_insert( env->local_st, node->attr.val.sval, ret ); 
 					return ret;
 				}
+				if( sb->val.type == SB_VAR_ARRAY )
+				{
+					ret.type = SB_VAR_NUM;
+					ret.dval = (size_t)sb->val.aval;
+					return ret;
+				}
 				return sb->val;
+			}
+
+		case ET_ARRAY:
+			/* array access */
+			{
+				struct Symbol *sb = inter_lookup_symbol( env, node->attr.val.sval );
+				if( sb == 0 )
+				{
+					env->inter_log( node->lineno, ">>runtime error->undefine array" );
+					return ret;
+				}
+				else
+				{
+					struct Value index = inter_expression( env, node->child[0] );
+					if( index.type != SB_VAR_NUM || index.dval < 0 || index.dval >= sb->val.size )
+					{
+						env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array index" );
+					}
+					return sb->val.aval[(size_t)index.dval];
+				}
 			}
 
 		case ET_FUNC_CALL:
@@ -466,6 +540,19 @@ static struct FuncRet inter_return_stmt( struct interEnv *env, struct treeNode *
 	return ret;
 }
 
+static void inter_array_def_stmt( struct interEnv *env, struct treeNode *node )
+{
+	struct Value val = inter_expression( env, node->child[0] );
+	if( val.type != SB_VAR_NUM || val.dval <= 0 )
+	{
+		env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array size" );
+	}
+	else
+	{
+		sym_insert_array( env->local_st, node->attr.val.sval, (size_t)val.dval );
+	}
+}
+
 static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node )
 {
 	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
@@ -489,6 +576,10 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 
 				case ST_BREAK:
 					ret.type = ER_BREAK;
+					break;
+
+				case ST_ARRAY_DEF:
+					inter_array_def_stmt( env, node );
 					break;
 
 				default:

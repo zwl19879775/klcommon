@@ -15,6 +15,7 @@ const struct Token reserved_words[] = {
 	TK_RETURN, "return", 
 	TK_BREAK, "break", 
 	TK_FUNCTION, "function", 
+	TK_ARRAY, "dim",
 	0, NULL
 };
 
@@ -235,7 +236,7 @@ int lex_token( struct lexState *ls )
 					else
 					{
 						lex_back( ls );
-						lex_settoken( ls, '>', ">" );
+						lex_settoken( ls, '<', "<" );
 					}
 				}
 				break;
