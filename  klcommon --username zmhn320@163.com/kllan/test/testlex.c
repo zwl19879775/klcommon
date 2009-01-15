@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "kllex.h"
 #include <stdarg.h>
+#include <malloc.h>
 
 void lex_error( size_t lineno, const char *format, ... )
 {

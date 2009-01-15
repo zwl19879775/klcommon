@@ -10,6 +10,8 @@
 #include "kllex.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <malloc.h>
+#include <string.h>
 
 struct klState *kl_new( kl_log l )
 {
@@ -49,7 +51,7 @@ int kl_prepare( struct klState *kl, char *source )
 
 struct TValue kl_call( struct klState *kl, const char *name, ArgType args )
 {
-	struct TValue ret = { 0, NUMBER, 0 };
+	struct TValue ret = { { 0 }, NUMBER, 0 };
 	struct Value vret;
 	struct symTable *st = 0, *tmp_st = 0;
 	struct Symbol *func = sym_lookup( kl->env->global_st, name );

@@ -9,6 +9,8 @@
 #include "klsymtab.h"
 #include "kllib.h"
 #include <stdio.h>
+#include <malloc.h>
+#include <string.h>
 
 /**
  * function executed result type
@@ -101,7 +103,7 @@ static struct Symbol *inter_lookup_symbol( struct interEnv *env, const char *nam
 
 static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 {
-	struct Value ret, left, right = { 0, SB_VAR_NUM };
+	struct Value ret, left, right = { { 0 }, SB_VAR_NUM };
 	ret = left = right;
 	/* two operator operation */
 	if( ( node->child[0] == 0 || node->child[1] == 0 ) && node->attr.op != '-' && 
@@ -198,7 +200,6 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 				}
 				else if( left.type == SB_VAR_STRING || right.type == SB_VAR_STRING )
 				{
-					char *str = 0;
 					ret.type = SB_VAR_STRING;
 					if( left.type == SB_VAR_STRING )
 					{
@@ -319,7 +320,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 
 static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *node )
 {
-	struct Value ret = { 0, SB_VAR_NUM }, arg;
+	struct Value ret = { { 0 }, SB_VAR_NUM }, arg;
 	struct symTable *st = 0, *tmp_st = 0;
 	struct treeNode *func_node = 0, *param_node = 0, *arg_node = 0;
 	struct Symbol *func = 0;
@@ -502,7 +503,7 @@ static void inter_exp_stmt( struct interEnv *env, struct treeNode *tree )
 
 static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *tree )
 {
-	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	struct Value exp = inter_expression( env, tree->child[0] );
 	if( (int)exp.dval )
 	{
@@ -517,9 +518,8 @@ static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *tree
 
 static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *tree )
 {
-	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	struct Value exp = inter_expression( env, tree->child[0] );
-	struct treeNode *node = 0;
 	while( (int)exp.dval )
 	{
 		ret = inter_statements( env, tree->child[1] );
@@ -534,7 +534,7 @@ static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *t
 
 static struct FuncRet inter_return_stmt( struct interEnv *env, struct treeNode *node )
 {
-	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_RETURN };
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_RETURN };
 	ret.val = inter_expression( env, node->child[0] );
 	return ret;
 }
@@ -554,7 +554,7 @@ static void inter_array_def_stmt( struct interEnv *env, struct treeNode *node )
 
 static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node )
 {
-	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	for( ; node != 0; node = node->sibling )
 	{
 		if( node->type == NT_STMT )
@@ -602,8 +602,7 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 
 struct Value inter_function( struct interEnv *env, struct treeNode *tree )
 {
-	struct treeNode *node;
-	struct FuncRet ret = { { 0, SB_VAR_NUM }, ER_NORMAL };
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	ret = inter_statements( env, tree->child[1] );
 	return ret.val;	
 }
@@ -615,12 +614,12 @@ struct Value inter_call_func( struct interEnv *env, struct treeNode *root )
 
 int inter_execute( struct interEnv *env )
 {
-	struct Symbol *main;
-	main = sym_lookup( env->global_st, "main" );
-	if( main != 0 )
+	struct Symbol *main_func;
+	main_func = sym_lookup( env->global_st, "main" );
+	if( main_func != 0 )
 	{
 		env->local_st = sym_new();
-		inter_function( env, (struct treeNode*) main->val.address );
+		inter_function( env, (struct treeNode*) main_func->val.address );
 		sym_free( env->local_st );
 	}
 	return 0;

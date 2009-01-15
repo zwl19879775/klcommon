@@ -7,6 +7,7 @@
 #include "kllex.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <malloc.h>
 
 int indentno = 0;
 
@@ -51,6 +52,12 @@ void print_tree( struct treeNode *node )
 				case ST_RETURN:
 					printf( "return\n" );
 					break;
+				case ST_ARRAY_DEF:
+					printf( "array def\n" );
+					break;
+				case ST_BREAK:
+					printf( "break\n" );
+					break;
 			}
 		}
 		else if( node->type == NT_EXP )
@@ -68,6 +75,12 @@ void print_tree( struct treeNode *node )
 				   break;
 				case ET_ID:
 				   printf( "id : %s\n", node->attr.val.sval );
+				   break;
+				case ET_ARRAY:
+				   printf( "array : %s\n", node->attr.val.sval );
+				   break;
+				case ET_FUNC_CALL:
+				   printf( "func call : %s\n", node->attr.val.sval );
 				   break;
 			}
 		}
@@ -117,7 +130,6 @@ void test_inter( const char *file )
 	{
 		struct lexState ls;
 		struct treeNode *tree;
-		int t;
 		struct interEnv *env = inter_env_new( env_log, 0 );
 		lex_setinput( &ls, buf, env_log );
 		tree = syn_parse( &ls );

@@ -6,10 +6,12 @@
 #include "kllib.h"
 #include "kllibbase.h"
 #include <stdio.h>
+#include <malloc.h>
+#include <string.h>
 
 static struct TValue print( ArgType arg )
 {
-	struct TValue ret = { 0, NUMBER, 0 };
+	struct TValue ret = { { 0 }, NUMBER, 0 };
 	if( arg->type == NUMBER )
 	{
 		printf( "%lf", arg->dval );
@@ -22,14 +24,14 @@ static struct TValue print( ArgType arg )
 
 static struct TValue printc( ArgType arg )
 {
-	struct TValue ret = { 0, NUMBER, 0 };
+	struct TValue ret = { { 0 }, NUMBER, 0 };
 	putc( (char)arg->dval, stdout );
 	return ret;
 }
 
 static struct TValue input( ArgType arg )
 {
-	struct TValue ret = { 0, NUMBER, 0 };
+	struct TValue ret = { { 0 }, NUMBER, 0 };
 	if( arg->type == STRING )
 	{
 		if( strcmp( arg->sval, "%s" ) == 0 )

@@ -7,6 +7,8 @@
 #include "klparser.h"
 #include "kllex.h"
 #include <stdio.h>
+#include <malloc.h>
+#include <memory.h>
 
 /**
  * create a new expression node 

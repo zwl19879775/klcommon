@@ -5,6 +5,7 @@
 #include "klparser.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <malloc.h>
 
 int indentno = 0;
 
@@ -52,6 +53,9 @@ void print_tree( struct treeNode *node )
 				case ST_RETURN:
 					printf( "return\n" );
 					break;
+				case ST_BREAK:
+					printf( "break\n" );
+					break;
 			}
 		}
 		else if( node->type == NT_EXP )
@@ -72,6 +76,9 @@ void print_tree( struct treeNode *node )
 				   break;
 				case ET_ARRAY:
 				   printf( "array access : %s\n", node->attr.val.sval );
+				   break;
+				case ET_FUNC_CALL:
+				   printf( "func call : %s\n", node->attr.val.sval );
 				   break;
 			}
 		}
@@ -122,7 +129,6 @@ void test_syntax( const char *file )
 	{
 		struct lexState ls;
 		struct treeNode *tree; 
-		int t;
 		lex_setinput( &ls, buf, lex_error );
 		tree = syn_parse( &ls );
 		print_tree( tree );

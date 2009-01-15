@@ -5,18 +5,21 @@
  */
 #include "kllex.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 /* reserved words */
 const struct Token reserved_words[] = {
-	TK_IF, "if", 
-	TK_ELSE, "else", 
-	TK_WHILE, "while", 
-	TK_DO, "do", 
-	TK_RETURN, "return", 
-	TK_BREAK, "break", 
-	TK_FUNCTION, "function", 
-	TK_ARRAY, "dim",
-	0, NULL
+	{ TK_IF, "if" }, 
+	{ TK_ELSE, "else" }, 
+	{ TK_WHILE, "while" }, 
+	{ TK_DO, "do" }, 
+	{ TK_RETURN, "return" }, 
+	{ TK_BREAK, "break" }, 
+	{ TK_FUNCTION, "function" }, 
+	{ TK_ARRAY, "dim" },
+	{ 0, NULL }
 };
 
 static int lex_lookup_reserved( const char *str )
