@@ -5,6 +5,7 @@
 #include "kllibbase.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <malloc.h>
 
 void _log( size_t lineno, const char *format, ... )
 {

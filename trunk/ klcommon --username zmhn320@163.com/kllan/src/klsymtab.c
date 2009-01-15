@@ -5,6 +5,9 @@
  */
 #include "klsymtab.h"
 #include <stdio.h>
+#include <malloc.h>
+#include <memory.h>
+#include <string.h>
 
 /* the hash function */
 static int sym_hash( const char *key )

@@ -1,7 +1,7 @@
 #makefile for kl interpred language
 CC = gcc
 LINK = gcc
-CFLAG = -c -g -I.\src -I.\plugin -o
+CFLAG = -c -Wall -g -I.\src -I.\plugin -o
 LINKFLAG = -o
 SRCDIR = .\src
 TESTDIR = .\test
