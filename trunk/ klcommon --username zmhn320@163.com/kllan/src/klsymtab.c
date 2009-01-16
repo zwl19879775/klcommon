@@ -8,6 +8,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <string.h>
+#include "klmemcheck.h"
 
 /* the hash function */
 static int sym_hash( const char *key )
@@ -34,8 +35,9 @@ void sym_free( struct symTable *st )
 	for( i = 0; i < SYM_SIZE; ++ i )
 	{
 		struct Symbol *sl = st->table[i] ;
-		for( ; sl != 0; sl = sl->next )
+		for( ; sl != 0; )
 		{
+			struct Symbol *tmp = sl;
 			free( sl->name );
 			if( sl->val.type == SB_VAR_STRING )
 			{
@@ -52,6 +54,8 @@ void sym_free( struct symTable *st )
 					}
 				}
 			}
+			sl = sl->next;
+			free( tmp );
 		}
 	}
 	free( st );

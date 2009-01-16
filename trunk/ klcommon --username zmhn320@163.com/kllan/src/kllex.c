@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "klmemcheck.h"
+
 
 /* reserved words */
 const struct Token reserved_words[] = {

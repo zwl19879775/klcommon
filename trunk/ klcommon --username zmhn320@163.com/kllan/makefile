@@ -1,7 +1,7 @@
 #makefile for kl interpred language
 CC = gcc
 LINK = gcc
-CFLAG = -c -Wall -g -I.\src -I.\plugin -o
+CFLAG = -c -Wall -g -I.\src -I.\plugin -IE:\libs\duma_2_5_14 -o
 LINKFLAG = -o
 SRCDIR = .\src
 TESTDIR = .\test
@@ -46,17 +46,17 @@ ${TMPDIR}/kllibbase.o: ${PLUGINDIR}/kllibbase.c ${PLUGINDIR}/kllibbase.h ${SRCDI
 	${CC} ${CFLAG} $@ $<
 
 ${BINDIR}/testlex.exe: ${TMPDIR}/kllex.o ${TMPDIR}/testlex.o
-	${LINK} ${LINKFLAG} $@ $^
+	${LINK} ${LINKFLAG} $@ $^ E:\libs\duma_2_5_14\libduma.a
 
 ${BINDIR}/testsyntax.exe: ${TMPDIR}/testsyntax.o ${TMPDIR}/kllex.o ${TMPDIR}/klparser.o
-	${LINK} ${LINKFLAG} $@ $^
+	${LINK} ${LINKFLAG} $@ $^ E:\libs\duma_2_5_14\libduma.a
 
 ${BINDIR}/testinter.exe: ${TMPDIR}/testinter.o ${TMPDIR}/klinterpret.o ${TMPDIR}/klsymtab.o ${TMPDIR}/klparser.o ${TMPDIR}/kllex.o
-	${LINK} ${LINKFLAG} $@ $^
+	${LINK} ${LINKFLAG} $@ $^ E:\libs\duma_2_5_14\libduma.a
 
 ${BINDIR}/testplugin.exe: ${TMPDIR}/testplugin.o ${TMPDIR}/kllib.o ${TMPDIR}/klinterpret.o ${TMPDIR}/klsymtab.o ${TMPDIR}/klparser.o ${TMPDIR}/kllex.o \
 	${TMPDIR}/kllibbase.o
-	${LINK} ${LINKFLAG} $@ $^
+	${LINK} ${LINKFLAG} $@ $^ E:\libs\duma_2_5_14\libduma.a
 
 clean: 
 	-rmdir /Q /S ${TMPDIR}
