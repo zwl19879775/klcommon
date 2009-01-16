@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
+#include "klmemcheck.h"
 
 void _log( size_t lineno, const char *format, ... )
 {
@@ -60,6 +61,9 @@ void test_plugin( const char *file )
 
 int main( int argc, char **argv )
 {
+#ifdef _CHECK_MEMORY_LEAK
+	duma_init();
+#endif
 	if( argc < 2 )
 	{
 		fprintf( stderr, "Usage : %s filename\n", argv[0] );

@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <malloc.h>
 #include <string.h>
+#include "klmemcheck.h"
 
 struct klState *kl_new( kl_log l )
 {
