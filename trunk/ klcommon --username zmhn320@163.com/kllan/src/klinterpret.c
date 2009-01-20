@@ -46,48 +46,25 @@ static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *node
 static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *node );
 static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNode *arg_node, struct Value *ret );
 
-void inter_build_global_st( struct interEnv *env, struct treeNode *root )
+
+static struct Value inter_copy_val_str( struct Value *val )
 {
-	struct treeNode *node;
-	for( node = root; node != 0; node = node->sibling )
+	if( val->type == SB_VAR_STRING )
 	{
-		if( node->type == NT_STMT )
-		{
-			if( node->subtype.stmt == ST_VAR_DEF )
-			{
-				struct Value val;
-			    val	= inter_expression( env, node->child[0] );
-				sym_insert( env->global_st, node->attr.val.sval, val );				
-			}
-			else if( node->subtype.stmt == ST_ARRAY_DEF )
-			{
-				struct Value val;
-				val = inter_expression( env, node->child[0] );
-				if( val.type != SB_VAR_NUM || val.dval <= 0 )
-				{
-					env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array size" );
-				}
-				else
-				{
-					sym_insert_array( env->global_st, node->attr.val.sval, (size_t)val.dval );
-				}
-			}
-			else if( node->subtype.stmt == ST_FUNC_DEF )
-			{
-				struct Value val;
-				val.address = node;
-				val.type = SB_FUNC;
-				sym_insert( env->global_st, node->attr.val.sval, val );
-			}
-			else
-			{
-				env->inter_log( node->lineno, ">>runtime error->error statement in global scope" );
-			}
-		}
-		else
-		{
-			env->inter_log( node->lineno, ">>runtime error->global scope must be var/func def" );
-		}
+		struct Value tmp;
+		tmp.type = SB_VAR_STRING;
+		tmp.sval = (char*) malloc( strlen( val->sval ) + 1 );
+		strcpy( tmp.sval, val->sval );
+		return tmp;
+	}
+	return *val;
+}
+
+static void inter_free_val_str( struct Value *val )
+{
+	if( val->type == SB_VAR_STRING )
+	{
+		free( val->sval );
 	}
 }
 
@@ -141,7 +118,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 				ret.type = SB_VAR_NUM;
 				ret.dval = !(right.dval);
 			}
-			break;
+			break;	
 
 		case TK_LE:
 			{
@@ -217,6 +194,9 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 						strcpy( ret.sval, tmp );
 					}	
 				}
+
+				inter_free_val_str( &left );
+				inter_free_val_str( &right );
 			}
 			break;
 
@@ -277,6 +257,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 						}
 						else
 						{
+							/* create new or update the symbol in local scope */
 							sym_insert( env->local_st, l_node->attr.val.sval, right );
 						}
 					}	
@@ -286,6 +267,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 					}
 					else
 					{
+						/* update the symbol in global scope */
 						sym_insert( env->global_st, l_node->attr.val.sval, right );
 					}
 				}
@@ -309,7 +291,7 @@ static struct Value inter_op_exp( struct interEnv *env, struct treeNode *node )
 						}
 					}
 				}
-				ret = right;
+				ret = inter_copy_val_str( &right );
 			}
 			break;
 
@@ -384,8 +366,9 @@ static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNo
 		}
 		else if( arg.type == SB_VAR_STRING )
 		{
-			t->sval = (char*) malloc( strlen( arg.sval ) + 1 );
-			strcpy( t->sval, arg.sval );
+			/*t->sval = (char*) malloc( strlen( arg.sval ) + 1 );
+			strcpy( t->sval, arg.sval );*/
+			t->sval = arg.sval;
 			t->type = STRING;
 		}
 		if( tval == 0 )
@@ -438,7 +421,8 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 		    return ret;
 
 		case ET_STRING:
-			ret.sval = node->attr.val.sval;
+			ret.sval = (char*) malloc( strlen( node->attr.val.sval ) + 1 );
+			strcpy( ret.sval, node->attr.val.sval );
 			ret.type = SB_VAR_STRING;
 			return ret;
 
@@ -460,7 +444,7 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 					ret.dval = (size_t)sb->val.aval;
 					return ret;
 				}
-				return sb->val;
+				return inter_copy_val_str( &sb->val );
 			}
 
 		case ET_ARRAY:
@@ -479,7 +463,7 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 					{
 						env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array index" );
 					}
-					return sb->val.aval[(size_t)index.dval];
+					return inter_copy_val_str( &sb->val.aval[(size_t)index.dval] );
 				}
 			}
 
@@ -499,13 +483,20 @@ static struct Value inter_expression( struct interEnv *env, struct treeNode *nod
 
 static void inter_exp_stmt( struct interEnv *env, struct treeNode *tree )
 {
-	inter_expression( env, tree );
+	struct Value val = inter_expression( env, tree );
+	inter_free_val_str( &val );
 }
 
 static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *tree )
 {
 	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	struct Value exp = inter_expression( env, tree->child[0] );
+	if( exp.type != SB_VAR_NUM )
+	{
+		inter_free_val_str( &exp );
+		env->inter_log( tree->child[0]->lineno, ">>runtime error->if expression must be a number result" );
+		return ret;
+	}
 	if( (int)exp.dval )
 	{
 		ret = inter_statements( env, tree->child[1] );	
@@ -521,6 +512,12 @@ static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *t
 {
 	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
 	struct Value exp = inter_expression( env, tree->child[0] );
+	if( exp.type != SB_VAR_NUM )
+	{
+		inter_free_val_str( &exp );
+		env->inter_log( tree->child[0]->lineno, ">>runtime error->while expression must be a number result" );
+		return ret;
+	}
 	while( (int)exp.dval )
 	{
 		ret = inter_statements( env, tree->child[1] );
@@ -599,6 +596,80 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 	}
 	
 	return ret;
+}
+
+static void inter_build_string_st( struct interEnv *env, struct treeNode *root )
+{
+	int i;
+	struct treeNode *node;
+	if( root == 0 )
+	{
+		return;
+	}
+	if( root->type == NT_EXP && root->subtype.exp == ET_STRING )
+	{
+		char name[8];
+		struct Value val;
+	   	val.sval = root->attr.val.sval;
+		val.type = SB_VAR_STRING;	
+		/* make the address as the symbol name */
+		itoa( (int) root->attr.val.sval, name, 10 );
+		sym_insert( env->global_st, name, val );
+	}
+
+	for( i = 0; i < MAXCHILDREN; ++ i )
+	{
+		inter_build_string_st( env, root->child[i] );
+	}	
+	inter_build_string_st( env, root->sibling );
+}
+		
+void inter_build_global_st( struct interEnv *env, struct treeNode *root )
+{
+	struct treeNode *node;
+	for( node = root; node != 0; node = node->sibling )
+	{
+		if( node->type == NT_STMT )
+		{
+			if( node->subtype.stmt == ST_VAR_DEF )
+			{
+				struct Value val;
+			    val	= inter_expression( env, node->child[0] );
+				sym_insert( env->global_st, node->attr.val.sval, val );				
+			}
+			else if( node->subtype.stmt == ST_ARRAY_DEF )
+			{
+				struct Value val;
+				val = inter_expression( env, node->child[0] );
+				if( val.type != SB_VAR_NUM || val.dval <= 0 )
+				{
+					env->inter_log( node->child[0]->lineno, ">>runtime error->invalid array size" );
+				}
+				else
+				{
+					sym_insert_array( env->global_st, node->attr.val.sval, (size_t)val.dval );
+				}
+			}
+			else if( node->subtype.stmt == ST_FUNC_DEF )
+			{
+				struct Value val;
+				val.address = node;
+				val.type = SB_FUNC;
+				sym_insert( env->global_st, node->attr.val.sval, val );
+			}
+			else
+			{
+				env->inter_log( node->lineno, ">>runtime error->error statement in global scope" );
+			}
+		}
+		else
+		{
+			env->inter_log( node->lineno, ">>runtime error->global scope must be var/func def" );
+		}
+	}
+
+	/* build the string symbol table */
+	inter_build_string_st( env, root );
 }
 
 struct Value inter_function( struct interEnv *env, struct treeNode *tree )
