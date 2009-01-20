@@ -1,6 +1,14 @@
 function main()
 {
-	"a" + "b";
+	while( "aaaa" )
+	{
+	
+	}
+}
+
+function test()
+{
+	return "a string";
 }
 
 function func()

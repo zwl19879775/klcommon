@@ -6,6 +6,6 @@ function main()
 	if( c == 'c' || a != 123 )
 	{
 		d = 2.34;
-		return;
+		return 1;
 	}
 }

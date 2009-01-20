@@ -582,7 +582,7 @@ void syn_free_tree( struct treeNode *tree )
 	if( tree->type == NT_STMT )
 	{
 		int stmt = tree->subtype.stmt;
-		if( stmt == ST_VAR_DEF || stmt == ST_FUNC_DEF || stmt == ST_PARAM_DEF )
+		if( stmt == ST_VAR_DEF || stmt == ST_FUNC_DEF || stmt == ST_PARAM_DEF || stmt == ST_ARRAY_DEF )
 		{
 			free( tree->attr.val.sval );
 		}
@@ -590,7 +590,7 @@ void syn_free_tree( struct treeNode *tree )
 	else if( tree->type == NT_EXP )
 	{
 		int exp = tree->subtype.exp;
-		if( exp == ET_ID || exp == ET_FUNC_CALL )
+		if( exp == ET_ID || exp == ET_FUNC_CALL || exp == ET_ARRAY )
 		{
 			free( tree->attr.val.sval );
 		}	

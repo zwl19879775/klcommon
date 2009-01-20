@@ -53,6 +53,7 @@ void sym_free( struct symTable *st )
 						free( sl->val.aval[j].sval );
 					}
 				}
+				free( sl->val.aval );
 			}
 			sl = sl->next;
 			free( tmp );
@@ -69,6 +70,11 @@ int sym_insert( struct symTable *st, const char *name, struct Value val )
 	if( sb != 0 )
 	{
 		/* the symbol exists, update its value */
+		/* if the symbol's value type is STRING type, free the memory first */
+		if( sb->val.type == SB_VAR_STRING )
+		{
+			free( sb->val.sval );
+		}
 		sb->val = val;
 	}
 	else
