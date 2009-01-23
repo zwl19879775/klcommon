@@ -1,0 +1,145 @@
+1.23.2008
+
+这个内存泄露工具最基本的原理就是利用宏替换掉标准的malloc、free（暂不考虑其他内存分配函数，
+如realloc、strdup），记录下每次内存分配和释放动作。因为宏的处理发生在预处理阶段，所以可以
+很容易地用你自己的malloc函数替换掉标准的malloc。例如：
+
+
+/* lib.h */
+#define malloc my_malloc
+#define free my_free
+
+/* lib.c */
+/* disable these macro in this compile unit */
+#undef malloc
+#undef free
+
+static int count = 0;
+
+void *my_malloc( size_t size )
+{
+	++count;
+	return malloc( size );
+}
+
+void my_free( void *a )
+{
+	--count;
+	free( a );
+}
+
+要使用以上代码，用户在使用时就需要包含lib.h，从而可以使用宏将用户自己写的malloc替换
+为my_mallo。当程序退出时，如果count大于0，那么可以肯定的是有内存泄露。当然，如果
+count为负数，则很可能对同一个指针进行多次free。
+
+但是以上代码的功能太局限了。一个真正的内存泄露检测库（工具），至少需要报告泄露的代码
+文件、函数、行数等信息。当然，如果能报告调用堆栈，就更好了。不过这就依赖于具体的平台，
+需要使用特定的系统接口才可以获取出。
+
+要实现以上功能也很简单，只需要在每次调用malloc的时候，通过编译器预定义宏__FILE__、
+__LINE__、__FUNCTION__(__func__)就可以得到文件名、函数、行号等信息。将这些信息保存
+起来，然后在free的时候移除相应的信息即可。
+
+最简单的实现方式，就是保存一个表，表里记录着每次分配内存的信息：
+
+struct memRecord
+{
+	char file[MAX_FILE_NAME];
+	char func[MAX_FUNC_NAME];
+	size_t lineno;
+	void *address;
+	size_t size;
+};
+
+struct memRecord mem_record[MAX_RECORD];
+
+但是，通过单单一个free函数的void*参数，如何获取出对应的分配记录呢？难道：
+for( size_t i = 0; i < MAX_RECORD; ++ i )
+{
+	if( address == mem_record[i].address ) 
+	{
+		/* shit */
+	}
+}
+
+虽然可行，但是很stupid。这里提供一个小技巧：
+
+void *my_malloc( size_t size )
+{
+	void *a = malloc( size + sizeof( size_t ) );
+	return (char*)a + sizeof( size_t );
+}
+
+void my_free( void *a )
+{
+	/* actually, 'a' is not the real address */
+	char *p = ((char*)a - sizeof( size_t ) );	
+	free( p );
+}
+
+意思就是说，我多分配了4字节内存（sizeof( size_t ) ），用于保存这次分配记录在mem_record
+中被保存的索引。在释放内存的时候，通过一些地址偏移计算，就可以获取出真正的系统malloc
+返回的地址，从而安全释放（别给我说这里的计算存在平台和编译器的限制，没认真看文章的SB才说）。
+
+另一个问题是，我们如何处理每次分配释放时，对于分配记录那个数据结构，也就是mem_record。
+每一次free的时候，移除的记录可能位于mem_record的任何位置。一定时间后，mem_record内部
+将出现很多漏洞（已经没用的数组位置）。解决这个问题最直接当然还是最stupid的方法，就是每次
+free移除记录时重新整理一遍mem_record。如果你这样做了，那你的malloc/free比微软的还慢。
+
+我的解决方法是：
+size_t free_index[MAX_RECORD];
+用于保存这些出现漏洞的index。每一次free移除记录时，就把这个记录对应的inex保存进来，表示
+这个index指向的mem_record[]可用。每一次malloc的时候，先从这里取index，如果这里没有，那
+可以直接从mem_record的末尾取。
+
+具体细节就不阐述了，典型的空间换时间方法。整个库很简单，代码100来行。我也只进行过粗略的
+测试。我肯定这100来行代码是有问题的，相信自己的代码存在问题是对bug的一种觉悟，哈哈哈。
+
+这个东西只检测C语言的内存泄露，其实要检测C++的也很简单，只需要重载new和delete就可以了。
+
+要放春节假了，在公司的最后几个小时实在无聊，才做了这个东西，前后花了1个多小时，写起来感觉
+不错。
+
+=========================================================================================
+
+内存泄露基本原理就是，利用宏替换掉标准的malloc、free函数（暂不考虑其他内存分配
+函数，如realloc、strdup）。通过记录分配和释放动作，就可以跟踪程序是否存在内存
+泄露。
+
+关键问题：
+最简单的实现方法，就是维护一个分配表，表里保存着每一次malloc出来的内存信息。
+每一次free时，就根据free的参数在表里查找对应的分配记录，并移除这个记录。程序退
+出时，表里剩余的记录则全部是内存泄露。
+
+这种做法最大的弊端在于：每一次free时，都涉及到遍历操作。如何避免这个遍历？可以采
+取以下方法：
+假定用户程序首先调用的是我自己定义的malloc、free函数：cmlc_malloc、cmlc_free。
+
+struct memRecord
+{
+	char file[MAX_PATH];
+	char func[MAX_STR];
+	size_t lineno;
+	void *address;
+};
+该结构体记录每次内存分配记录，用于内存泄露报告；
+
+struct memRecord mem_record[MAX_RECORD];
+size_t tail;
+size_t free_index[MAX_RECORD];
+size_t fi_tail;
+
+struct memory
+{
+	int index;
+	void *mem;
+};
+
+每一次调用cmlc_malloc的时候，都会创建该结构体，index指向内存分配记录被放置于
+mem_record的位置。index的获取比较巧妙，mem_record是一个改装的栈，每一次加入元素
+时直接放进tail指向的位置。每一次释放时，会移除一个记录，移除记录直接根据index
+来移除（避免了遍历），移除后这个index就成为free的了，那么把这个index保存进
+free_index。free_index是一个标准的栈。如果free_index为空，则直接放进tail指向
+的地方。通过以上空间换时间的方式，就避免了线性遍历带来的开销。
+
+
