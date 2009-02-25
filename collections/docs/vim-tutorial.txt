@@ -46,7 +46,16 @@ g# :
 set hlsearch : highlighting the search result
 nohlsearch : turn off the highting for this search operation
 J : press 'J' at the end of one line, it will join the next line with the current line
-
+( : sentences backward
+) : sentences forward
+{ : paragraphs backward
+} : paragraphs forward
+]] : sections forward.
+[[ : sections backward
+copy cut paste : in visual mode, move the cursor to select some texts, press 'd' to cut,
+press 'y' to copy, and in normal mode press 'p' to paste.
+V : switch line visual mode, means select line by line
+D : to delete texts after the cursor until the end of this line
 
 
 
