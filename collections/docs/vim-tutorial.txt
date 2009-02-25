@@ -1,0 +1,52 @@
+tabnew : create a new tab page
+tabn : switcht to the specified tab by its index addressing from 0
+set tabstop=4 : tab 4 character
+set nowrap : make the editor not to return automatically
+set expandtab : replace the tab with space
+tabc : close the current tab
+set cindent shiftwidth=4 : set the tabs to 4 when editing a c file
+set nobackup : no backup file
+edit . : to edit the current path, this command will display the file in the directory.
+pwd : to display the current path
+cd : to change the current path
+option : display the option help text.
+set number : to display line count at the left 
+set nonumber : donot display the line count 
+!cmd : with '!' and the cmd will be executed in the os shell , i.e : !dir
+gg=G : to format the whole text ( i.e format to c source file ), must type in common mode
+tabn : to switch to the next tab page
+dd : to delete the current line, must be typed in the common mode
+$ : to move the cursor at the end of the current line
+^ : to move the cursor at the front of the current line
+gg : to move the cursor at the beginning of the whole file
+G : to move the cursor at the end of the whole file
+nG : to move to the specified line by n
+/String : to search the 'String' in the file, and then you can press 'n' to move to the
+next, 'N' to the previous
+?String : to search reverse
+w : to move the cursor forward one word, 3w moves three words
+b : moves backward to the start of the previous word
+e : moves the cursor to the next end of a word
+ge : moves the cursor to the previous end of a word
+0 : move the cursor to the very first character of the line,it's different from '^'
+fx : searchs forward in the line for the single character 'x', press ';' to the next result
+and ',' to the previous.
+Fx : searchs to the left
+% : moves to the matching paren : ( ) [ ] { } etc, just try it when you write a c file
+ctrl+f : to scroll forward by a whole screen
+ctrl+b : to scroll back by a whole screen
+ctrl+U : to scroll down half a screen of text
+crrl+d : to scroll up half a screen of text
+set ignorecase : to ignore upper or lowercase when search text
+* : when you press *, vim will search the text where the cursor is on
+# : the same as * but search in the other direction
+g* :
+g# :
+\< :
+set hlsearch : highlighting the search result
+nohlsearch : turn off the highting for this search operation
+J : press 'J' at the end of one line, it will join the next line with the current line
+
+
+
+
