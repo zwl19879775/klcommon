@@ -601,7 +601,6 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 static void inter_build_string_st( struct interEnv *env, struct treeNode *root )
 {
 	int i;
-	struct treeNode *node;
 	if( root == 0 )
 	{
 		return;

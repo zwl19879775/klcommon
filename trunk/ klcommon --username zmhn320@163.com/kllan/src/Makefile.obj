@@ -1,0 +1,7 @@
+klinterpret.o: klinterpret.c klinterpret.h klsymtab.h klparser.h kllex.h \
+  kllib.h klmemcheck.h
+kllex.o: kllex.c kllex.h klmemcheck.h
+kllib.o: kllib.c kllib.h klsymtab.h klinterpret.h klparser.h kllex.h \
+  klmemcheck.h
+klparser.o: klparser.c klparser.h kllex.h klmemcheck.h
+klsymtab.o: klsymtab.c klsymtab.h klmemcheck.h

@@ -3,6 +3,7 @@
  */
 #include "kllib.h"
 #include "kllibbase.h"
+#include "kllibloader.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
@@ -41,6 +42,7 @@ void test_plugin( const char *file )
 	{
 		struct klState *kl = kl_new( _log );
 		kllib_open_base( kl );
+		kllib_open_loader( kl );
 		kl_run( kl, buf );	
 		{
 			/* test call script function */

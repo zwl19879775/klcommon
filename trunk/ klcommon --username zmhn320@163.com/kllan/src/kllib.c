@@ -14,6 +14,18 @@
 #include <string.h>
 #include "klmemcheck.h"
 
+/**
+ * register some build-in symbol
+ *
+ */
+static void kl_register_buildin_symbol( struct klState *kl )
+{
+	struct Value val;
+	val.type = SB_VAR_NUM;
+	val.dval = (long) kl;
+	sym_insert( kl->env->global_st, "KLSTATE", val );
+}
+
 struct klState *kl_new( kl_log l )
 {
 	struct klState *kl = (struct klState*) malloc( sizeof( struct klState ) );
@@ -47,6 +59,8 @@ int kl_prepare( struct klState *kl, char *source )
 	lex_setinput( &ls, source, kl->log );
 	kl->root = syn_parse( &ls );
 	inter_build_global_st( kl->env, kl->root );
+	/* to build some build-in symbol */
+	kl_register_buildin_symbol( kl );
 	return 0;
 }
 
