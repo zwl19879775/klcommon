@@ -318,7 +318,6 @@ int lex_token( struct lexState *ls )
 			SINGLE_TOKEN( '+', "+" );
 			SINGLE_TOKEN( '-', "-" );
 			SINGLE_TOKEN( '*', "*" );
-			SINGLE_TOKEN( '/', "/" );
 			SINGLE_TOKEN( '%', "%" );
 			SINGLE_TOKEN( ',', "," );
 			SINGLE_TOKEN( ';', ";" );
@@ -339,6 +338,38 @@ int lex_token( struct lexState *ls )
 					if( t == TK_ERROR )
 					{
 						ls->lex_error( ls->lineno, ">>lex error->read string constant error" );
+					}
+				}
+				break;
+
+			case '/':
+				{
+					if( lex_next( ls ) == '*' )
+					{
+						char c;
+						/* comment */
+						done = 0;
+						do
+						{
+							if( ( c = lex_next( ls ) ) == '*' )
+							{
+								if( lex_next( ls ) == '/' )
+								{
+									break;
+								}
+								lex_back( ls );
+							}
+							if( c == '\r' || c == '\n' )
+							{
+								ls->lineno ++;
+							}
+							
+						} while( c != TK_EOF );
+					}
+					else
+					{
+						lex_back( ls );
+						lex_settoken( ls, '/', "/" );
 					}
 				}
 				break;
