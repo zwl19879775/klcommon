@@ -1,0 +1,2 @@
+kllibbase.o: kllibbase.c ../src/kllib.h kllibbase.h
+kllibloader.o: kllibloader.c ../src/kllib.h kllibloader.h

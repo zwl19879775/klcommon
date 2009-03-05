@@ -30,6 +30,12 @@ struct TValue
 	struct TValue *next;
 };
 
+#ifdef __cplusplus
+#define DEF_DEFAULT_VAL( v ) struct TValue v = { { 0 }, TValue::NUMBER, 0 }
+#else
+#define DEF_DEFAULT_VAL( v ) struct TValue v = { { 0 }, NUMBER, 0 }
+#endif
+
 /**
  * the plugin function arguments type
  * i.e:
@@ -37,14 +43,48 @@ struct TValue
  */
 typedef struct TValue* ArgType;
 
-#define kl_next_arg( arg ) ( arg = arg->next )
+/**
+ * get the next argument, handle the arguments from scripts.
+ */
+#define kl_next_arg( arg ) ( (arg) = (arg)->next )
+
+/**
+ * init an argument, passed to scripts.
+ *
+ * These macros below are only used to pass arguments to the kl script.
+ * usage:
+ * ArgType arg;
+ * kl_new_arg( arg );
+ * kl_add_number( arg, 1 );
+ * kl_add_string( arg, "a string" );
+ * kl_call( kl, "script_fn", arg );
+ * kl_free_arg( arg );
+ *
+ */
 #define kl_new_arg( arg ) arg = 0
+
+/**
+ * check whether the arg is a number 
+ */
+#define kl_is_number( arg ) ( arg != 0 && arg->type == NUMBER )
+
+/**
+ * check whether the arg is a string.
+ */
+#define kl_is_string( arg ) ( arg != 0 && arg->type == STRING )
+
+/**
+ * internal use only,  donot use this macro.
+ */
 #define kl_new_arg_malloc( arg ) \
 	{ \
 		arg = (struct TValue*) malloc( sizeof( struct TValue ) ) ; \
 		arg->next = 0; arg->type = NUMBER; arg->dval = 0; \
 	}
 
+/**
+ * add a number to the arg-list, passed to scripts.
+ */
 #define kl_add_number( arg_head, num ) \
 	{ \
 		ArgType arg, tail ; \
@@ -57,6 +97,10 @@ typedef struct TValue* ArgType;
 			tail->next = arg; \
 		} \
 	}
+
+/**
+ * add a string to the arg-list, passed to scripts.
+ */
 #define kl_add_string( arg_head, str ) \
 	{ \
 		ArgType arg, tail ; \
@@ -69,6 +113,10 @@ typedef struct TValue* ArgType;
 			tail->next = arg; \
 		} \
 	}
+
+/**
+ * free the arg-list, usually called after the script call.
+ */
 #define kl_free_arg( arg_head ) \
 	{ \
 		ArgType arg; \
@@ -80,6 +128,19 @@ typedef struct TValue* ArgType;
 		} \
 		arg_head = 0; \
 	}	
+
+/**
+ * convert the arg to a number, if the arg is not a number, return 0.
+ *
+ * these functions below are used to query the arguments from scripts with some
+ * error checking.Also these functions will auto move the arguments cursor.
+ */
+double kl_check_number( ArgType *arg );
+
+/**
+ * return the arg as a string
+ */
+const char *kl_check_string( ArgType *arg );
 
 /**
  * kl plugin function prototype

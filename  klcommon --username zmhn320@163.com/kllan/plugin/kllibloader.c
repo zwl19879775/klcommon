@@ -39,15 +39,10 @@ static void *loader_getsym( struct klState *kl, void *lib, const char *sym_name 
 static struct TValue loader_import( ArgType arg )
 {
 	struct TValue ret = { { 0 }, NUMBER, 0 };
-	struct klState *kl;
-	if( arg->type == NUMBER )
+	struct klState *kl = (struct klState*)(long) kl_check_number( &arg );
+	if( kl != 0 )
 	{
-		kl = (struct klState*) (long)arg->dval;
-	}
-	kl_next_arg( arg );
-	if( arg->type == STRING )
-	{
-		void *lib = loader_load( kl, arg->sval );
+		void *lib = loader_load( kl, kl_check_string( &arg ) );
 		void *sym;
 		if( lib == 0 )
 		{
@@ -69,9 +64,9 @@ static struct TValue loader_import( ArgType arg )
 static struct TValue loader_unimport( ArgType arg )
 {
 	struct TValue ret = { { 0 }, NUMBER, 0 };
-	if( arg->type == NUMBER )
+	void *lib = (void*) (long) kl_check_number( &arg );
+	if( lib != 0 )
 	{
-		void *lib = (void*) (long) ret.dval;
 		loader_unload( lib );
 	}
 	return ret;

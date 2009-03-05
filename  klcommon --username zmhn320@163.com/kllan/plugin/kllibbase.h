@@ -14,6 +14,9 @@ struct klState;
  * - print : to print a number or a string
  * - putc : to put a character to the screen
  * - input : get a input string/char/number from stdin [%s, %d, %c]
+ * - bit_or : 
+ * - bit_and:
+ * - bit_not
  */
 int kllib_open_base( struct klState *kl );
 
