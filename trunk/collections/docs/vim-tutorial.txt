@@ -56,6 +56,7 @@ copy cut paste : in visual mode, move the cursor to select some texts, press 'd'
 press 'y' to copy, and in normal mode press 'p' to paste.
 V : switch line visual mode, means select line by line
 D : to delete texts after the cursor until the end of this line
-
+dw: to delete the character until the end of this word ( think about 'd' and 'w' command )
+r+any character : will replace the character which the cursor is on 
 
 
