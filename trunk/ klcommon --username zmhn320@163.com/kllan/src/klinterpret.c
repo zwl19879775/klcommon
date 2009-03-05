@@ -315,7 +315,7 @@ static struct Value inter_func_call_exp( struct interEnv *env, struct treeNode *
 	func = sym_lookup( env->global_st, node->attr.val.sval );
 	if( func == 0 || func->val.type != SB_FUNC )
 	{
-		env->inter_log( node->lineno, ">>runtime error->the function [%s] is not exist", node->attr.val.sval );
+		env->inter_log( node->lineno, ">>runtime error->the function [%s] does not exist", node->attr.val.sval );
 		return ret;
 	}
 	
@@ -632,8 +632,8 @@ void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 		{
 			if( node->subtype.stmt == ST_VAR_DEF )
 			{
-				struct Value val;
-			    val	= inter_expression( env, node->child[0] );
+				struct Value val = { { 0 }, SB_VAR_NUM };
+			    /*val	= inter_expression( env, node->child[0] ); */
 				sym_insert( env->global_st, node->attr.val.sval, val );				
 			}
 			else if( node->subtype.stmt == ST_ARRAY_DEF )

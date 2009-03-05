@@ -12,12 +12,12 @@
 static struct TValue print( ArgType arg )
 {
 	struct TValue ret = { { 0 }, NUMBER, 0 };
-	if( arg->type == NUMBER )
+	if( kl_is_number( arg ) )
 	{
-		printf( "%lf", arg->dval );
-	} else if( arg->type == STRING )
+		printf( "%lf", kl_check_number( &arg ) );
+	} else if( kl_is_string( arg ) )
 	{
-		printf( arg->sval );
+		printf( kl_check_string( &arg ) );
 	}
 	return ret;
 }
@@ -25,27 +25,28 @@ static struct TValue print( ArgType arg )
 static struct TValue printc( ArgType arg )
 {
 	struct TValue ret = { { 0 }, NUMBER, 0 };
-	putc( (char)arg->dval, stdout );
+	putc( (char)kl_check_number( &arg ), stdout );
 	return ret;
 }
 
 static struct TValue input( ArgType arg )
 {
 	struct TValue ret = { { 0 }, NUMBER, 0 };
-	if( arg->type == STRING )
+	if( kl_is_string( arg ) )
 	{
-		if( strcmp( arg->sval, "%s" ) == 0 )
+		const char *fmt = kl_check_string( &arg );
+		if( strcmp( fmt, "%s" ) == 0 )
 		{
 			ret.sval = (char*) malloc( sizeof( char ) * 2056 ) ;
 			gets( ret.sval );
 			ret.type = STRING;
 		}
-		else if( strcmp( arg->sval, "%d" ) == 0 )
+		else if( strcmp( fmt, "%d" ) == 0 )
 		{
 			scanf( "%lf", &ret.dval );
 			ret.type = NUMBER;
 		}
-		else if( strcmp( arg->sval, "%c" ) == 0 )
+		else if( strcmp( fmt, "%c" ) == 0 )
 		{
 			char c = getc( stdin );
 		    ret.dval = c;
@@ -55,11 +56,40 @@ static struct TValue input( ArgType arg )
 	return ret;
 }
 
+static struct TValue bitor( ArgType arg )
+{
+	struct TValue ret = { { 0 }, NUMBER, 0 };
+	long l = (long) kl_check_number( &arg );
+	long r = (long) kl_check_number( &arg );
+	ret.dval = ( l | r );
+	return ret;
+}
+
+static struct TValue bitand( ArgType arg )
+{
+	struct TValue ret = { { 0 }, NUMBER, 0 };
+	long l = (long) kl_check_number( &arg );
+	long r = (long) kl_check_number( &arg );
+	ret.dval = ( l & r );
+	return ret;
+}
+
+static struct TValue bitnot( ArgType arg )
+{
+	DEF_DEFAULT_VAL( ret );
+	long o = (long) kl_check_number( &arg );
+	ret.dval = (~o);
+	return ret;
+}
+
 int kllib_open_base( struct klState *kl )
 {
 	kl_register( kl, print, "print" );
 	kl_register( kl, printc, "putc" );
 	kl_register( kl, input, "input" );
+	kl_register( kl, bitor, "bit_or" );
+	kl_register( kl, bitand, "bit_and" );
+	kl_register( kl, bitnot, "bit_not" );
 	return 0;
 }
 

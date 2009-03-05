@@ -26,6 +26,28 @@ static void kl_register_buildin_symbol( struct klState *kl )
 	sym_insert( kl->env->global_st, "KLSTATE", val );
 }
 
+double kl_check_number( ArgType *arg )
+{
+	if( *arg != 0 && (*arg)->type == NUMBER )
+	{
+		double t = (*arg)->dval;
+		kl_next_arg( *arg );
+		return t;
+	}
+	return 0;	
+}
+
+const char *kl_check_string( ArgType *arg )
+{
+	if( *arg != 0 && (*arg)->type == STRING )
+	{
+		const char *s = (*arg)->sval;
+		kl_next_arg( *arg );
+		return s;
+	}
+	return "";
+}
+
 struct klState *kl_new( kl_log l )
 {
 	struct klState *kl = (struct klState*) malloc( sizeof( struct klState ) );
@@ -73,7 +95,7 @@ struct TValue kl_call( struct klState *kl, const char *name, ArgType args )
 	struct treeNode *func_node = 0, *param_node = 0;
 	if( func == 0 )
 	{
-		kl->log( 0, ">>lib error->does not found the function->%s", name );
+		kl->log( 0, ">>lib error->dost not find the function->%s", name );
 		return ret;
 	}
 	func_node = (struct treeNode*) func->val.address;
