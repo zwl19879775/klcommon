@@ -56,6 +56,11 @@ void print_tree( struct treeNode *node )
 				case ST_BREAK:
 					printf( "break\n" );
 					break;
+				case ST_FOR:
+					printf( "for\n" );
+					break;
+				default:
+					printf( "unknown\n" );
 			}
 		}
 		else if( node->type == NT_EXP )

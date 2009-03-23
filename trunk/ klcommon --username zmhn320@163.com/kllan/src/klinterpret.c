@@ -44,6 +44,7 @@ static struct Value inter_function( struct interEnv *env, struct treeNode *tree 
 static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *node );
 static struct FuncRet inter_if_stmt( struct interEnv *env, struct treeNode *node );
 static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *node );
+static struct FuncRet inter_for_stmt( struct interEnv *env, struct treeNode *node );
 static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNode *arg_node, struct Value *ret );
 
 
@@ -530,6 +531,35 @@ static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *t
 	return ret;	
 }
 
+static struct FuncRet inter_for_stmt( struct interEnv *env, struct treeNode *node )
+{
+	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_NORMAL };
+	struct Value exp;
+	/* initial expression */
+	inter_expression( env, node->child[0] );
+	exp = inter_expression( env, node->child[1] );
+	if( exp.type != SB_VAR_NUM )
+	{
+		inter_free_val_str( &exp );
+		env->inter_log( node->child[1]->lineno, ">>runtime error->for expression must be a number result" );
+		return ret;
+	}
+	while( (int)exp.dval )
+	{
+		ret = inter_statements( env, node->child[3] );
+		if( ret.type == ER_RETURN || ret.type == ER_BREAK )
+		{
+			break;
+		}
+		/* the third expression of 'for' */
+		inter_expression( env, node->child[2] );
+		/* the second expression: bool expression */
+		exp = inter_expression( env, node->child[1] );
+	}
+	return ret;
+
+}
+
 static struct FuncRet inter_return_stmt( struct interEnv *env, struct treeNode *node )
 {
 	struct FuncRet ret = { { { 0 }, SB_VAR_NUM }, ER_RETURN };
@@ -565,6 +595,10 @@ static struct FuncRet inter_statements( struct interEnv *env, struct treeNode *n
 
 				case ST_WHILE:
 					ret = inter_while_stmt( env, node );
+					break;
+
+				case ST_FOR:
+					ret = inter_for_stmt( env, node );
 					break;
 
 				case ST_RETURN:
