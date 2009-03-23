@@ -16,6 +16,7 @@ const struct Token reserved_words[] = {
 	{ TK_IF, "if" }, 
 	{ TK_ELSE, "else" }, 
 	{ TK_WHILE, "while" }, 
+	{ TK_FOR, "for" },
 	{ TK_DO, "do" }, 
 	{ TK_RETURN, "return" }, 
 	{ TK_BREAK, "break" }, 

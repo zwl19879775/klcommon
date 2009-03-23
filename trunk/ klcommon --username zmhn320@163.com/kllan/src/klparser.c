@@ -48,6 +48,7 @@ static struct treeNode *syn_statement( struct lexState *ls );
 static struct treeNode *syn_compound_stmt( struct lexState *ls );
 static struct treeNode *syn_if_stmt( struct lexState *ls );
 static struct treeNode *syn_while_stmt( struct lexState *ls );
+static struct treeNode *syn_for_stmt( struct lexState *ls );
 static struct treeNode *syn_return_stmt( struct lexState *ls );
 static struct treeNode *syn_break_stmt( struct lexState *ls );
 static struct treeNode *syn_args( struct lexState *ls );
@@ -339,6 +340,28 @@ static struct treeNode *syn_while_stmt( struct lexState *ls )
 		it_node->child[1] = syn_exp_stmt( ls );
 	}
 
+	return it_node;
+}
+
+static struct treeNode *syn_for_stmt( struct lexState *ls )
+{
+	struct treeNode *it_node = syn_new_stmt_node( ST_FOR, ls->lineno );
+	syn_match( ls, TK_FOR );
+	syn_match( ls, '(' );
+	it_node->child[0] = syn_expression( ls );
+	syn_match( ls, ';' );
+	it_node->child[1] = syn_expression( ls );
+	syn_match( ls, ';' );
+	it_node->child[2] = syn_expression( ls );
+	syn_match( ls, ')' );
+	if( lex_current( ls ) == '{' )
+	{
+		it_node->child[3] = syn_compound_stmt( ls );
+	}
+	else
+	{
+		it_node->child[3] = syn_exp_stmt( ls );
+	}
 	return it_node;
 }
 
