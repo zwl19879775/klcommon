@@ -25,6 +25,7 @@ typedef enum
 	ST_VAR_DEF, ST_ARRAY_DEF,
 	ST_FUNC_DEF, ST_PARAM_DEF,
 	ST_IF, ST_WHILE, /*ST_ASSIGN*/
+	ST_FOR,
 	ST_RETURN, ST_BREAK
 } StmtType;
 
@@ -44,7 +45,7 @@ typedef enum
 /**
  * max children of a node
  */
-#define MAXCHILDREN 3
+#define MAXCHILDREN 4
 
 /**
  * syntax tree node
