@@ -263,6 +263,10 @@ static struct treeNode *syn_statement( struct lexState *ls )
 				node = syn_while_stmt( ls );
 				break;
 
+			case TK_FOR:
+				node = syn_for_stmt( ls );
+				break;
+
 			case TK_RETURN:
 				node = syn_return_stmt( ls );
 				break;
