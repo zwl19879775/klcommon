@@ -310,7 +310,7 @@ static struct treeNode *syn_if_stmt( struct lexState *ls )
 	}
 	else
 	{
-		if_node->child[1] = syn_exp_stmt( ls );
+		if_node->child[1] = syn_statement( ls );
 	}
 	if( lex_current( ls ) == TK_ELSE )
 	{
@@ -321,7 +321,7 @@ static struct treeNode *syn_if_stmt( struct lexState *ls )
 		}
 		else
 		{
-			if_node->child[2] = syn_exp_stmt( ls );
+			if_node->child[2] = syn_statement( ls );
 		}
 	}
 
