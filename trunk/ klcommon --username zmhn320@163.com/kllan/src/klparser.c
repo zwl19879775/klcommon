@@ -45,6 +45,7 @@ static struct treeNode *syn_logic_exp( struct lexState *ls );
 static struct treeNode *syn_expression( struct lexState *ls );
 static struct treeNode *syn_exp_stmt( struct lexState *ls );
 static struct treeNode *syn_statement( struct lexState *ls );
+static struct treeNode *syn_statement_list( struct lexState *ls );
 static struct treeNode *syn_compound_stmt( struct lexState *ls );
 static struct treeNode *syn_if_stmt( struct lexState *ls );
 static struct treeNode *syn_while_stmt( struct lexState *ls );
@@ -165,6 +166,11 @@ static struct treeNode *syn_var_def( struct lexState *ls )
 	struct treeNode *node = syn_new_stmt_node( ST_VAR_DEF, ls->lineno );
 	node->attr.val.sval = lex_current_str( ls );
 	syn_match( ls, TK_ID );
+	if( lex_current( ls ) == '=' )
+	{
+		syn_match( ls, '=' );
+		node->child[0] = syn_expression( ls );
+	}
 	syn_match( ls, ';' );
 
 	return node;
@@ -179,8 +185,7 @@ static struct treeNode *syn_array_def( struct lexState *ls )
 	syn_match( ls, '[' );
 	node->child[0] = syn_expression( ls );
 	syn_match( ls, ']' );
-	syn_match( ls, ';' );
-	return node;
+	syn_match( ls, ';' );;
 }
 
 static struct treeNode *syn_func_def( struct lexState *ls )
@@ -238,50 +243,18 @@ static struct treeNode *syn_compound_stmt( struct lexState *ls )
 {
 	struct treeNode *node = 0;
 	syn_match( ls, '{' );
-	node = syn_statement( ls );
+	node = syn_statement_list( ls );
 	syn_match( ls, '}' );
 	return node;
 }
 
-static struct treeNode *syn_statement( struct lexState *ls )
+static struct treeNode *syn_statement_list( struct lexState *ls )
 {
 	struct treeNode *prev = 0, *ret_node = 0, *node = 0;
 	int token = lex_current( ls );
 	while( token != '}' && token != TK_EOF && token != TK_ERROR )
 	{
-		switch( token )
-		{
-			case '{':
-				node = syn_compound_stmt( ls );
-				break;
-
-			case TK_IF:
-				node = syn_if_stmt( ls );
-				break;
-
-			case TK_WHILE:
-				node = syn_while_stmt( ls );
-				break;
-
-			case TK_FOR:
-				node = syn_for_stmt( ls );
-				break;
-
-			case TK_RETURN:
-				node = syn_return_stmt( ls );
-				break;
-		
-			case TK_BREAK:
-				node = syn_break_stmt( ls );
-				break;
-
-			case TK_ARRAY:
-				node = syn_array_def( ls );
-				break;
-
-			default:
-				node = syn_exp_stmt( ls );
-		}
+		node = syn_statement( ls );	
 		if( prev == 0 )
 		{
 			prev = ret_node = node;
@@ -291,10 +264,58 @@ static struct treeNode *syn_statement( struct lexState *ls )
 			prev->sibling = node;
 			prev = node;
 		}
+		/* because 'syn_statement' may create a list of statement, so here
+		 * should adjust the 'prev' pointer */
+		while( prev->sibling != 0 )
+		{
+			prev = prev->sibling;
+		}
 		token = lex_current( ls );
 	}
 
 	return ret_node;
+}
+
+static struct treeNode *syn_statement( struct lexState *ls )
+{
+	int token = lex_current( ls );
+	struct treeNode *node = 0;
+
+	switch( token )
+	{
+		case '{':
+			node = syn_compound_stmt( ls );
+			break;
+
+		case TK_IF:
+			node = syn_if_stmt( ls );
+			break;
+
+		case TK_WHILE:
+			node = syn_while_stmt( ls );
+			break;
+
+		case TK_FOR:
+			node = syn_for_stmt( ls );
+			break;
+
+		case TK_RETURN:
+			node = syn_return_stmt( ls );
+			break;
+
+		case TK_BREAK:
+			node = syn_break_stmt( ls );
+			break;
+
+		case TK_ARRAY:
+			node = syn_array_def( ls );
+			break;
+
+		default:
+			node = syn_exp_stmt( ls );
+	}
+
+	return node;
 }
 
 static struct treeNode *syn_if_stmt( struct lexState *ls )

@@ -1,0 +1,28 @@
+3.24.2009
+复合语句及if语句语法树解析错误，如丢失树节点、if包含错误节点等
+
+1.两个print被归为if的子节点
+	if( 0 )
+	print( "3\n" );
+	print( "4\n" );
+
+2.最后一个print被归为if(x==2)的子节点
+	if( x == 1 )
+	{
+		print( "1" );
+	}
+	else if( x == 2 )
+	{
+		print( "2\n" );
+	}
+	print( "3\n" );
+
+3.第二个print被丢弃
+		{
+			print( "3\n" );
+			print( "4\n" );
+		}
+		x = x + 1;
+
+1,2通过区分syn_statement_list和syn_statement即可解决
+3需要为compound-statement增加父节点，或者校正当前节点
