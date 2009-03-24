@@ -39,3 +39,10 @@ kl目前支持：
 - 加入对for的支持
 - 增加二维数组操作插件，用于支持定义二维数组
 
+3.24.2009
+
+- 修正if的语法树解析，使其支持：
+  if( 1 ) if( 0 ) print( "something" );及
+  if( 1 ) do-something else if( 1 ) do-something
+
+- 修正复合语句及if语句语法树解析错误，如丢失树节点、if包含错误节点等

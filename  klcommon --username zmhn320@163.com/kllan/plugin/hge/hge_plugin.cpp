@@ -231,6 +231,16 @@ static struct TValue khgeTimerGetFPS( ArgType arg )
 	return ret;
 }
 
+static struct TValue khgeTimerGetTime( ArgType arg )
+{
+	DEFAULT_RET( ret );
+	HGE *hge = CAST_PTR( kl_check_number( &arg ), HGE* );
+	if( hge != 0 )
+	{
+		ret.dval = hge->Timer_GetTime();
+	}
+	return ret;
+}
 
 static struct TValue khgeARGB( ArgType arg )
 {
@@ -307,6 +317,7 @@ void kllib_open_hge( struct klState *kl )
 	kl_register( kl, khgeTextureLoad, "hgeTexture_Load" );
 	kl_register( kl, khgeTextureFree, "hgeTexture_Free" );
 	kl_register( kl, khgeTimerGetDelta, "hgeTimer_GetDelta" );
+	kl_register( kl, khgeTimerGetTime, "hgeTimer_GetTime" );
 	kl_register( kl, khgeTimerGetFPS, "hgeTimer_GetFPS" );
 	kl_register( kl, khgeRandomFloat, "hgeRandom_Float" );
 

@@ -667,7 +667,10 @@ void inter_build_global_st( struct interEnv *env, struct treeNode *root )
 			if( node->subtype.stmt == ST_VAR_DEF )
 			{
 				struct Value val = { { 0 }, SB_VAR_NUM };
-			    /*val	= inter_expression( env, node->child[0] ); */
+				if( node->child[0] != 0 )
+				{
+			    	val	= inter_expression( env, node->child[0] ); 
+				}
 				sym_insert( env->global_st, node->attr.val.sval, val );				
 			}
 			else if( node->subtype.stmt == ST_ARRAY_DEF )
