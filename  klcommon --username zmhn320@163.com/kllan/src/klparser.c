@@ -185,7 +185,8 @@ static struct treeNode *syn_array_def( struct lexState *ls )
 	syn_match( ls, '[' );
 	node->child[0] = syn_expression( ls );
 	syn_match( ls, ']' );
-	syn_match( ls, ';' );;
+	syn_match( ls, ';' );
+	return node;
 }
 
 static struct treeNode *syn_func_def( struct lexState *ls )

@@ -278,6 +278,18 @@ static struct TValue khgeTextureFree( ArgType arg )
 	return ret;
 }
 
+static struct TValue khgeRandomSeed( ArgType arg )
+{
+	DEFAULT_RET( ret );
+	HGE *hge = CAST_PTR( kl_check_number( &arg ), HGE* );
+	if( hge != 0 )
+	{
+		int seed = (int) kl_check_number( &arg );
+		hge->Random_Seed( seed );
+	}
+	return ret;
+}
+
 static struct TValue khgeRandomFloat( ArgType arg )
 {
 	DEFAULT_RET( ret );
@@ -319,6 +331,7 @@ void kllib_open_hge( struct klState *kl )
 	kl_register( kl, khgeTimerGetDelta, "hgeTimer_GetDelta" );
 	kl_register( kl, khgeTimerGetTime, "hgeTimer_GetTime" );
 	kl_register( kl, khgeTimerGetFPS, "hgeTimer_GetFPS" );
+	kl_register( kl, khgeRandomSeed, "hgeRandom_Seed" );
 	kl_register( kl, khgeRandomFloat, "hgeRandom_Float" );
 
 	/* sprite helper */

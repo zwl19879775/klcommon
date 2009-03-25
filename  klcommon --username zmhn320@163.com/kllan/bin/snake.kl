@@ -1,5 +1,6 @@
 /*
-	snake
+	snake game by Kevin Lynx for my own script language 'kl'
+	3.24.2009
 */
 
 AREA_WIDTH = 20;
@@ -17,10 +18,13 @@ TILE_HEIGHT = GAME_HEIGHT / AREA_HEIGHT;
 GS_READY = 0; /* GS_X to identify the state of the game */
 GS_RUN = 1;
 GS_DIED = 2;
-DIR_UP = 0; /* the snake move direction */
-DIR_DOWN = 1;
-DIR_LEFT = 2;
-DIR_RIGHT = 3;
+GS_WIN = 3;
+DIR_UP = 1; /* the snake move direction */
+DIR_DOWN = 2;
+DIR_LEFT = 4;
+DIR_RIGHT = 8;
+QUEUE_MAX = 100; /* queue size */
+TIMER_INTER = 300;
 
 game_area;
 hge;
@@ -28,10 +32,11 @@ sp_body;
 sp_wall;
 sp_food;
 sp_bk;
+fnt_info;
 
 last_time; /* the last move time */
-time_inter = 500; /* time interval between this moving and last moving */
-game_state = GS_RUN;
+time_inter; /* time interval between this moving and last moving */
+game_state;
 
 head_x;
 head_y;
@@ -40,41 +45,30 @@ tail_y;
 length;
 head_dir;
 tail_dir;
+queue_ptr;
+key; /* a simple input buffer */
+dim corner_x[QUEUE_MAX];
+dim corner_y[QUEUE_MAX];
+dim corner_dir[QUEUE_MAX];
 
 function init()
 {
-	/*
-	AREA_WIDTH = 20;
-	AREA_HEIGHT = 20;
-	VAL_NONE = 0;
-	VAL_BODY = 1;
-	VAL_FOOD = 2;
-	VAL_WALL = 3;
-	WIN_WIDTH = 480;
-	WIN_HEIGHT = 320;
-	GAME_WIDTH = 320;
-	GAME_HEIGHT = 320;
-	TILE_WIDTH = GAME_WIDTH / AREA_WIDTH;
-	TILE_HEIGHT = GAME_HEIGHT / AREA_HEIGHT;
-	GS_READY = 0;
-	GS_RUN = 1;
-	GS_DIED = 2;
-	DIR_UP = 0;
-	DIR_DOWN = 1;
-	DIR_LEFT = 2;
-	DIR_RIGHT = 3;
-*/
 	game_area = tdim_new( AREA_WIDTH, AREA_HEIGHT );
-	reset_area();
-	reset_snake();
-
-	time_inter = 500;
-	game_state = GS_RUN;
+	restart();
+	time_inter = TIMER_INTER;
 }
 
 function release()
 {
 	tdim_delete( game_area, AREA_WIDTH );
+}
+
+function restart()
+{
+	key = 0;
+	reset_area();
+	reset_snake();
+	queue_ptr = 0;
 }
 
 function reset_area()
@@ -124,7 +118,8 @@ function init_hge()
 	hgeSys_SetState( hge, 18, WIN_HEIGHT ); /* screen height */
 	hgeSys_SetState( hge, 24, 100 ); /* fixed fps */
 	hgeSys_SetState( hge, 29, "snakelog.txt" ); /* log file */
-	hgeSys_SetState( hge, 27, "kl script hge by kevin lynx" ); /* window title */
+	hgeSys_SetState( hge, 27, "snaky game powed by kl and hge" ); /* window title */
+	hgeRandom_Seed( hge, 0 );
 	hgeSys_Init( hge );
 	load_res(); /* load resource */
 	hgeSys_Start( hge );
@@ -137,6 +132,7 @@ function load_res()
 	sp_body = hgeSprite_Create( 0, 0, 0, 16, 16 );
 	sp_food = hgeSprite_Create( 0, 0, 0, 16, 16 );
 	sp_wall = hgeSprite_Create( 0, 0, 0, 16, 16 );
+	fnt_info = hgeFont_Create( "res/sfnt.fnt" );
 
 	hgeSprite_SetColor( sp_body, ARGB( 255, 128, 0, 0 ), -1 );
 	hgeSprite_SetColor( sp_food, ARGB( 255, 128, 0, 0 ), -1 );
@@ -151,8 +147,9 @@ function free_res()
 	hgeSprite_Release( sp_body );
 	hgeSprite_Release( sp_food );
 	hgeSprite_Release( sp_wall );
+	hgeFont_Release( fnt_info );
 }
-
+	
 function release_hge()
 {
 	free_res();
@@ -164,37 +161,57 @@ function FrameFunc()
 {
 	if( hgeInput_GetKeyState( hge, 27 ) )
 	{
-		print( "esc pressed\n" );
+		print( "exit\n" );
 		return 1;
 	}
 
 	if( game_state == GS_RUN )
 	{
 		/* player input checking */
-		if( head_dir != DIR_LEFT && head_dir != DIR_RIGHT 
-				&& hgeInput_GetKeyState( hge, 37 ) ) /* left */
+		if( hgeInput_GetKeyState( hge, 37 ) ) /* left */
 		{
-			head_dir = DIR_LEFT;
+			key = bit_or( key, DIR_LEFT );
 		}
-		if( head_dir != DIR_UP && head_dir != DIR_DOWN 
-				&& hgeInput_GetKeyState( hge, 38 ) ) /* up */
+		if( hgeInput_GetKeyState( hge, 38 ) ) /* up */
 		{
-			head_dir = DIR_UP;
+			key = bit_or( key, DIR_UP );
 		}
-		if( head_dir != DIR_LEFT && head_dir != DIR_RIGHT 
-				&& hgeInput_GetKeyState( hge, 39 ) ) /* right */
+		if( hgeInput_GetKeyState( hge, 39 ) ) /* right */
 		{
-			head_dir = DIR_RIGHT;
+			key = bit_or( key, DIR_RIGHT );
 		}
-		if( head_dir != DIR_UP && head_dir != DIR_DOWN 
-				&& hgeInput_GetKeyState( hge, 40 ) ) /* down */
+		if( hgeInput_GetKeyState( hge, 40 ) ) /* down */
 		{
-			head_dir = DIR_DOWN;
+			key = bit_or( key, DIR_DOWN );
 		}	
 
 		time = hgeTimer_GetTime( hge ) * 1000;
 		if( time - last_time >= time_inter )
 		{
+			last_dir = head_dir;
+			if( bit_and( key, DIR_LEFT ) && head_dir != DIR_LEFT && head_dir != DIR_RIGHT )
+			{
+				head_dir = DIR_LEFT;
+			}	
+			else if( bit_and( key, DIR_RIGHT ) && head_dir != DIR_LEFT && head_dir != DIR_RIGHT )
+			{
+				head_dir = DIR_RIGHT;
+			}	
+			else if( bit_and( key, DIR_DOWN ) && head_dir != DIR_DOWN && head_dir != DIR_UP )
+			{
+				head_dir = DIR_DOWN;
+			}	
+			else if( bit_and( key, DIR_UP ) && head_dir != DIR_DOWN && head_dir != DIR_UP )
+			{
+				head_dir = DIR_UP;
+			}	
+	
+			key = 0; /* clear the input buffer */
+			if( last_dir != head_dir )
+			{
+				/* direction has been changed */
+				head_dir_add( head_x, head_y, head_dir );
+			}
 			/* our snakey will move */
 			snake_move();	
 			last_time = time;
@@ -202,17 +219,37 @@ function FrameFunc()
 	}
 	else if( game_state == GS_DIED )
 	{
+		if( hgeInput_GetKeyState( hge, 13 ) )
+		{
+			time_inter = TIMER_INTER;
+			restart();	
+			create_food();
+			game_state = GS_RUN;
+		}
+	}
+	else if( game_state == GS_WIN )
+	{
+		if( hgeInput_GetKeyState( hge, 13 ) )
+		{
+			restart();
+			game_state = GS_RUN;
+			create_food();
+		}
 	}
 	else if( game_state == GS_READY )
 	{
+		if( hgeInput_GetKeyState( hge, 13 ) )
+		{
+			game_state = GS_RUN;
+			create_food();
+			time_inter = TIMER_INTER;
+		}
 	}
-
 	return 0;
 }
 
 function snake_move()
 {
-	print( "snake_move, head_dir=" + head_dir + ", tail_dir=" + tail_dir + "\n" );
 	if( head_dir == DIR_UP )
 	{
 		head_y = head_y - 1;
@@ -239,6 +276,22 @@ function snake_move()
 	}
 	else if( r == 1 )
 	{
+		/* eat food */
+		length = length + 1;
+		if( length > 10 )
+		{
+			if( time_inter > 50 )
+			{
+				/* speed up */
+				time_inter = time_inter - 50;
+				print( "speed up " + time_inter + "\n" );
+			}
+			else
+			{
+				time_inter = TIMER_INTER;
+			}
+			game_state = GS_WIN;	
+		}
 	}
 	else
 	{
@@ -263,9 +316,19 @@ function snake_move()
 		}
 
 		/* tail direction checking */
+		dir = tail_dir_check( tail_x, tail_y );
+		if( dir != -1 )
+		{
+			tail_dir = dir;
+		}
 	}
 
 	tdim_set( game_area, head_x, head_y, VAL_BODY );
+	if( r == 1 )
+	{
+		/* create new food */
+		create_food();
+	}
 }
 
 function col_check()
@@ -285,6 +348,80 @@ function col_check()
 	return 0;
 }
 
+/* this function will pop the queue */
+function tail_dir_check( x, y )
+{
+	if( queue_ptr <= 0 )
+	{
+		/* donot change direction */
+		return -1;
+	}
+
+	if( x == corner_x[0] && y == corner_y[0] )
+	{
+		dir = corner_dir[0];
+		adjust_queue();
+		return dir;
+	}
+
+	return -1;
+}
+
+function adjust_queue()
+{
+	if( queue_ptr == 1 )
+	{
+		/* do nothing */
+	}
+	else if( queue_ptr == 2 )
+	{
+		corner_x[0] = corner_x[1];
+		corner_y[0] = corner_y[1];
+		corner_dir[0] = corner_dir[1];
+	}
+	else
+	{
+		for( i = 0; i < queue_ptr - 1; i = i + 1 )
+		{
+			corner_x[i] = corner_x[i+1];
+			corner_y[i] = corner_y[i+1];
+			corner_dir[i] = corner_dir[i+1];
+		}
+	}
+
+	queue_ptr = queue_ptr - 1;
+}
+
+/* this function will push element in the queue */
+function head_dir_add( x, y, dir )
+{
+	if( queue_ptr >= QUEUE_MAX )
+	{
+		print( "fatal error : the queue is full!\n" );
+	}
+	else 
+	{
+		corner_x[queue_ptr] = x;
+		corner_y[queue_ptr] = y;
+		corner_dir[queue_ptr] = dir;
+		queue_ptr = queue_ptr + 1;
+	}
+}
+
+function create_food()
+{
+	while( 1 )
+	{
+		x = hgeRandom_Float( hge, 1, AREA_WIDTH - 2 );
+		y = hgeRandom_Float( hge, 1, AREA_HEIGHT - 2 );
+		if( tdim_get( game_area, x, y ) == VAL_NONE )
+		{
+			tdim_set( game_area, x, y, VAL_FOOD );
+			break;
+		}
+	}
+}
+
 function RenderFunc()
 {
 	hgeGfx_BeginScene( hge );
@@ -292,6 +429,19 @@ function RenderFunc()
 	
 	hgeSprite_Render( sp_bk, 0, 0 );
 	render_area();
+	
+	if( game_state == GS_READY )
+	{
+		hgeFont_Render( fnt_info, WIN_WIDTH / 2, 40, 2, "Press 'Enter' to play." );
+	}
+	else if( game_state == GS_DIED )
+	{
+		hgeFont_Render( fnt_info, WIN_WIDTH / 2, 40, 2, "God damn it." );
+	}
+	else if( game_state == GS_WIN )
+	{
+		hgeFont_Render( fnt_info, WIN_WIDTH / 2, 40, 2, "You WIN." );
+	}
 
 	hgeGfx_EndScene( hge );
 	return 0;
