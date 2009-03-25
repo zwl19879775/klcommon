@@ -165,6 +165,11 @@ function FrameFunc()
 		return 1;
 	}
 
+	if( hgeInput_GetKeyState( hge, 112 ) ) /* f1 to make a screenshot */
+	{
+		hgeSys_Snapshot( hge, "snake_screenshot.bmp" );
+	}
+
 	if( game_state == GS_RUN )
 	{
 		/* player input checking */

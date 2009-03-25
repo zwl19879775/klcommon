@@ -139,6 +139,17 @@ static struct TValue khgeSysLog( ArgType arg )
 	return ret;
 }
 
+static struct TValue khgeSysSnapshot( ArgType arg )
+{
+	DEFAULT_RET( ret );
+	HGE *hge = CAST_PTR( kl_check_number( &arg ), HGE* );
+	if( hge != 0 )
+	{
+		hge->System_Snapshot( kl_check_string( &arg ) );
+	}
+	return ret;
+}
+
 static struct TValue khgeInputGetKeyState( ArgType arg )
 {
 	DEFAULT_RET( ret );
@@ -319,6 +330,7 @@ void kllib_open_hge( struct klState *kl )
 	kl_register( kl, khgeSysShutdown, "hgeSys_Shutdown" );
 	kl_register( kl, khgeSysSetState, "hgeSys_SetState" );
 	kl_register( kl, khgeSysLog, "hgeSys_Log" );
+	kl_register( kl, khgeSysSnapshot, "hgeSys_Snapshot" );
 	kl_register( kl, khgeInputGetKeyState, "hgeInput_GetKeyState" );
 	kl_register( kl, khgeInputGetMousePosX, "hgeInput_GetMousePosX" );
 	kl_register( kl, khgeInputGetMousePosY, "hgeInput_GetMousePosY" );
