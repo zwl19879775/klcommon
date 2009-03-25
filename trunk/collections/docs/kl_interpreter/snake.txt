@@ -50,4 +50,4 @@ HGE使用了1.81版本。
 	下载例子，包含脚本代码。
 
 	如果要获取kl实现代码，建议从我在google的SVN获取：
-
+	http://code.google.com/p/klcommon/
