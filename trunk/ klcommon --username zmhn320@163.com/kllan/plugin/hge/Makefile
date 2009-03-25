@@ -11,15 +11,15 @@
 #
 CPP = g++
 LINK = g++
-CXXFLAG = -c -Wall -I../../src -IE:/libs/hge181/include -o
+CXXFLAG = -c -Wall -I../../src -Ihge181/include -o
 LINKFLAG = -shared -o
-MMFLAG = -MM -I../../src -IE:/libs/hge181/include
+MMFLAG = -MM -I../../src -Ihge181/include
 RM = del
 SRCDIR = ./
 TARGET = ../../bin/hge_plugin.dll
 SRCLIST = $(wildcard *.cpp)
 OBJLIST = $(SRCLIST:%.cpp=%.o)
-DEPLIB = E:\libs\hge181\lib\gcc\libhgehelper.a E:\libs\hge181\lib\gcc\libhge.a ../../lib/libkl.a
+DEPLIB = hge181\lib\gcc\libhgehelp.a hge181\lib\gcc\libhge.a ../../lib/libkl.a
 
 all: Makefile.obj $(TARGET)
 

@@ -1,8 +1,7 @@
-hge_plugin.o: hge_plugin.cpp E:/libs/hge181/include/hge.h \
-  ../../src/kllib.h
+hge_plugin.o: hge_plugin.cpp hge181/include/hge.h ../../src/kllib.h
 hge_plugin_font.o: hge_plugin_font.cpp ../../src/kllib.h \
-  E:/libs/hge181/include/hgefont.h E:/libs/hge181/include/hge.h \
-  E:/libs/hge181/include/hgesprite.h E:/libs/hge181/include/hgerect.h
+  hge181/include/hgefont.h hge181/include/hge.h \
+  hge181/include/hgesprite.h hge181/include/hgerect.h
 hge_plugin_sprite.o: hge_plugin_sprite.cpp ../../src/kllib.h \
-  E:/libs/hge181/include/hgeSprite.h E:/libs/hge181/include/hge.h \
-  E:/libs/hge181/include/hgerect.h
+  hge181/include/hgeSprite.h hge181/include/hge.h \
+  hge181/include/hgerect.h
