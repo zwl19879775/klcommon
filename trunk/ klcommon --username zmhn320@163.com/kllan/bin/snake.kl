@@ -118,7 +118,7 @@ function init_hge()
 	hgeSys_SetState( hge, 18, WIN_HEIGHT ); /* screen height */
 	hgeSys_SetState( hge, 24, 100 ); /* fixed fps */
 	hgeSys_SetState( hge, 29, "snakelog.txt" ); /* log file */
-	hgeSys_SetState( hge, 27, "snaky game powed by kl and hge" ); /* window title */
+	hgeSys_SetState( hge, 27, "snakey game powed by kl and hge" ); /* window title */
 	hgeRandom_Seed( hge, 0 );
 	hgeSys_Init( hge );
 	load_res(); /* load resource */
