@@ -117,7 +117,7 @@ void test_lex( const char *file )
 					break;
 
 				default:
-					printf( "%c\n", lex_current( &ls ) );
+					printf( "%s\n", lex_current_str( &ls ) );
 			}
 
 			if( lex_current_str( &ls ) != 0 )

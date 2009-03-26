@@ -74,5 +74,11 @@ int lex_token( struct lexState *ls );
  * keep the source memory valid before the token scanning finished. 
  */
 void lex_setinput( struct lexState *ls, char *source, lex_errorfn lex_error );
+
+/**
+ * get a string descriptioin for a token
+ *
+ */
+const char *lex_token_desc( int token );
 #endif 
 

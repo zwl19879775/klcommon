@@ -35,7 +35,7 @@ static void print_usage( const char *program )
 
 static int load_file( const char *filename, struct FileInfo *file_s )
 {
-	FILE *fp = fopen( filename, "rb" );
+	FILE *fp = fopen( filename, "r" );
 	if( fp == 0 )
 	{
 		fprintf( stderr, "Cannot open %s\n", filename );
@@ -46,7 +46,7 @@ static int load_file( const char *filename, struct FileInfo *file_s )
 	fseek( fp, 0, SEEK_SET );
 
 	file_s->buf = (char*) malloc( file_s->size + 1 );
-	fread( file_s->buf, file_s->size, 1, fp );
+	file_s->size = fread( file_s->buf, sizeof( char), file_s->size, fp );
 	file_s->buf[file_s->size] = 0;
 	fclose( fp );
 

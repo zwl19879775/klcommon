@@ -93,7 +93,7 @@ struct TValue kl_call( struct klState *kl, const char *name, ArgType args )
 	struct symTable *st = 0, *tmp_st = 0;
 	struct Symbol *func = sym_lookup( kl->env->global_st, name );
 	struct treeNode *func_node = 0, *param_node = 0;
-	if( func == 0 )
+	if( func == 0 || func->val.type != SB_FUNC )
 	{
 		kl->log( 0, ">>lib error->dost not find the function->%s", name );
 		return ret;
