@@ -21,7 +21,7 @@ void lex_error( size_t lineno, const char *format, ... )
 
 void test_lex( const char *file )
 {
-	FILE *fp = fopen( file, "rb" );
+	FILE *fp = fopen( file, "r" );
 	int size;
 	char *buf;
 	if( fp == 0 )
@@ -34,7 +34,7 @@ void test_lex( const char *file )
 	fseek( fp, 0, SEEK_SET );
 	
 	buf = (char*) malloc( size + 1 );
-	fread( buf, size, 1, fp );
+	size = fread( buf, sizeof( char), size, fp );
 	buf[size] = 0;
 	fclose( fp );
 
