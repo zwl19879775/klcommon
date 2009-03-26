@@ -54,6 +54,7 @@ J : press 'J' at the end of one line, it will join the next line with the curren
 [[ : sections backward
 copy cut paste : in visual mode, move the cursor to select some texts, press 'd' to cut,
 press 'y' to copy, and in normal mode press 'p' to paste.
+yy: to copy the full line
 V : switch line visual mode, means select line by line
 D : to delete texts after the cursor until the end of this line
 dw: to delete the character until the end of this word ( think about 'd' and 'w' command )
