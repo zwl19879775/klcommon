@@ -79,23 +79,27 @@ static struct treeNode *syn_new_stmt_node( StmtType t, size_t lineno )
 
 static void syn_match( struct lexState *ls, int token )
 {
-	if( token != TK_ID && token != TK_STRING && lex_current_str( ls ) != 0 )
-	{
-		free( lex_current_str( ls ) );
-	}
+	char *s = lex_current_str( ls );
 	if( lex_current( ls ) == token )
 	{
 		lex_token( ls );
 	}
 	else if( lex_current( ls ) != TK_ERROR )
 	{
-		ls->lex_error( ls->lineno, ">>syntax error->unexpcted token -> %s", lex_current_str( ls ) );
+		ls->lex_error( ls->lineno, ">>syntax error->unexpcted token-> %s (expect->%s)", lex_current_str( ls ),
+			   lex_token_desc( token ) );
 		lex_token( ls );
 	}
 	else
 	{
-		ls->lex_error( ls->lineno, ">>syntax error->unknown token -> %d", lex_current( ls ) );
+		ls->lex_error( ls->lineno, ">>syntax error->invalid token : %s (expect->%s)", lex_current_str( ls ),
+			   lex_token_desc( token ) );
 		lex_token( ls );
+	}
+
+	if( lex_current( ls ) != TK_EOF && token != TK_ID && token != TK_STRING && s != 0 )
+	{
+		free( s );
 	}
 }
 
@@ -143,18 +147,23 @@ static struct treeNode *syn_definition( struct lexState *ls )
 		}
 		else
 		{
-			ls->lex_error( ls->lineno, ">>syntax error->unexpected token -> %s", lex_current_str( ls ) );
+			ls->lex_error( ls->lineno, ">>syntax error->unexpected token-> %s (expect->array/var/func def", 
+					lex_current_str( ls ) );
 			syn_match( ls, lex_current( ls ) );
+			node = 0;
 		}
 
-		if( root == 0 )
+		if( node != 0 )
 		{
-			root = prev = node;
-		}
-		else
-		{
-			prev->sibling = node;
-			prev = node;
+			if( root == 0 )
+			{
+				root = prev = node;
+			}
+			else
+			{
+				prev->sibling = node;
+				prev = node;
+			}
 		}
 		token = lex_current( ls );
 	}
@@ -256,20 +265,23 @@ static struct treeNode *syn_statement_list( struct lexState *ls )
 	while( token != '}' && token != TK_EOF && token != TK_ERROR )
 	{
 		node = syn_statement( ls );	
-		if( prev == 0 )
+		if( node != 0 ) /* the node maybe nil because of syntax error */
 		{
-			prev = ret_node = node;
-		}
-		else
-		{
-			prev->sibling = node;
-			prev = node;
-		}
-		/* because 'syn_statement' may create a list of statement, so here
-		 * should adjust the 'prev' pointer */
-		while( prev->sibling != 0 )
-		{
-			prev = prev->sibling;
+			if( prev == 0 )
+			{
+				prev = ret_node = node;
+			}
+			else
+			{
+				prev->sibling = node;
+				prev = node;
+			}
+			/* because 'syn_statement' may create a list of statement, so here
+			 * should adjust the 'prev' pointer */
+			while( prev->sibling != 0 )
+			{
+				prev = prev->sibling;
+			}
 		}
 		token = lex_current( ls );
 	}
@@ -524,7 +536,7 @@ static struct treeNode *syn_term( struct lexState *ls )
 
 static struct treeNode *syn_factor( struct lexState *ls )
 {
-	struct treeNode *node ;
+	struct treeNode *node = 0;
 	switch( lex_current( ls ) )
 	{
 		case '(':
@@ -584,7 +596,7 @@ static struct treeNode *syn_factor( struct lexState *ls )
 			break;	
 	
 		default:
-			ls->lex_error( ls->lineno, ">>syntax error->unexpected token-> %c", lex_current( ls ) );
+			ls->lex_error( ls->lineno, ">>syntax error->unexpected token-> %s", lex_current_str( ls ) );
 			syn_match( ls, lex_current( ls ) );
 	}
 
@@ -594,17 +606,20 @@ static struct treeNode *syn_factor( struct lexState *ls )
 static struct treeNode *syn_args( struct lexState *ls )
 {
 	struct treeNode *node = 0, *first = 0, *prev = 0;
-	while( lex_current( ls ) != ')' )
+	while( lex_current( ls ) != TK_ERROR && lex_current( ls ) != TK_EOF && lex_current( ls ) != ')' )
 	{
 		node = syn_expression( ls );
-		if( first == 0 )
+		if( node != 0 )
 		{
-			first = prev = node;
-		}
-		else
-		{
-			prev->sibling = node;
-			prev = node;
+			if( first == 0 )
+			{
+				first = prev = node;
+			}
+			else
+			{
+				prev->sibling = node;
+				prev = node;
+			}
 		}
 		if( lex_current( ls ) != ')' )
 		{

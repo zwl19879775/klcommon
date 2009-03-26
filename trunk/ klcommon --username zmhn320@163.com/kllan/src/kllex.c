@@ -25,6 +25,31 @@ const struct Token reserved_words[] = {
 	{ 0, NULL }
 };
 
+/* token description */
+const struct Token token_desc[] = {
+	{ TK_ID, "Id" },
+	{ TK_NUM, "Number" },
+	{ TK_FLOAT, "Float number" },
+	{ TK_CHAR, "Character" },
+	{ TK_STRING, "String" },
+	{ TK_IF, "if" },
+	{ TK_ELSE, "else" },
+	{ TK_WHILE, "while" },
+	{ TK_DO, "do" },
+	{ TK_RETURN, "return" },
+	{ TK_BREAK, "break" },
+	{ TK_FUNCTION, "function" },
+	{ TK_ARRAY, "dim" },
+	{ TK_FOR, "for" },
+	{ TK_NE, "!=" },
+	{ TK_EQ, "==" },
+	{ TK_LE, "<=" },
+	{ TK_GE, ">=" },
+	{ TK_OR, "||" },
+	{ TK_AND, "&&" },
+	{ 0, NULL }
+};	
+
 static int lex_lookup_reserved( const char *str )
 {
 	int i = 0;
@@ -61,7 +86,8 @@ static void lex_settoken( struct lexState *ls, int type, const char *str )
 	ls->token.type = type;
 	if( str == 0 )
 	{
-		ls->token.string = 0;
+
+		ls->token.string = (char*) strdup( "LEX ERROR" );
 	}
 	else
 	{
@@ -411,5 +437,21 @@ int lex_token( struct lexState *ls )
 	return ls->token.type;	
 }	
 
+const char *lex_token_desc( int token )
+{
+	static char def_s[2];
 
+	int i;
+	for( i = 0; token_desc[i].string != 0; ++ i )
+	{
+		if( token_desc[i].type == token )
+		{
+			return token_desc[i].string;
+		}
+	}	
+
+	/* not in 'token_desc' table */
+	sprintf( def_s, "%c", (char)token );
+	return def_s;
+}
 
