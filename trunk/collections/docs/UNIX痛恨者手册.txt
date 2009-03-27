@@ -1,0 +1,3395 @@
+　
+UNIX痛恨者手册
+第一章 UNIX——世界上第一个电脑病毒
+
+“伯克利的两项最著名的产品是UNIX和LSD (一种毒品)，我想这不是巧合”
+
+病毒依赖于微小的个体和强大的适应性得以生存。它们并不复杂：它们没有为呼吸，新
+陈代谢，肌体活动等功能提供什么，只有足够的DNA或RNA以供繁衍。比如，肺炎病毒比
+起它们入侵的细胞要小得多，但它们在每个肺炎流行季节都能够产生新的变种，造成无
+数人死亡。
+
+一个好病毒的特点是：
+
+* 个头小
+病毒做的事情不多，所以不需要很大。有人认为病毒不是生物，只是一些有破坏性的酸
+和蛋白质。
+
+* 可移植性
+病毒经常变异，以便以不同的方式攻击不同的细胞。据说AIDS就是由猴子身上的病毒变
+异而成的。
+
+* 耗尽寄主的资源
+
+* 快速变异
+
+UNIX具有以上所有优点。在它刚诞生时，很小，功能不多，缺乏真正操作系统所需要的
+功能（如文件映射，告诉IO，健壮的文件系统，设备锁，合理的进程间通讯），它的移
+植性很好。UNIX耗尽主机的资源，没有系统管理员的时时呵护，UNIX会不断恐慌，core
+dump，挂起。UNIX不断变异：同一个补丁在一个版本上工作，在另一个版本上就不行。
+
+
+UNIX是有用户界面的计算机病毒。
+
+
+标准化那些不一致的
+================
+
+“标准的伟大之处在于它可以有很多” --- Grace Murray Hopper
+
+自从UNIX 80年代开始流行以来，UNIX厂商一直在努力进行UNIX标准化工作。SUN, IBM，
+HP和DEC在这个他们自己制造的难题上倾注了数百万美元。
+
+为什么UNIX厂商不喜欢UNIX标准化?
+
+许多用户受够了复杂繁多的UNIX，最终只好使用Windows，因为他们的这个UNIX无法支持
+那个UNIX上的应用程序。
+
+如果UNIX标准化了，谁还会买SUN的机器呢
+第二章 欢迎新用户
+
+欢迎新用户如同用一把上了六颗子弹的左轮枪玩俄罗斯轮盘赌
+
+Ken Thompson 自己设计过一辆汽车。和其他车不同，它没有速度计、汽油计，也没有那
+些愚蠢的指示灯讨司机的厌。如果司机犯了什么错误，仪表盘上就会出现一个大大的“
+？”。“有经验的司机，”Thompson说，“应该知道哪儿搞错了。”
+
+计算机系统的新手需要一个友好的系统。至少，一个得体的系统会这样招待自己的客人
+：
+
+
+与功能有逻辑关系的命令名
+对危险命令的小心处理
+一致的命令行为和命令行参数解析
+易得和易读的在线文档
+当命令失败时，给出可理解和有用的错误反馈
+
+
+在建造UNIX的过程中，从没邀请过住户。来访的都是些戴着安全帽的建筑工人，被安插
+在这个破木板房子的各个角落。不幸的是，不仅没有人性因素（human factors）工程师
+的参与，而且住户的需要就从来没有被考虑过。所以抽水马桶、中央供暖、窗户等这些
+方便设施在后期就很难再添加了。但是建筑师们仍然为UNIX的设计而骄傲，似乎他们并
+不介意在一个没有烟火探测器的屋子里睡觉。
+
+在其发展的大部分历史中，UNIX只是大学和工业研究人员的研究工具。随着大批便宜工
+作站的出现，UNIX作为平台软件进入了新时代。这一变化大约发生在1990年，其标志就
+是工作站厂商把C编译器从UNIX发布中剔除出去，以降低成本满足非开发用户的需求。可
+见，只是最近几年中UNIX厂商才开始考虑非程序员用户的需要，开始为他们提供shell以
+外的图形界面。
+
+含糊的命令名
+
+UNIX新手总是对UNIX对命令的命名表示惊讶。在DOS和Mac上受的教育不足以让他们体会
+到cp、rm、ls这类两字母命令的简洁和优美。
+
+像我们这样用过70年代早期的IO设备的人都能理解，ASR-33 Teletype这类设备的速度、
+可靠性，以及它的键盘是万恶之源。和今天这种基于反馈原理、只需要关闭一个微开关
+的键盘不同，你必须用足力气揿下Teletype的键至少半英寸，以发动一个类似自行车上
+用的小型发电机，在上面操作要冒指骨骨折的危险。
+
+如果当时Dennis和Ken用的是Selectric而不是Teletype，可能今天我们敲的将不是”cp
+”和”rm”而是”copy”和”remove”了。（Ken Thompson曾被问道如果他能重新设计U
+NIX他将做什么修改，他回答说：“我会在creat命令后加上个e。”），科技在拓宽我们
+的选择的同时，也能限制我们的选择，此一例也。
+
+20多年过去了，还有什么理由延续这一传统呢？理由就是“历史的无可替代的力量”，
+历史就是那些存在的代码和教科书。如果一个厂商用remove替代了rm，那么所有UNIX教
+科书就不适用于这一系统了，每个使用rm的shell脚本都需要被修改。而且这也不合POSI
+X标准。
+
+一个世纪前，打字高手由于击键过快，经常把打字键柄搅在一起，工程师设计了QWERTY
+键盘，于是问题得到了解决，因为没人能在这样的键盘上打得快。计算机的键盘不再有
+机械键柄，但QWERTY的键盘布局仍然在使用。同理，在未来的一个世纪中，我们仍然会
+继续使用rm。
+
+事故会发生
+
+用户十分关心自己的数据和文件。他们使用计算机来产生、分析和存储重要信息。他们
+相信计算机能够保护他们的重要财产。如果没有了这种信任，他们和计算机的关系就会
+蒙上阴影。UNIX辜负了我们的信任，它拒绝对使用危险命令的用户提供保护。比如rm就
+是以删除文件为目的的危险命令。
+
+所有UNIX新手都有不小心无可挽回地删除重要文件的经历，即使是专家和系统管理员也
+遇到过。因此而每年损失的时间、精力可能价值几百万美元。这是个值得解决的问题；
+我们不理解为何UNIX一直拒绝解决这一问题。难道结果还不够悲惨么？
+
+UNIX比其他操作系统更需要提供恢复删除功能，原因是:
+
+UNIX文件系统没有版本功能
+自动的版本维护能保留文件的历史版本，防止新版本冲掉老版本。
+UNIX程序员在错误处理方面臭名昭著
+许多程序不检查是否所有内容都被写入了磁盘，或被写入的文件是否存在。有些程序总
+是删除输入文件。
+UNIX shell扩展“*”，而不是其子命令
+于是rm这样的命令就无法检查“*”这些危险的参数。即使是DOS也对”del *.*”有些提
+示。但在UNIX下，rm * 和 rm file1 file2…是没有区别的。
+删除是永久的
+UNIX没有undelete命令。许多其他更安全的系统则只是标记被删除文件所用的块为“可
+被使用”，然后把它移到一个特殊目录下。如果磁盘满了，这些文件块才会被重新使用
+。这一技术不是什么火箭科学，Macintosh在1984年就提出了“回收站”的想法，而Tene
+x早在1974年就采用了这一技术。连DOS也提供了简单的undelete功能，虽然并不总有效
+。
+
+
+这四个问题互相合作，制造了无数无法恢复的重要文件。解决的方法早就存在，但UNIX
+“标准”版中却从来没有提供。
+
+欢迎来到未来世界。
+
+“rm”就是终结
+
+许多实际的恐怖故事说明了以上的这些原则。以下是alt.folklore.computers新闻组上
+流传的一系列故事中的一个：
+
+
+Date: Wed, 10 Jan 90
+X-Virus: 6
+From: djones@megatest.uucp (Dave Jones)
+Subject: rm *
+Newsgroups: alt.folklore.computers
+
+是否有人曾想执行以下命令:
+% rm *.o
+结果却打成了：
+% rm *>o
+现在你得到了一个空文件o，以及大量的空间来存放它！
+
+
+事实上，你可能连o也得不到，因为shell的文档并没有说o是在*被扩展前还是被扩展后
+被建立的。
+
+上回书说到如何用rm获得一个空文件和很大的磁盘空间，下面是另一种用法：
+
+
+Date: Wed, 10 Jan 90
+X-Virus: 6
+From: ram@attcan.uucp
+Subject: Re: rm *
+Newsgroups: alt.folklore.computers
+
+我也被rm搞过。有一次我想删除一些/usr/foo/下的东西，我在/usr/foo下敲了以下命令
+：
+% rm –r ./etc
+% rm –r ./adm
+当我要删除./bin目录时，我忘敲了那个点。我的系统似乎不太喜欢这个。
+
+
+当受了这一致命一击后，UNIX就彻底完蛋了。聪明的系统会给用户一个恢复的机会（或
+至少提醒用户这一操作会导致系统崩溃）。
+
+UNIX迷认为偶尔的文件误删除是正常的。比如，可以参考以下下面这个comp.unix.quest
+ions上的FAQ:
+
+
+6) 如何反删除一个文件？
+
+也许有一天，你不小心执行了一下这个命令：
+% rm * .foo
+然后发现你把“*”删掉了。你应该把这当作人生的一课。
+当然称职的系统管理员应该定时备份系统。所以你最好问问他们手中是不是有你的文件
+备份。
+
+
+“人生的一课”？没有任何一个其他厂商用这样的态度对待一个有缺陷的产品。“大人
+，我知道您的油箱炸了，但这是人生的一课。”“陪审团的先生女士们，我们将证明电
+锯保险开关的失效不过是给用户上的人生的一课。”不错。
+
+改变rm的行为也不是个办法
+
+被rm咬了几次后，往往会想到用”rm -i”替换rm，或整个替换掉rm，把所有被删除的文
+件放到~/.deleted目录中。这些小技巧让用户有了错误的安全感。
+
+
+Date: Mon，16 Apr 90 18:46:33 199
+X-Virus: 6
+From: Phil Agre <agre@gargoyle.uchicago.edu>
+To: UNIX-HATERS
+Subject: deletion
+
+在我们的系统上，”rm”并不真正删除文件，而是给文件换了名，这样”undelete”(不
+是unrm)这样的工具就能恢复被删的文件。
+
+这个功能让我不再对删除文件多加小心，反正删掉了也能找回来。可是，我错了。Emacs
+中的删除并不支持这个功能，Dired命令也是如此。这当然是因为文件恢复并不是操作系
+统的一个功能。
+
+所以，现在我脑子里有两个概念，一个是”deleting”一个文件，一个是”rm’ing”一
+个文件。当我的手要我的脑子删除一个文件时，我总要把这两个概念区分一遍。
+
+
+一些UNIX专家由此得出了荒谬的结论，他们认为最好别把rm搞得更友好。他们争辩说，
+让UNIX更友好的努力往往适得其反。不幸的是，他们是对的。
+
+
+Date: Thu, 11 Jan 90 17:17 CST
+X-Virus: 6
+From: merlyn@iwarp.intel.com (Randal L. Schwartz)
+Subject: Don’t Overload commands! (was Re: rm *)
+Newsgroups: alt.folklore.computers
+
+请千万别让人用“安全”命令去替换标准命令。
+（1） 许多shell程序会对多嘴的rm感到惊讶，而且也不会想到删除了的文件仍然占有磁
+盘空间。
+（2） 并不是所有删除操作都是安全的，有户会因此产生一切都能恢复的错觉。
+（3） 那些不标准的命令对系统管理员来说尤其可恨。
+如果你想有个有确认功能的”rm”，用下面的命令:
+% alias del rm -i
+千万别替换rm!
+
+
+最近，comp.unix.questions上有过一次对系统管理员的调查，让他们说出最恐怖的系统
+管理故事。72小时内，就有了300多条回应。许多和我们上面描述的文件删除有关。可笑
+的是，这些可是UNIX高手。然而正是他们在对“UNIX对用户不友好”这类指责进行着辩
+护。
+
+对用户不友好？UNIX对系统管理员又友好过么？请看
+
+
+Date: Wed, 14 Sep 88 01:39 EDT
+X-Virus: 6
+From: Matthew P Wiener <weemba@garnet.berkeley.edu>
+To: RISKS-LIST@kl.sri.com
+Subject: “Single Keystroke”
+
+在UNIX上，即使是有经验的用户也会误用rm。我从来没有误删除过文件，可是有一天，
+我用!r重复执行一个历史命令，我惊讶地发现被运行的是”rm –r *”。
+
+为什么不能有个没有history功能的shell?
+
+我还听到过一个用户试图删除一个名叫”*”的文件，好在他没有权限。
+
+
+这个用户还想修改shell来避免对*进行展开。不幸的是，这个补救如同是在渗水的墙上
+再刷一层漆，治标不治本。
+
+在线帮助
+
+用户读打印文档的次数比他们参加选举投票的次数还要少。只有触手可及的在线文档才
+是有用的。下面我们看看UNIX的man是如何让最需要它的新用户失望的。
+
+不是每个命令都是平等的，有些是外部命令，有些是内部命令。有些有man page，有些
+没有。UNIX要求你能区分这些命令。比如，wc, cp和ls是外部命令，它们都有man page
+，而fg, jobs, set和alias（这些长文件名是从哪里来的？）是内部命令，它们没有man
+page。
+
+UNIX告诉新手用”man command”命令获得帮助，他们可不知道并不是所有命令都是如此
+。另外，如果他们的shell设置得有些不标准，他们就只能请教高手来获得帮助了。
+
+错误信息和错误检查？没门!
+
+新手很容易犯错误，比如用错命令，或用错选项。系统应该能识别这些错误，并且反馈
+给用户。不幸的是，UNIX程序从来不麻烦自己。相反，UNIX往往把各种错误混在一起，
+直到产生致命的结果。
+
+上面一节我们说明了rm如何容易造成误删除。但你可能不知道不用rm也能很容易地误删
+除文件。
+
+想删除你的文件么？试试编译器
+
+一些cc版本经常根本不考虑用户的可能输入错误，而删除一些源代码文件。一些本科生
+常常着了道。
+
+
+Date: Thu, 26 Nov 1992 16:01:55 GMT
+X-Virus: 6
+From: tk@dcs.ed.ac.uk (Tommy Kelly)
+Subject: HELP!
+Newsgroups: cs.questions
+Organization: Lab for the Foundations of Computer Science, Edinburgh UK
+
+我刚才想这么编译程序：
+% cc –o doit doit.c
+不小心敲成了：
+% cc –o doit.c doit
+不用说我的doit.c被冲掉了。有没有办法能恢复我的程序？（我干了整整一个上午）
+
+
+其他一些程序也有同样的行为:
+
+
+Date: Thu, 1 July 1993 09:10:50 - 0700
+X-Virus: 6
+From: Daniel Weise <Daniel@dolores.stanford.edu>
+To: UNIX-HATERS
+Subject: tarred and feathered
+
+经过几次努力，我总算从欧洲的一个脆弱ftp站点上下载了了一个3.2M的文件。该untar
+它了。我敲了一下命令:
+% tar –cf thesis.tar
+…没有回应。
+
+老天！
+
+是不是该用x选项而不是c?
+是的。
+
+tar是不是给出了错误信息说没有指定输入文件？
+没有。
+
+tar是否感觉到有什么不对劲？
+没有。
+
+tar是不是真的什么也没有tar?
+是的。
+
+tar是否把thesis.tar用垃圾覆盖了？
+当然，这就是UNIX。
+
+我是不是需要再花 30分钟从欧洲下载这个文件？
+当然，这就是UNIX。
+
+我敢肯定有不少人遇到过这一不幸，有那么多的解决办法，比如：错误信息，文件版本
+化，确认用户是否想覆盖一个已有文件，等等等等。tar似乎在有意给用户找麻烦。
+
+
+对于经常用tar备份的系统管理员来说，这个bug更是危险。不少系统管理员都曾经在备
+份脚本中错误地使用过“tar xf…”。在需要恢复备份的时候，才发现原来什么也没做
+。
+
+欲知是否还有其他这样的恐怖命令，请听下回分解。
+
+
+上回书说到cc、tar等命令是如何帮助你删除重要文件的。UNIX的强大当然不局限于此。
+
+
+因为没有错误检查，在众多“UNIX 强大编程工具”的支持下，用户有各种选择来删除他
+们的重要文件。
+
+
+Date: Sun, 4 Oct 1992 0:21:49 PDT
+X-Virus: 6
+From: Pavel Curtis <pavel@parc.xerox.com>
+To: UNIX-HATERS
+Subject: So many bastards to choose from…
+
+我有一个总在运行的程序foo，用来提供网络服务，并且每隔24小时检查系统内部状态。
+
+
+一天，我cd到foo所在的目录，因为这不是开发目录，我想看看foo的版本是多少。代码
+是由RCS来维护的，所以我自然而然地使用了以下命令:
+
+% ident foo
+
+先别管RCS的种种劣迹，也别管ident如何原始疯狂。我这次的麻烦是，我的手指自行其
+是地选择了更像一个词的indent而不是ident:
+
+% indent foo
+
+indent是UNIX的一个愚蠢的C代码风格转换工具。那个写indent的混蛋是否判断了一下输
+入文件真的为C程序么 (天哪，至少可以看看文件的后缀是否为.c吧)？我想你知道答案
+。而且，这个SB(Said Bastard)认为如果你只给了一个参数，那么你就是想要进行在线
+风格转换。不过别着急，这个SB 考虑到了可能带来的麻烦，他保存了一个备份foo.BAK
+。然而他是否只是简单地把foo换了个名字呢？没有，他选择了拷贝(毫无疑问，那个写i
+ndent的程序员在准备备份的时候已经打开了foo，而且rename系统调用是后来才有的)。
+现在，你可能知道发生了些什么了…
+
+我那正在运行中的foo在准备页面扇出的时候，发现原来的可执行文件已经不在了，这可
+不是什么好事，于是我的foo崩溃了，我丢掉了20小时的系统状态信息。
+
+自然那些设计（咳嗽）UNIX的混蛋们对复杂的文件版本化功能不感兴趣，而这一功能就
+能救我的命。当然，那些混蛋也从未想到过对准备进行页面扇出的文件加锁，是不是？
+
+有那么多混蛋可供选择，为什么不把他们都宰了？
+
+Pavel
+
+想象一种散发氯气的油漆，按照说明，用在户外是不成问题的，但如果用它刷你卧室的
+墙壁，你的脑袋就要大了。这样的油漆能在市场上存活多久呢？当然不会超过20年。
+
+错误信息笑话
+
+当你看到饭馆跑堂的把一盘菜撒在顾客脑袋上时，你会笑么？UNIX迷会的。但那些无助
+的用户对着错误信息百思不得其解的时候，他们是最先发出笑声的。
+
+有人整理了一些UNIX最为可笑的错误信息，把他发布在Usenet上。他们使用的是C
+shell.
+
+
+% rm meese-ethics
+rm: messe-ethics nonexistent
+
+% ar m God
+ar: God does not exist
+
+% “How would you rate Dan Quayle’s incompetence?
+Unmatched “.
+
+% ^How did the sex change^ operation go?
+Modifier failed.
+
+% If I had a ( for every $ the Congress spent, what would I have?
+Too many (‘s
+
+% make love
+Make: Don’t know how to make love. Stop.
+
+% sleep with me
+bad character
+
+% got a light?
+No match
+
+% man: why did you get a divorce?
+man: Too many arguments.
+
+% ^What is saccharine?
+Bad substitute.
+
+% %blow
+%blow: No such job.
+
+下面的这些幽默作品来自Bourne Shell:
+
+
+$ PATH=pretending! /usr/ucb/which sense
+no sense in pretending
+
+$ drink <bottle; opener
+bottle: cannot open
+opener: not found
+
+$ mkdir matter; cat >matter
+matter: cannot create
+
+
+UNIX态度
+
+我们展现了一个非常惨淡的图景: 迷一般的命令名，不一致和无法预计的运行结果，危
+险命令没有保护，无法接受的在线文档以及在错误检查和容错性方面的稀松工作。那些
+参观UNIX的人不是为了得到热情款待，他们不是迪斯尼公园中的游客，更像是执行任务
+中的联合国维和部队。UNIX怎么会搞成这个样子？如我们曾指出的那样，其中有一些是
+历史原因造成的。但是还有其他的原因：那就是多年来形成的UNIX文化，这种文化被称
+为 “UNIX哲学”。
+
+UNIX哲学不是来自Bell实验室或UNIX系统实验室的手册。他是自然形成的，其中包含了
+许多人的贡献。Don Libes和Sandy Ressler在《UNIX生活》(Life with UNIX)中对UNIX
+哲学作了很好的总结：
+
+
+小即是美
+用10%的工作解决90%的任务
+如果必须作出选择，选择最简单的那个。
+
+
+根据UNIX程序和工具的实际表现来看，对UNIX哲学更为精确的总结应该是:
+
+小的程序比正确的程序更好
+粗制滥造是可以接受的
+如果必须作出选择，选择责任最小的那个。
+
+
+UNIX没有哲学，UNIX只有态度。这个态度指出简单的做了一半的工作比复杂完整的工作
+更好。这个态度指出程序员的时间比用户的时间更为珍贵，即使用户比程序员要多得多
+。这个态度指出达到最低要求就足够了。
+
+
+Date: Sun, 24 Dec 89 19:01:36 EST
+X-Virus: 6
+From: David Chapman <zvona@ai.mit.edu>
+To: UNIX-HATERS
+Subject: killing jobs; the Unix Design Paradigm
+
+我最近学会了如何在UNIX上杀掉任务。在这个过程中我体会到了不少UNIX的强大和智慧
+，我想应该和大家分享一下。
+
+你们中的大多数当然不用UNIX，所以知道如何UNIX上杀任务估计没什么用。但是，你们
+中的一些人，包括我，可能会经常运行一些TeX任务，那么学会杀任务就显得尤为重要了
+。“kill”命令继承了UNIX的设计原则，所以下面的一些体会有更为通用的意义。
+
+在UNIX中你可以用^Z挂起一个任务，或者用^C终止一个任务。但是LaTex自己截获^C。结
+果是，我经常搞出一堆LaTex任务。我对此到不在乎，可还是觉得应该想办法除掉它们。
+
+
+许多操作系统有“kill”这样的命令，UNIX也不例外。大多数操作系统上的“kill”仅
+仅用来杀死进程。但UNIX的设计更为通用：“kill”被用来向进程发送一个信号，这体
+现了UNIX的一个设计原则：
+
+尽量使操作通用，给予用户强大力量(power)
+
+
+“kill”命令功能很是强大；你能用它给进程发送各种各样的信号。比如，9这个信号用
+来杀死进程。注意到9是最大的一位数，这体现了UNIX的另一个设计原则：
+
+使用能体现功能的最简单的名字
+
+
+在其他我知道的操作系统上，不带参数的“kill”用于杀死当前任务。单UNIX的“kill
+”总是需要参数。这体现了UNIX的一个明智的设计原则：
+
+尽量使用长参数或提示来防止用户不小心把自己操了(screwing himself)
+
+
+这一设计原则在许多UNIX应用程序中得到了体现，我不想列举它们，但还是想提一下UNI
+X上logout和文件删除的实现，希望你知道我的意思。
+
+在其他我知道的操作系统上，“kill”接受的参数是任务名。这不是好的选择，因为你
+可能有许多LaTex任务同时运行，它们都有同样的任务名“latex”。所以“kill –9
+latex”可能会产生歧义。
+
+和其他操作系统一样，UNIX提供一个列出任务的命令“jobs”，下面是一个例子：
+
+zvona@rice-chex> jobs
+[1] – Stopped latex
+[1] – Stopped latex
+[1] + Stopped latex
+
+这样你可以用job号（表示在[]中）标识一个任务。
+
+如果你受到那些未经精雕细刻的操作系统的影响，你会想用“kill –9 1”来杀掉第一
+个latex任务。但你会发现下面的错误信息：
+
+zvona@rice-chex> kill -9 1
+1: not owner
+
+正确的做法是使用进程号，比如18517。你能用“ps”命令获得它。当找到了相应进程号
+后，你只要：
+
+zvona@rice-chex> kill -9 18517
+zvona@rice-chex>
+[1] Killed latex
+
+注意到UNIX在你的任务被真正杀掉之前就给了你提示符。这又体现了一个UNIX设计原则
+：
+
+对于给用户的反馈，能少说绝不多说，能晚说绝不早说。以免过多信息所可能导致的用
+户脑损伤。
+
+
+我希望这些体会能对大家有用。在这一学习过程中，我自己当然被UNIX设计哲学所深深
+吸引了。我们都应该从UNIX kill命令的雅致、强大和简洁中学到些东西。
+
+第二章就这么完了,经历了这么多艰难困苦的你已经不是新手了,下回书将介绍UNIX之文
+档,或者说UNIX之没有文档.
+第三章 文档
+
+OK，不是新手的你可能想进一步学习了解UNIX。不错，UNIX文档正是你需要的。
+
+文档
+什么文档
+
+“使用UNIX进行操作系统教学的一个好处是，学生的书包能装下所有的UNIX源代码和文
+档。”
+—— John Lions， 新南威尔士大学，1976年在谈论UNIX版本6时说的一段话。
+
+多年以来，有三个获得UNIX有关知识的简单途径:
+
+
+阅读源代码
+写一个自己的UNIX
+给写UNIX的程序员打电话（或是发email）
+
+
+和荷马史诗一样，UNIX被口头传诵着。如果不成为内核黑客，你就不可能是一个严肃的U
+NIX用户——或者至少应该在身边有个触手可及的内核黑客。那个确实存在的文档——ma
+n手册——不过是一些已经知道自己在做什么了的人所收集的一些备忘录。UNIX的文档是
+这么简洁，你能在一下午读完它。
+
+在线文档
+
+man工具是UNIX文档系统的基础。man接受你输入的参数，找到相应的文档文件，把它输
+出到nroff（还包括一些地球上没有其他地方使用的一些文本格式宏），最后结果被发送
+到pg或more。
+
+起先，这些零碎文档被叫做”man页”(man pages)，因为这些文档多为一页左右（多数
+情况是少于一页）。
+
+man对于那个时代是个不错的玩意，但那个时代早已一去不复返了。
+
+多年来，man系统不断发展成熟。值得称赞的是，它并没有像UNIX的其他部分一样搞得代
+码混乱程序难懂，可是它也没变得更有用。事实上，在过去的15年中，UNIX的文档系统
+只有了两处改进:
+
+catman. 程序员曾“惊喜地”发现除了nroff格式以外，他们还能存储处理过的文档文件
+，这样文档调出的速度就更快了。 对于今天的快速处理器，catman似乎不那么需要了。
+但是许多nroff处理过的文档文件仍然占据着用户的几兆磁盘空间。
+makewhatis, apropos和key (最终构成了man –k功能)是一个对man手册进行索引的系统
+，这样即使不知道程序的确切名字也能进行查询。
+
+
+与此同时，电子出版的势头早已超过了man手册。使用今天的超文本系统你能用鼠标从一
+篇文章跳到另一篇文章；与之相比，man手册仅仅在末尾提供”SEE ALSO”一节，让用户
+自己再man下去。在线文档的索引功能又是如何呢？今天你可以买到CD-ROM上的牛津英语
+词典，它对其中的每一个词都加了索引；可是man手册还是仅仅对命令名和描述行进行索
+引。今天甚至连DOS都提供了有索引的超文本文档。可是man手册还是采用适合DEC打印终
+端的80列66行的格式。
+
+公平点说，有些厂商是在看不下去，提供了自己的超文本在线文档系统。在这些系统上
+，man手册走到了进化的尽头，常常不是过时了，就是根本不存在。
+
+“我知道它就在这里，可就是找不到”
+
+对于今天还在使用man手册的人来说，最大的问题是告诉man你要的man手册就在那里。在
+以前，查找man手册是很容易的：全都在/usr/man下头。后来man手册按章节分成了不同
+的目录：/usr/man/man1, /usr/man/man2,/usr/man/man3等等。有的系统甚至把“本地
+”man手册也放在/usr/man/man1下。
+
+当AT&T发布系统V的时候，情况变得费解了。/usr/man/man1目录变成了/usr/man/c_man
+，似乎字母比数字更好记。在有些系统上，/usr/man/man1变成了/usr/local/man。那些
+销售UNIX应用程序的公司开始建立自己的man目录。
+
+最终，伯克利修改了man程序使得它能对环境变量$MANPATH中指定的一系列目录进行查找
+。这是个伟大的想法，只有一个小毛病：它不工作。(以下省略100字, 因为我太懒了，
+内容也有些太过时了，Linux上的man还是不错的，除了无法获得shell内部命令的man手
+册，当然，man bash是一个选择 -- me)。
+
+这个就是内部文档？
+
+一些大的UNIX工具也提供自己的文档。许多程序的在线文档是一行叫人费解的 “使用”
+（usage）说明。下面是awk的“使用”说明:
+
+% awk
+awk: Usage: awk [-f source | ‘cmds’] [files]
+
+是不是挺有用的？复杂一些的程序有着更深入的在线文档。不幸的是，它们有时候描述
+的似乎不是你正在运行的程序。
+
+Date: 3 Jan 89 16:26:25 EST (Tuesday)
+X-Virus: 6
+From: Reverend Heiny <Heiny.henr@Xerox.COM>
+To: UNIX-HATERS
+Subject: A conspiracy uncovered (阴谋被揭露了)
+
+经过几个小时的专心研究，我得出了一个重要的结论：
+
+UNIX是狗屎 (UNIX sucks)
+
+现在，你可能觉得很惊讶，但这是事实。这项研究已经被遍布全球的研究人员所证实了
+。
+
+更为重要的是，这不仅仅是摊狗屎，而是又稀又粘的臭狗屎，是大写的臭狗屎。看看下
+面这个例子，你就知道了：
+
+toolsun% mail
+Mail version SMI 4.0 Sat Apr 9 01:54:23 PDT 1988 Type ? for help
+“/usr/spool/mail/chris”: 3 messages 3 new
+>N 1 chris Thu Dec 22 15:49 19/643 editor saved “trash1”
+N 2 chris Tue Jan 3 10:35 19/636 editor saved “trash1”
+N 3 chris Tue Jan 3 10:35 19/656 editor saved “/tmp/ma9”
+& ?
+Unknown command: “?”
+&
+
+什么样的系统环境（特别是这个到了能开车、投票、喝啤酒年龄的家伙）会拒绝一个它
+让使用的命令？
+
+为什么用户手册是如此脱离现实？
+
+为什么这些神秘的命令是这么和功能不符？
+
+
+我们不知道Heiny的问题是什么；和我们上面提到的一些问题一样，这个bug似乎已经被
+修正了。或者说，它被转移到了其他程序中。
+
+Date: Tuesday, September 29, 1992 7:47PM
+X-Virus: 6
+From: Mark Lottor <mkl@nw.com>
+To: UNIX-HATERS
+Subject: no comments needed (无需多说)
+
+fs2# add_client
+usage: add_client [options] clients
+add_client -i | -p [options] clients
+-i interactive mode – invoke full-screen mode
+
+[还有一些选项，这里省略了]
+
+fs2# add_client -i
+
+Interactive mode uses no command line arguments
+
+
+如何得到真正的文档
+
+实际上，UNIX最好的文档是经常用strings处理程序二进制代码。使用strings你能得到
+所有程序中定死了的文件名，环境变量，未公开的选项，怪异的错误信息等等。比如，
+如果你想知道cpp是如何去查找头文件的，你最好使用strings而不是man:
+
+next% man cpp
+No manual entry for cpp.
+next% strings /lib/cpp | grep /
+/lib/cpp
+/lib/
+/usr/local/lib/
+/cpp
+next%
+
+嗯…别着急
+
+next% ls /lib
+cpp* gcrt0.o libssy_s.a
+cpp-precomp* i386/ m68k/
+crt0.o libsys_p.a posixcrt0.o
+next% strings /lib/cpp-precomp | grep /
+/*%s*/
+//%s
+/usr/local/include
+/NextDeveloper/Headers
+/NextDeveloper/Headers/ansi
+/NextDeveloper/Headers/bsd
+/LocalDeveloper/Headers
+/LocalDeveloper/Headers/ansi
+/LocalDeveloper/Headers/bsd
+/NextDeveloper/2.0CompatibleHeaders
+%s/%s
+/lib/%s/specs
+next%
+
+我真笨。NEXTSTEP的cpp使用了/lib/cpp-precomp。你不可能在man手册中发现这些。
+
+next% man cpp-precomp
+No manual entry for cpp-precomp.
+
+
+OK. 这一切究竟是因为什么？这一切究竟是从何而来？下回分解。
+
+上回书说到源代码是最好和唯一的文档，根本原因是因为UNIX是...
+
+给程序员用的，不是用户
+
+别因为UNIX蹩脚的文档而责怪Ken和Dennis。 UNIX刚开始建立文档时并没有遵守业界流
+行的文档标准，一些bug和潜在的陷阱，而不是程序的功能，被记录了下来，这是因为读
+这些文档的人往往就是UNIX系统开发者。对于许多开发者来说，man手册不过是收集bug
+报告的地方。那些针对初级用户、程序员和系统管理员提供文档的观念是新玩意。可悲
+的是，由于70年代建立的UNIX文档系统，这一观念实现的并不是很成功。
+
+UNIX世界认识到了这些文档方面的现状，但并不觉得有什么大不了的。《UNIX生活》很
+客观地说明了UNIX对于文档的态度:
+
+UNIX源代码是最好的文档。毕竟，这是系统用以决定该如何运行时所参照的文档。文档
+用来解释代码，经常是一些不同的人在不同的时间写成的，而这些人往往不是写代码的
+人。你应该把这些文档看作是指南。有时候这些文档不过是些期望而已。
+
+但是，更一般的做法是去源代码中寻找未被文档化使用方法和功能说明。有时候你会发
+现一些文档中记录的功能其实并没有被实现。
+
+这还只是针对用户程序。对于内核，情况就更为糟糕了。直到最近，还没有厂商提供的
+设备驱动编写和内核级调用函数的文档资料。有人开玩笑说：“如果你觉得需要阅读关
+于内核函数的文档，那么很可能你本来就不配使用这些函数。”
+
+真相恐怕更为邪恶。之所以没有内核文档是因为AT&T把它的代码看成是商业机密。如果
+你想写一本说明UNIX内核的书，那么你就等着入被告席吧。
+
+源代码就是文档
+
+命里注定，AT&T的计划弄巧成拙了。由于没有文档，了解内核和应用程序的唯一途径就
+是阅读源代码。结果是，UNIX源代码在在最初的20年中被疯狂的盗版。咨询人员，程序
+员和系统管理员去搞UNIX源代码并不是为了重新编译或制作出售自己的UNIX版本，他们
+需要文档，而源代码是唯一的选择。UNIX源代码从大学流向周边的高科技公司。这当然
+是非法的，但是情有可原：UNIX厂商提供的文档不够用。
+
+这并不是说源代码中有什么值钱的秘密。所有读过UNIX代码的人都被下面的一行粗暴注
+释惊呆过：
+
+/* you are not expected to understand this */ （/* 没指望你能明白 */）
+
+尽管这行注释最开始出现在UNIX V6内核中，但是几乎所有的原始AT&T代码都差不多，其
+中充满了内联手动优化和怪异的宏。寄存器变量被冠以p, pp和ppp这类的名字。“这个
+函数是递归的”这样的注释似乎表明递归调用是什么难理解的概念。事实上，AT&T在文
+档方面好为人师的态度只不过是其写代码的马虎态度的一个反映。
+
+要识别一个蹩脚手艺人其实很简单：你会看到裂缝上的油漆，一个接一个的补丁，所有
+东西被胶带和口香糖勉强凑合在一块儿。必须承认：如果想从头建立和重新设计什么，
+必须要多思考，多下功夫。
+
+Date: Thu，17 May 90 14:43:28 -0700
+X-Virus: 6
+From: David Chapman <zvona@gang-of-four.stanford.edu>
+To: UNIX-HATERS
+
+这是man man中的一段，挺有意思：
+DIAGNOSITICS
+如果你使用-M选项而且给出的路径并不存在，那么输出的错误信息可能有点儿不对。比
+如/usr/foo/目录不存在，如果你运行:
+
+man –M /usr/foo ls
+
+那么你得到的错误信息是“No manual entry for ls”（“没有ls的手册记录”）。正
+确的错误信息时告诉你目录/usr/foo不存在。
+
+有写这段说明的功夫，恐怕足够修改这个bug了。
+
+无言UNIX：课程设置建议
+
+
+Date: Fri, 24 Apr 92 12:58:28 PT
+X-Virus: 6
+From: cj@eno.corp.sgi.com (C J Silverio)
+Organization: SGI TechPubs
+Newsgroups: talk.bizarre
+Subject: UNIX Without Words (无言UNIX)
+
+[在一场关于文档无用论的激烈辩论中，我提出了下面这个建议。我胆子小，所以现在才
+敢公开，供大家参考。]
+
+UNIX Ohne Worter (不会翻 – me)
+
+我被这里散步的文档无用论观点深深折服了。事实上，我进一步认为文档就是毒品，我
+对于它的依赖性是人为造成的。在专业人士的帮助下，我想我能够戒掉它。
+
+而且，我的良心告诉我不能再靠贩卖这种毒品为生了。我决定回到数学研究院脱胎换骨
+，彻底从这个寄生虫一样的职业中脱身。
+
+虽然下面这份文档似乎表明了我中毒有多么深，可我还是觉得下一版SGI中应该把它提供
+给用户。这不过是暂时之举，以后会把它搞掉的。
+
+这是我的建议:
+
+标题：“无言UNIX”
+
+对象：UNIX新手
+
+简介：提供在没有文档条件下使用UNIX的通用策略。展示在没有文档条件下摸清任何操
+作系统的通用原则。
+
+内容:
+
+介绍：“无文档”哲学简介
+为什么手册是恶魔
+为什么man手册是恶魔
+为什么你还是应该读这份文档
+“这将是你读的最后一份文档！”
+第一章：如何猜测可能存在哪些命令
+第二章：如何猜测命令名
+
+UNIX的怪异缩略命名法
+案例：grep
+第三章：如何猜测命令选项
+
+如何破解怪异的使用说明
+案例：tar
+如何知道什么时候顺序是重要的
+案例：fine
+第四章：如何知道运行正确：没有消息就是好消息
+
+从错误中恢复
+第五章：口头传统：你的朋友
+第六章：如何获得和维持一个活生生的UNIX高手
+
+如何喂饱你的高手
+如何让高手高兴
+提供全部新闻组连接的重要性
+为什么你的高手需要最快的计算机
+免费可乐：高手的长生不老药
+如何保持高手身体健康
+高手什么时候睡觉?
+第七章：常见疑难：你的高手不理你了
+
+识别愚蠢的问题
+如何安全地提出愚蠢问题
+第八章：如何承受压力
+
+如何对待失败
+
+注：可能只有6、7章才是真正需要的。是的，这才是正路：我把它称为“UNIX高手驯养
+指南”。
+
+
+OK, 再也没有文档了。下回书将带你进入sendmail的美好世界，为什么“使用sendmail
+的感觉和得了花柳病一样。”？下回分解。
+第八章 csh, pipes和find (part 1)
+
+UNIX演义又开始了，本来这回书要表一表sendmail和花柳病的关系，不过sendmail似乎
+已经从良了，从良妓女比贞节烈女对我们民族的贡献要大得多，所以不想再找她麻烦了
+，对妓女发展史和性病斗争史感兴趣的，我们可以私下交流。
+
+作为程序员而不是妓女的你，可能对UNIX的编程环境更感兴趣，所以这一节中介绍一下U
+NIX Shell的历史。我GPL，你没花钱，所以只能任我摆布，我上什么你就吃什么，不要
+废话。
+
+GPL的好处在于你不必为自己的工作负责，也不必对用户负责，所以sourseforge上充斥
+着良莠不齐的自由项目。我希望我的心上人也能理解这一点，这一切的开始并不是为了
+什么价值、责任、过去或是未来，这一切甚至不是为了现在，这一切只是源于passion。
+
+
+在大海吐出的每个泡沫中
+在上班路上吸入的每一粒尘埃中
+在过去岁月的每一次阵痛中
+在一次一次睡去和醒来中
+在天气预报和新闻联播中
+在七月流火和九月授衣中
+在七月长生殿七日中
+在矢车菊和芙蓉中
+在长绳纪日中
+在天长地久中
+在你身边
+在我心里
+无须寻求意义
+
+第八章 csh, pipes和find
+强有力的工具给强有力的傻瓜
+
+
+“有些操作系统从没有被好好计划，以至于只好用反刍的噪音来命名它的命令（awk,
+grep, fsck, norff），我想到这个就反胃。”
+—— 无名氏
+
+UNIX所谓的“强大工具”是个骗局。 这不过是UNIX为了那些东拼西凑的命令和工具所打
+的幌子。真正的强大工具不需要用户付出太多努力就能提供强大的功能。任何会使改锥
+和钻头的人都会用电动改锥和电钻。他们不需要搞懂电学、电机、转矩、电磁学、散热
+或维护。他们只需要把它通上电，带上安全眼镜，然后打开开关。许多人连安全眼镜也
+不省了。你在五金商店里找不到有致命缺陷的工具：它们不是根本没能投放市场，就是
+被诉讼搞得焦头烂额。
+
+UNIX设计者的最初目标是提供简单的工具，然而现在的工具则充满了过分的设计和臃肿
+的功能。比如ls这个列文件的命令竟然有18个选项，提供从排序到指定显示列数的种种
+功能，而这些功能如果用其他程序实现会更好些（以前正是这样的）。Find命令除了查
+找文件以外还输出cpio格式的文件（而这个功能其实用UNIX名声狼藉的管道很好地实现
+）。今天，和UNIX类似的电钻将有20个旋钮，连着不标准的电源线，不匹配3/8英寸和7/
+8英寸的钻头（而这一点会在手册的BUG一章中说明）。
+
+和五金店里的工具不同，许多UNIX强大工具是有缺陷的（有时对文件是致命的）：比如t
+ar的不接受超过100个字符的文件名；又比如UNIX调试器总是垮掉，这还不够，它的core
+文件将覆盖你自己的core，让你下次可以用调试器去调试调试器在调试调试器中生成的c
+ore。
+
+
+Shell游戏
+
+UNIX的发明人有个伟大的想法: 把命令解析器作为一个用户程序实现。如果用户不喜欢
+缺省的命令解析器，他可以自己写一个。更重要的是，shell能够进化，这样shell将不
+断进步，变得越来越强大，灵活和易用，至少理论上是这样。
+
+这真是个伟大的想法，不过弄巧成拙了。功能的逐渐增加带来的是一团糟。因为这些功
+能没有经过设计，只是在不断演化。和所有编程语言所遭到过的诅咒一样，那些利用这
+些功能的既存shell脚本成为了shell的最大敌人。只要有新的功能加入shell，就会有人
+在自己的脚本中使用它，这样这个功能就从此长生不老了。坏主意和臭功能往往怎么也
+死不掉。
+
+于是，你得到了一个不完整、不兼容的shell的大杂烩 （以下每个shell的描述都来自于
+他们各自的man pages）：
+
+sh 是个命令编程语言，用于执行来自终端或文件的命令。
+
+Jsh 和sh一样，但具有csh风味的工作控制 (job control)
+
+Csh C类型语法的shell
+
+Tcsh emacs编辑口味的csh
+
+Ksh KornShell，你的另一个命令和编程语言
+
+Zsh Z Shell
+
+Bash GUN Bourne-Again Shell (GNU Bourne复出Shell)
+
+
+五金商店里的螺丝刀和锯子，尽管可能来自3、4个不同的厂商，但操作方法都差不多。
+典型的UNIX在/bin或/usr/bin下存了成百个程序，它们来自众多自以为是的程序员，有
+着自己的语法、操作范例、使用规则（这一个可以当成管道，而那一个则操作临时文件
+），不同的命令行参数习惯，以及不同的限制。拿grep和它的变种fgrep, egrep来说，
+哪一个是最快的？为什么它们接受的参数都不一样，甚至对正则表达式的理解也不尽相
+同？为什么不能有一个程序提供所有功能？负责的家伙在哪儿啊？
+
+当把命令之间的种种不同都深深烙在脑海中后，你还不能避免被惊着。
+
+Shell Crash
+
+下面这条消息来自哥伦比亚大学编译原理课程的BBS。
+
+Subject: Relevant UNIX bug
+October 11, 1991
+
+W4115x课程的同学们：
+我们刚学习了活动记录(activation record)，参数传递(argument passing)和函数调用
+规则(calling conventions)，你们是否知道下面的输入将让任何一个cshell立刻崩溃？
+：
+
+!xxx%s%s%s%s%s%s%s%s
+
+你们知道为什么么？
+
+以下的问题供你们思考：
+
+Shell遇到 “!xxx”会做什么？
+Shell遇到 “!xxx%s%s%s%s%s%s%s%s”会做什么？
+为什么cshell会崩溃?
+你将如何修改有关代码来解决这个问题？
+
+
+最重要的一点：
+
+当你(是的，就是你)将这个前途远大的操作系统用21个字符治服的时候，你觉得天理能
+容么？
+
+
+你可以自己试一试。根据UNIX的设计，如果shell垮掉了，你的所有进程将被杀死，你也
+会被踢出系统。其他操作系统在遇到非法内存访问错误时会弹出调试器，但不是UNIX。
+
+
+可能这就是为什么UNIX shells不让你在shell的地址空间里动态加载自己的模块，或者
+直接调用其他程序中的函数。如果这样就太危险了。一步走错，唉哟，你已经被踢出门
+外了。愚蠢的用户是应该被惩罚的，程序员的错误更是不可容忍。
+
+
+下回书里我们将进入色彩斑斓的UNIX语法世界。
+---
+说了世上一无牵挂为何有悲喜
+说了朋友相交如水为何重别离
+说了少年笑看将来为何常回忆
+说了青春一去无悔为何还哭泣
+warning3 发表于：2003-01-09 13:01
+
+发帖： 359
+注册： 1999-08-27
+http://research.microsoft.com/~daniel/unix-haters.html
+
+Table of Contents
+
+Foreword, by Donald Norman
+Preface
+Anti-Foreword, by Dennis Ritchie
+Part 1: User Friendly?
+1 Unix. The World's First Computer Virus
+2 Welcome, New User! Like Russian Roulette with Six Bullets Loaded
+3 Documentation? What Documentation?
+4 Mail. Don't Talk to Me, I'm Not a Typewriter
+5 Snoozenet. I Post, Therefore I Am
+6 Terminal Insanity. Curses! Foiled Again!
+7 The X-Windows Disaster. How to Make a 50-MIPS Workstation Run Like a 4.77MHz IBM PC
+Part 2: Programmer's System?
+8 csh, pipes, and find. Power Tools for Power Fools
+9 Programming. Hold Still, This Won't Hurt a Bit
+10 C++. The COBOL of the 90s
+Part 3: Sysadmin's Nightmare
+11 System Administration. Unix's Hidden Cost
+12 Security. Oh, I'm Sorry, Sir, Go Ahead, I didn't Realize You Were Root
+13 The File System. Sure It Corrupts Your Files, But Look How Fast It Is!
+14 NFS. Nightmare File System
+Part 4: Et Cetera
+A Epilogue. Enlightenment Through Unix
+B Creators Admit C, Unix Were Hoax
+C The Rise of Worse is Better, by Richard P. Gabriel
+D Bibliography
+
+(Editors note: this page is a verbatim reproduction of the preface in the published version of "The UNIX-HATERS Handbook." Here is the link back to "The UNIX-HATERS Handbook" home page.)
+
+
+Preface
+
+
+Things Are Going to Get a Lot Worse
+Before Things Get Worse
+
+"I liken starting one's computing career with Unix, say as an undergraduate, to being born in East Africa. It is intolerably hot, your body is covered with lice and flies, you are malnourished and you suffer from numerous curable diseases. But, as far as young East Africans can tell, this is simply the natural condition and they live within it. By the time they find out differently, it is too late. They already think that the writing of shell scripts is a natural act."
+
+Ken Pier, Xerox PARC
+
+Modern Unix is a catastrophe. It's the "Un-Operating System": unreliable, unintuitive, unforgiving, unhelpful, and underpowered. Little is more frustrating than trying to force Unix to do something useful and nontrivial. Modern Unix impedes progress in computer science, wastes billions of dollars, and destroys the common sense of many who seriously use it. An exaggeration? You won't think so after reading this book.
+
+Deficient by Design
+
+The original Unix solved a problem and solved it well, as did the Roman numeral system, the mercury treatment for syphilis, and carbon paper. And like those technologies, Unix, too, rightfully belongs to history. It was developed for a machine with little memory, tiny disks, no graphics, no networking, and no power. In those days it was mandatory to adopt an attitude that said: "Being small and simple is more important than being complete and correct." "You only have to solve 90% of the problem." "Everything is a stream of bytes."
+
+These attitudes are no longer appropriate for an operating system that hosts complex and important applications. They can even be deadly when Unix is used by untrained operators for safety-critical tasks.
+
+
+Ironically, the very attributes and design goals that made Unix a success when computers were much smaller, and were expected to do far less, now impede its utility and usability. Each graft of a new subsystem onto the underlying core has resulted in either rejection or graft vs. host disease with its concomitant proliferation of incapacitating scar tissue. The Unix networking model is a cacophonous Babel of Unreliability that quadrupled the size of Unix's famed compact kernel. Its window system inherited the cryptic unfriendliness of its character-based interface, while at the same time realized new ways to bring fast computers to a crawl. Its new system administration tools take more time to use than they save. Its mailer makes the U.S. Postal Service look positively stellar.
+
+
+The passing years only magnify the flaws. Using Unix remains an unpleasant experience for beginners and experts alike. Despite a plethora of fine books on the subject, Unix security remains an elusive goal at best. Despite increasingly fast, intelligent peripherals, high-performance asynchronous I/O is a pipe dream. Even though manufacturers spend millions developing "easy-to-use" graphical user interfaces, few versions of Unix allow you to do anything but trivial system administration without having to resort to the 1970s-style teletype interface. Indeed, as Unix is pushed to be more and more, it instead becomes less and less. Unix cannot be fixed from the inside. It must be discarded.
+
+Who We Are
+
+We are academics, hackers, and professionals. None of us were born in the computing analog of Ken Pier's East Africa. We have all experienced much more advanced, usable, and elegant systems than Unix ever was, or ever can be. Some of these systems have increasingly forgotten names, such as TOPS-20, ITS (the Incompatible Timesharing System), Multics, Apollo Domain, the Lisp Machine, Cedar/Mesa, and the Dorado. Some of us even use Macs and Windows boxes. Many of us are highly proficient programmers who have served our time trying to practice our craft upon Unix systems. It's tempting to write us off as envious malcontents, romantic keepers of memories of systems put to pasture by the commercial success of Unix, but it would be an error to do so: our judgments are keen, our sense of the possible pure, and our outrage authentic. We seek progress, not the reestablishment of ancient relics.
+
+Our story started when the economics of computing began marching us, one by one, into the Unix Gulag. We started passing notes to each other. At first, they spoke of cultural isolation, of primitive rites and rituals that we thought belonged only to myth and fantasy, of depravation and humiliations. As time passed, the notes served as morale boosters, frequently using black humor based upon our observations. Finally, just as prisoners who plot their escape must understand the structure of the prison better than their captors do, we poked and prodded into every crevice. To our horror, we discovered that our prison had no coherent design. Because it had no strong points, no rational basis, it was invulnerable to planned attack. Our rationality could not upset its chaos, and our messages became defeatist, documenting the chaos and lossage.
+
+
+This book is about people who are in abusive relationships with Unix, woven around the threads in the UNIX-HATERS mailing list. These notes are not always pretty to read. Some are inspired, some are vulgar, some depressing. Few are hopeful. If you want the other side of the story, go read a Unix how-to book or some sales brochures.
+
+
+This book won't improve your Unix skills. If you are lucky, maybe you will just stop using Unix entirely.
+
+The UNIX-HATERS History
+
+The year was 1987, and Michael Travers, a graduate student at the MIT Media Laboratory, was taking his first steps into the future. For years Travers had written large and beautiful programs at the console of his Symbolics Lisp Machine (affectionately known as a LispM), one of two state-of-the-art AI workstations at the Lab. But it was all coming to an end. In the interest of cost and efficiency, the Media Lab had decided to purge its LispMs. If Travers wanted to continue doing research at MIT, he discovered, he would have to use the Lab's VAX mainframe.
+
+The VAX ran Unix.
+
+
+MIT has a long tradition of mailing lists devoted to particular operating systems. These are lists for systems hackers, such as ITS-LOVERS, which was organized for programmers and users of the MIT Artificial Intelligence Laboratory's Incompatible Timesharing System. These lists are for experts, for people who can-and have-written their own operating systems. Michael Travers decided to create a new list. He called it UNIX-HATERS:
+
+
+Date: Thu, 1 Oct 87 13:13:41 EDT
+From: Michael Travers
+To: UNIX-HATERS
+Subject: Welcome to UNIX-HATERS
+In the tradition of TWENEX-HATERS, a mailing list for surly folk who have difficulty accepting the latest in operating system technology.
+
+If you are not in fact a Unix hater, let me know and I'll remove you. Please add other people you think need emotional outlets for their frustration.
+
+
+The first letter that Michael sent to UNIX-HATERS included a well-reasoned rant about Suns written by another new member of the Unix Gulag: John Rose, a programmer at a well-known Massachusetts computer manufacturer (whose lawyers have promised not to sue us if we don't print the company's name). Like Michael, John had recently been forced to give up a Lisp Machine for a computer running Unix. Frustrated after a week of lost work, he sent this message to his company's internal support mailing list:
+
+Date: Fri, 27 Feb 87 21:39:24 EST
+From: John Rose
+To: sun-users, systems
+
+Pros and Cons of Suns
+
+
+Well, I've got a spare minute here, because my Sun's editor window evaporated in front of my eyes, taking with it a day's worth of Emacs state.
+
+
+So, the question naturally arises, what's good and bad about Suns?
+
+
+This is the fifth day I've used a Sun. Coincidentally, it's also the fifth time my Emacs has given up the ghost. So I think I'm getting a feel for what's good about Suns.
+
+
+One neat thing about Suns is that they really boot fast. You ought to see one boot, if you haven't already. It's inspiring to those of us whose LispMs take all morning to boot.
+
+
+Another nice thing about Suns is their simplicity. You know how a LispM is always jumping into that awful, hairy debugger with the confusing backtrace display, and expecting you to tell it how to proceed? Well, Suns ALWAYS know how to proceed. They dump a core file and kill the offending process. What could be easier? If there's a window involved, it closes right up. (Did I feel a draft?) This simplicity greatly decreases debugging time because you immediately give up all hope of finding the problem, and just restart from the beginning whatever complex task you were up to. In fact, at this point, you can just boot. Go ahead, it's fast!
+
+
+One reason Suns boot fast is that they boot less. When a LispM loads code into its memory, it loads a lot of debugging information too. For example, each function records the names of its arguments and local variables, the names of all macros expanded to produce its code, documentation strings, and sometimes an interpreted definition, just for good measure.
+
+
+Oh, each function also remembers which file it was defined in. You have no idea how useful this is: there's an editor command called "meta-point" that immediately transfers you to the source of any function, without breaking your stride. ANY function, not just one of a special predetermined set. Likewise, there's a key that causes the calling sequence of a function to be displayed instantly.
+
+
+Logged into a Sun for the last few days, my Meta-Point reflex has continued unabated, but it is completely frustrated. The program that I am working on has about 80 files. If I want to edit the code of a function Foo, I have to switch to a shell window and grep for named Foo in various files. Then I have to type in the name of the appropriate file. Then I have to correct my spelling error. Finally I have to search inside the file. What used to take five seconds now takes a minute or two. (But what's an order of magnitude between friends?) By this time, I really want to see the Sun at its best, so I'm tempted to boot it a couple of times.
+
+
+There's a wonderful Unix command called "strip," with which you force programs to remove all their debugging information. Unix programs (such as the Sun window system) are stripped as a matter of course, because all the debugging information takes up disk space and slows down the booting process. This means you can't use the debugger on them. But that's no loss; have you seen the Unix debugger? Really.
+
+
+Did you know that all the standard Sun window applications ("tools") are really one massive 3/4 megabyte binary? This allows the tools to share code (there's a lot of code in there). Lisp Machines share code this way, too. Isn't it nice that our workstations protect our memory investments by sharing code.
+
+
+None of the standard Sun window applications ("tools") support Emacs. Unix applications cannot be patched either; you must have the source so you can patch THAT, and then regenerate the application from the source.
+
+
+But I sure wanted my Sun's mouse to talk to Emacs. So I got a couple hundred lines of code (from GNU source) to compile, and link with the very same code that is shared by all the standard Sun window applications ("tools"). Presto! Emacs gets mice! Just like the LispM; I remember similar hacks to the LispM terminal program to make it work with Emacs. It took about 20 lines of Lisp code. (It also took less work than those aforementioned couple hundred lines of code, but what's an order of magnitude between friends?)
+
+
+Ok, so I run my Emacs-with-mice program, happily mousing away. Pretty soon Emacs starts to say things like "Memory exhausted" and "Segmentation violation, core dumped." The little Unix console is consoling itself with messages like "clntudp_create: out of memory." Eventually my Emacs window decides it's time to close up for the day.
+
+
+What has happened? Two things, apparently. One is that when I created my custom patch to the window system, to send mouse clicks to Emacs, I created another massive 3/4 megabyte binary, which doesn't share space with the standard Sun window applications ("tools").
+
+
+This means that instead of one huge mass of shared object code running the window system, and taking up space on my paging disk, I had two such huge masses, identical except for a few pages of code. So I paid a megabyte of swap space for the privilege of using a mouse with my editor. (Emacs itself is a third large mass.)
+
+
+The Sun kernel was just plain running out of room. Every trivial hack you make to the window system replicates the entire window system. But that's not all: Apparently there are other behemoths of the swap volume. There are some network things with truly stupendous-sized data segments. Moreover, they grow over time, eventually taking over the entire swap volume, I suppose. So you can't leave a Sun up for very long. That's why I'm glad Suns are easy to boot!
+
+
+But why should a network server grow over time? You've got to realize that the Sun software dynamically allocates very complex data structures. You are supposed to call "free" on every structure you have allocated, but it's understandable that a little garbage escapes now and then because of programmer oversight. Or programmer apathy. So eventually the swap volume fills up! This leads me to daydream about a workstation architecture optimized for the creation and manipulation of large, complex, interconnected data structures, and some magic means of freeing storage without programmer intervention. Such a workstation could stay up for days, reclaiming its own garbage, without need for costly booting operations.
+
+
+But, of course, Suns are very good at booting! So good, they sometimes spontaneously boot, just to let you know they're in peak form!
+
+
+Well, the console just complained about the lack of memory again. Gosh, there isn't time to talk about the other LispM features I've been free of for the last week. Such as incremental recompilation and loading. Or incremental testing of programs, from a Lisp Listener. Or a window system you can actually teach new things (I miss my mouse-sensitive Lisp forms). Or safe tagged architecture that rigidly distinguishes between pointers and integers. Or the Control-Meta-Suspend key. Or manuals.
+
+
+Time to boot!
+
+
+John Rose sent his email message to an internal company mailing list. Somehow it was forwarded to Michael Travers at the Media Lab. John didn't know that Michael was going to create a mailing list for himself and his fellow Unix-hating friends and e-mail it out. But Michael did and, seven years later, John is still on UNIX-HATERS, along with hundreds of other people.
+
+At the end of flame, John Rose included this disclaimer:
+
+
+[Seriously folks: I'm doing my best to get our money's worth out of this box, and there are solutions to some of the above problems. In particular, thanks to Bill for increasing my swap space. In terms of raw CPU power, a Sun can really get jobs done fast. But I needed to let off some steam, because this disappearing editor act is really getting my dander up.]
+
+Some disclaimer. The company in question had bought its Unix workstations to save money. But what they saved in hardware costs they soon spent (and continue to spend) many times over in terms of higher costs for support and lost programmer productivity. Unfortunately, now that we know better, it is too late. Lisp Machines are a fading memory at the company: everybody uses Unix. Most think of Unix as a pretty good operating system. After all, it's better than DOS.
+
+Or is it?
+
+You are not alone
+
+If you have ever used a Unix system, you have probably had the same nightmarish experiences that we have had and heard. You may have deleted important files and gone for help, only to be told that it was your own fault, or, worse, a "rite of passage." You may have spent hours writing a heart-wrenching letter to a friend, only to have it lost in a mailer burp, or, worse, have it sent to somebody else. We aim to show that you are not alone and that your problems with Unix are not your fault.
+
+Our grievance is not just against Unix itself, but against the cult of Unix zealots who defend and nurture it. They take the heat, disease, and pestilence as givens, and, as ancient shamans did, display their wounds, some self-inflicted, as proof of their power and wizardry. We aim, through bluntness and humor, to show them that they pray to a tin god, and that science, not religion, is the path to useful and friendly technology.
+
+
+Computer science would have progressed much further and faster if all of the time and effort that has been spent maintaining and nurturing Unix had been spent on a sounder operating system. We hope that one day Unix will be relinquished to the history books and museums of computer science as an interesting, albeit costly, footnote.
+
+Contributors and Acknowledgments
+
+To write this book, the editors culled through six years' archives of the UNIX-HATERS mailing list. These contributors are referenced in each included message and are indexed in the rear of the volume. Around these messages are chapters written by UNIX-HATERS experts who felt compelled to contribute to this expose.
+
+We are:
+
+
+Simson Garfinkel, a journalist and computer science researcher. Simson received three undergraduate degrees from the Massachusetts Institute of Technology and a Master's degree in journalism from Columbia University. He would be in graduate school working on his Ph.D. now, but this book came up and it seemed like more fun. Simson is also the co-author of Practical Unix Security (O'Reilly and Associates, 1991) and NeXTSTEP Programming (Springer-Verlag, 1993). In addition to his duties as editor, Simson wrote the chapters on Documentation, the Unix File System, Networking, and Security.
+
+
+Daniel Weise, a researcher at Microsoft's research laboratory. Daniel received his Ph.D. and Master's degrees from the Massachusetts Institute of Technology's Artificial Intelligence Laboratory and was an assistant professor at Stanford University's Department of Electrical Engineering until deciding to enter the real world of DOS and Windows. While at his cushy academic job, Daniel had time to work on this project. Since leaving Stanford for the rainy shores of Lake Washington, a challenging new job and a bouncing, crawling, active baby boy have become his priorities. In addition to initial editing, Daniel wrote large portions of Welcome, New User; Mail; and Terminal Insanity.
+
+
+Steven Strassmann, a senior scientist at Apple Computer. Steven received his Ph.D. from the Massachusetts Institute of Technology's Media Laboratory and is an expert on teaching good manners to computers. He instigated this book in 1992 with a call to arms on the UNIX-HATERS mailing list. He's currently working on Apple's Dylan development environment.
+
+
+John Klossner, a Cambridge-based cartoonist whose work can be found littering the greater northeastern United States. In his spare time, John enjoys public transportation.
+
+
+Donald Norman, an Apple Fellow at Apple Computer, Inc. and a Professor Emeritus at the University of California, San Diego. He is the author of more than 12 books including The Design of Everyday Things.
+
+
+Dennis Ritchie, Head of the Computing Techniques Research Department at AT&T Bell Laboratories. He and Ken Thompson are considered by many to be the fathers of Unix. In the interest of fairness, we asked Dennis to write our Anti-Foreword.
+
+
+Scott Burson, the author of Zeta C, the first C compiler for the Lisp Machine. These days he makes his living hacking C++ as a consultant in Silicon Valley. Scott wrote most of the chapter on C++.
+
+
+Don Hopkins, a seasoned user interface designer and graphics programmer. Don received a BSCS degree from the University of Maryland while working as a researcher at the Human Computer Interaction Lab. Don has worked at UniPress Software, Sun Microsystems, the Turing Institute, and Carnegie Mellon University. He ported SimCity to NeWS and X11 for DUX Software. He now works for Kaleida. Don wrote the chapter on the X-Windows Disaster. (To annoy X fanatics, Don specifically asked that we include the hyphen after the letter "X," as well as the plural on the word "Windows," in his chapter title.)
+
+
+Mark Lottor, who has actively hated Unix since his first Usenix conference in 1984. Mark was a systems programmer on TOPS-20 systems for eight years, then spent a few years of doing Unix system administration. Frustrated by Unix, he now programs microcontrollers in assembler, where he doesn't have to worry about operating systems, shells, compilers, or window systems getting in the way of things. Mark wrote the chapter on System Administration.
+
+
+Christopher Maeda, a specialist on operating systems who hopes to have his Ph.D. from Carnegie Mellon University by the time this book is published. Christopher wrote most of the chapter on Programming.
+
+
+Rich Salz is a Principal Software Engineer at the Open Software Foundation, where he works on the Distributed Computing Environment. Rich has been active on the Usenet for many years; during his multiyear tenure as moderator of comp.sources.unix he set the defacto standards for Usenet source distribution still in use. He also bears responsibility for InterNetNews, one of the most virulent NNTP implementations of Usenet. More importantly, he was twice elected editor-in-chief of his college newspaper, The Tech, but both times left school rather than serve out his term. Rich wrote the Snoozenet chapter.
+
+
+In producing this book, we have used and frequently incorporated messages from Phil Agre, Greg Anderson, Judy Anderson, Rob Austein, Alan Bawden, Alan Borning, Phil Budne, David Chapman, Pavel Curtis, Mark Friedman, Jim Davis, John R. Dunning, Leonard N. Foner, Simson Garfinkel, Chris Garrigues, Ken Harrenstien, Ian D. Horswill, Bruce Howard, David H. Kaufman, Tom Knight, Robert Krajewski, James Lee Johnson, Jerry Leichter, Jim McDonald, Dave Mankins, Richard Mlynarik, Nick Papadakis, Michael A. Patton, Kent M. Pitman, Jonathan Rees, Stephen E. Robbins, M. Strata Rose, Robert E. Seastrom, Olin Shivers, Patrick Sobalvarro, Christopher Stacy, Stanley's Tool Works, Steve Strassmann, Michael Tiemann, Michael Travers, David Vinayak Wallace, David Waitzman, Dan Weinreb, Daniel Weise, John Wroclawski, Gail Zacharias, and Jamie Zawinski.
+
+
+The Unix Barf Bag was inspired by Kurt Schmucker, a world-class C++ hater and designer of the infamous C++ barf bag. Thanks, Kurt.
+
+
+We received advice and support from many people whose words do not appear here, including Beth Rosenberg, Dan Ruby, Alexander Shulgin, Miriam Tucker, David Weise, and Laura Yedwab.
+
+
+Many people read and commented on various drafts of this manuscript. We would especially like to thank Judy Anderson, Phil Agre, Regina C. Brown, Michael Cohen, Michael Ernst, Dave Hitz, Don Hopkins, Reuven Lerner, Dave Mankins, Eric Raymond, Paul Rubin, M. Strata Rose, Cliff Stoll, Len Tower Jr., Michael Travers David Waitzman, and Andy Watson. A special thanks to all of you for making many corrections and suggestions, and finding our typos. We would especially like to thank Matthew Wagner at Waterside Productions. Matt immediately gravitated to this book in May 1992. He was still interested more than a year later when Simson took over the project from Daniel. Matt paired us up with Christopher Williams at IDG Programmers Press. Chris signed us up without hesitation, then passed us on to Trudy Neuhaus, who saw the project through to its completion. Amy Pedersen was our Imprint Manager. The UNIX-HATERS cover was illustrated by Ken Copfelt of The Stock Illustration Source.
+
+Typographical Conventions
+
+In this book, we use this roman font for most of the text and a different sans serif font for the horror stories from the UNIX-HATERS mailing list. We've tried to put command names, where they appear, in bold, and the names of Unix system functions in italics. There's also a courier font used for computer output, and we make it bold for information typed by the user. That's it. This isn't an unreadable and obscure computer manual with ten different fonts in five different styles. We hate computer manuals that look like they were unearthed with the rest of King Tut's sacred artifacts.
+
+This book was typeset without the aid of troff, eqn, pic, tbl, yuc, ick, or any other idiotic Unix acronym. In fact, it was typeset using FrameMaker on a Macintosh, a Windows box, and a NeXTstation.
+
+The UNIX-HATERS Disclaimer
+
+In these days of large immoral corporations that compete on the basis of superior software patents rather than superior software, and that have no compunctions against suing innocent universities, we had better set a few things straight, lest they sic an idle lawyer on us:
+
+It might be the case that every once in a while these companies allow a programmer to fix a bug rather than apply for a patent, so some of the more superficial problems we document in this book might not appear in a particular version of Unix from a particular supplier. That doesn't really matter, since that same supplier probably introduced a dozen other bugs making the fix. If you can prove that no version of Unix currently in use by some innocent victim isn't riddled with any of the problems that we mention in this volume, we'll issue a prompt apology.
+
+
+Inaccuracies may have crept into our narrative, despite our best intentions to keep them out. Don't take our word for gospel for a particular flaw without checking your local Unix implementation.
+
+
+Unix haters are everywhere. We are in the universities and the corporations. Our spies have been at work collecting embarrassing electronic memoranda. We don't need the discovery phase of litigation to find the memo calculating that keeping the gas tank where it is will save $35 million annually at the cost of just eight lives. We've already got that memo. And others.
+
+Editors of "The Unix-Haters handbook", ugh@next.cambridge.ma.us
+---
+*** Do you segfault today?! ***
+scz 发表于：2003-01-14 10:53
+第八章 csh, pipes和find (part 2)
+
+张贴者： pengchengzou (veteran)
+张贴日期 01/13/03 11:24
+
+半年前的上回书说到你如何去玩shell游戏，估计现在你已经玩腻了，不过不要
+着急，下面，该轮到shell玩你了。
+
+
+欢迎来到元语法(metasyntacitic)动物园
+
+C Shell的元语法操作符带来了大量和引用有关的问题和混乱。元操作符在一个
+命令被执行前对其进行转换。我们把这些操作符叫做元操作符是因为它们不属于
+命令的语法成分，它们作用于命令本身。大多数程序员对元操作符(有时也叫做
+escape operators)并不陌生。比如，C字符串中的反斜杠(\)就是一个元语法操
+作符；它不代表自己，而是对其后的字符的说明。如果你不希望如此，你必须使
+用引用机制来告诉系统把元操作符当做一般字符来处理。回到刚才C字符串的例
+子，如果想得到反斜杠字符，你必须写成\\。
+
+简单的引用机制在C Shell中很难工作，这是因为Shell和它执行的程序之间各执
+一词，无法统一。例如，下面是个简单的命令：
+
+
+grep string filename;
+
+参数string包含了grep定义的字符，比如?, [, 和]等等，
+但这些字符是shell的元操作符。这意味着必须对它们进行引用。然而，有些时
+候可能不需要如此，这和你使用什么样的shell以及环境变量有关。
+
+如果想在字符串中寻找包含点(.)或其他以横杠(-)开头的模式，这就更为复杂了。
+
+一定要记住对元字符进行正确引用。不幸的是，和模式识别一样，操作系统的各
+个部分都充斥着互不兼容的引用标准。
+
+C Shell的元语法动物园里饲养着七种不同的元操作符家族。斗转星移，
+转眼间动物园里已经人满为患了，笼子使用的不再是钢铁，而是用锡了。动物间
+的小磨擦不断。这七种针对shell命令行的转换方式是：
+
+别名 alias, unalias
+
+命令输出替代 `
+
+文件名替代 *, ?, []
+
+历史替代 !, ^
+
+变量替代 $, set, unset
+
+进程替代 %
+
+引用 ',"
+
+
+这一“设计”的结果是，问号(?)永远被shell当成单字符匹配符，它永远无法被
+作为命令行参数传给用户程序，所以别想使用问号来作为帮助选项。
+
+如果这七种元字符有着清晰的逻辑顺序和定义，那么情况也不会太糟糕。可事实
+并非如此：
+
+
+日期: Mon, 7 May 90 18:00:27 - 0700
+发信人: Andy Beals <bandy@lll-crg.llnl.gov>
+主题: Re: today's gripe: fg %3 (今天之不爽事：fg %3)
+收信人: UNIX-HATERS
+
+你可以使用%emacs或者%e来恢复一个任务（如果唯一的话），也可以使
+用%?foo，如果"foo"出现在命令行中。
+
+当然，!ema和!?foo也可以用于历史命令替换上。
+
+但是，UCB的猪头(pinheads)们没有想到!?foo后面可能伴随的编辑命令：
+
+!?foo:s/foo/bar&/:p
+
+多向前扫描一个编辑字符真的这么困难么？
+
+
+哪怕是Unix“专家”，也要晕菜了。下面再来看看Milt Epstein的这个例子，他
+想写个shell脚本获得实际被敲入的命令行，而不是那个经shell处理后的
+结果。他最后发现这并不容易，因为shell为命令做了太多的“好事”。要做到
+这一点，需要各种稀奇古怪的变形技术，连Unix专家也会望而却步。这就是Unix
+的典型做法：把简单的东西搞得异常复杂，这只是因为这些东西在Unix诞生之时
+从没被仔细考虑过：
+
+
+日期: 19 Aug 91 15:26:00 GMT
+发信人: Dan_Jacobson@att.com
+主题: ${1+"$@"} in /bin/sh family of shells shell scripts
+收信人: comp.emacs.gnu.emacs.help, comp.unix.shell
+
+>>>>> On Sun, 19 Arg 91 18:21:58 - 0500
+>>>>> Milt Epstein <esptein@suna0.cs.uiuc.edu>
+写到：
+
+Milt> "${1+"$@"}"究竟是什么意思？我估计这是用来
+Milt> 读取其余的命令行参数，但我不敢肯定。
+
+这是/bin/sh里用来完整复制命令行参数的一种方法。
+
+它的意思是：如果有至少一个参数(${1+)，那么用所有参数("$@")来替
+代以保留所有的空白字符。
+
+如果我们只使用"$@"，那么在没有参数的情形下会得到""而不是我们想
+要的空参数。
+
+那么，为什么不使用"$*"呢？sh(1)的man手册是这样说的：
+
+双引号之间的参数和命令会被替换，shell会对结果加上引用，
+以避免解析空格或生成文件名。如果$*出现在双引号之中，各
+个参数之间的空格会被加上引用("$1 $2 ...")，而如果$@出
+现在双引号之中，各个参数之间的空格不会被加上引用("$1"
+"$2" ...)。
+
+我认为${1+"$@"}一直可以兼容到“版本7”的shell。
+
+
+老天！一直兼容到“版本7”。
+
+
+听"chdir"的还是听"cd"的？
+
+Unix在漫长的演化过程中几经易手，这些Unix系统开发者把Unix引向了不同方向，
+
+他们之中没有一个人停下来考虑一下自己的做法会不会对和其他人发生冲突。
+
+
+日期: Mon, 7 May 90 22:58:58 EDT
+发信人: Alan Bawden <alan@ai.mit.edu>
+主题: cd ..: I am not making this up (cd ..: 这不是我编造出来的)
+收信人: UNIX-HATERS
+
+有什么命令能比"cd"更直接了当的呢？让我们看这个简单的例子："cd
+ftp"。如果我的当前目录/home/ar/alan中有个子目录叫做"ftp"，那么
+它就变成了我新的当前目录，现在我在/home/ar/alan/ftp下了。简单
+吧？
+
+现在，你们知不知道"."和".."？每个目录都会有两个记录："."是指该
+目录自己，".."是指父目录。在上面的例子中，如果我想回到
+/home/ar/alan，只要敲"cd .."就可以了。
+
+现在假设"ftp"是一个符号链接。假设它指向的是目录
+/com/ftp/pub/alan。如果执行"cd ftp"，我的当前目录将是
+/com/ftp/pub/alan。
+
+和其他所有目录一样，/com/ftp/pub/alan也有一个叫".."的记录，它
+指的是父目录：/com/ftp/pub。如果我想进入那个目录，我敲入命令：
+
+% cd ..
+
+猜一下我现在在哪儿呢？我又回到了/home/ar/alan！shell(准确的说
+是人工智能实验室里用的tcsh)认为我其实是想回到那个装有符号链接
+的目录。现在我必须使用"cd ./.."才能进入/com/ftp/pub。
+
+ 
+
+Shell编程
+
+Shell程序员和《侏罗纪公园》里的恐龙制造者有些类似。他们手上没有所需的
+完整材料，所以不得不用一些乱七八糟的材料填充。尽管有着无穷的自信和能力，
+
+他们似乎并不是总能控制住造出来的那些玩意。
+
+理论上说，使用Shell编程比用C语言要有很多好处：Shell程序移植容易。这指
+的是使用shell“编程语言”写的程序能够在不同的体系结构和不同的Unix变种
+上运行，因为shell会解析这些程序，而不是把这些程序编译成机器码运行。而
+且，标准Unix Shell sh 自从1977年以来就成为Unix中不可或缺的一部
+分，所以你可以在许多机器上找到它。
+
+让我们来验证一下这个理论，写个脚本列举目录下的所有文件，并使用
+file命令来显示文件的类型：
+
+
+日期: Fri, 24 Apr 92 14:45:48 EDT
+发信人: Stephen Gildea <gildea@expo.lcs.mit.edu>
+主题: Simple Shell Programming (简单Shell编程)
+收信人: UNIX-HATERS
+
+同学们好。今天我们将学习"sh"编程。"sh" 是个简单，用途广泛的程
+序，让我们先看个基本的例子：
+
+打印一个目录下所有文件的类型
+
+(我听到你们在后面说什么了！那些已经会了的同学可以写个脚本在远
+程启动一个X11客户端，不要吵吵！)
+
+我们学习sh编程的同时，当然也希望自己的程序是健壮，可移植和优雅
+的。我假设你们都读过了相应的man手册，所以下面这个实现应该很简
+单：
+
+file *
+
+很不错，是不是？简单的答案给简单的问题；符号 * 用来匹配目录下
+的所有文件。嗯，不一定。以点(.)开头的文件会被忽略，*不会匹配它
+们。也许这种情况很少发生，但既然要写健壮的程序，我们将使用"ls"
+的一个特殊选项：
+
+for file in `ls -A`
+do
+flie $file
+done
+
+多么优雅，多么健壮！不过，唉，一些系统上的"ls"不接受"-A"选项。
+没问题，我们使用"-a"选项，然后再去掉"."和".."：
+
+for file in `ls -a`
+do
+if [ $file != . -a $file != ..]
+then
+file $file
+fi
+done
+
+不是那么优雅，但至少是健壮的和可移植的。你说什么？"ls -a"也不
+是哪里都能用的？没问题，我们用"ls -f"好啦。它还快一点呢。我希
+望你们能从man手册中看到所有这些东西。
+
+唔，可能不是那么健壮。Unix文件名中除了斜杠(/)以外可以使用任何
+字符。如果文件名中有个空格的话，这个脚本就完蛋了，这是因为
+shell会把它当成两个文件名传给"file"命令。不过这也不是太难对付。
+我们只要把它放到引用中就可以了：
+
+for file in `ls -f`
+do
+if [ "$file" != . -a "$file" != ..]
+then
+file "$file"
+fi
+done
+
+你们中可能已经有人看出来了，我们只是减少了问题，但还是没有完全
+解决。因为换行符也能用在文件名中。
+
+我们的脚本不是那么简单了，看来得重新评估一下我们用的方法了。如
+果我们不使用"ls"就不用费劲去处理它的输出了。这个怎么样：
+
+for file in * .*
+do
+if [ "$file" != . -a "$file" != ..]
+then
+file "$file"
+fi
+done
+
+看起来不错。能够处理点(.)文件和有非打印字符的文件名。我们不断
+把一些稀奇古怪的文件名加入到测试目录下，这个脚本始终工作得很好。
+然而有个家伙用它测一个空目录，这时候 * 产生了"No such file"
+(没有这个文件)的输出。不过，我们当然可以继续处理这种情况...
+
+....到了这一步uucp可能会嫌我的这封邮件可能，看来我只能到此为止
+了，请读者去自己解决剩下的bug吧。
+
+Stephen
+
+
+还有一个更大的问题Stephen没有想到，我们从一开始就有意隐藏着：Unix
+file 命令不工作。
+
+
+日期: Sat, 25 Apr 92 17:33:12 EDT
+发信人: Alan Bawden <Alan@lcs.mit.edu>
+主题: Simple Shell Programming (简单Shell编程)
+收信人: UNIX-HATERS
+
+喔！别忙。再仔细看看。你真的想用'file'命令？如果谁想开心大笑一
+场可以马上去找一台Unix机器，在有各种各样文件的目录下敲命令
+"file *"。
+
+例如，我在有各种C源代码文件的目录下运行"file"——这是一些结果：
+
+arith.c: c program text
+binshow.c: c program text
+bintxt.c: c program text
+
+看起来还不错。不过这个就不太对了：
+
+crc.c: ascii text
+
+看到了么？'file'并不是根据后缀".c"去判断的，它对文件的内容采用
+了一些启发式(heuristics)算法。很明显crc.c看起来不那么象C代码——
+尽管对我来说它就是。
+
+gencrc.c.~4~: ascii text
+gencrc.c: c program text
+
+估计我在第4版本以后做了一些修改，使得gencrc.c更象是C代码了...
+
+tcfs.h.~1~: c program text
+tcfs.h: ascii text
+
+很明显第1版本以后的tcfs.h不太象是C代码了。
+
+time.h: English text
+
+没错，time.h看起来更象英语，而不是一般的ascii码。我不知
+道'file'是不是还能判断出西班牙语或法语。(顺便说一下，你的TeX文
+档会被当成"ascii text"而不是"English text"，不过这有点儿跑题了)
+
+words.h.~1~: ascii text
+words.h: English text
+
+这可能是因为我在第1版本以后在words.h中加入了一些注释。
+
+我把最精采的留在最后：
+
+arc.h: shell commands
+Makefile: [nt]roff, tbl, or eqn input text
+
+都错得一塌糊涂。我不知道如果根据'file'的判断结果去使用这些文件
+会造成什么结果。
+
+—Alan
+
+Shell变量
+
+当然Alan还不算最倒霉的，至少他没试过shell变量。
+
+我们前面说过，sh和csh对shell变量的实现不太一样。这本来没
+有什么，可是一些shell变量的语义(比如定义的时刻，改变的原子性等)没有被
+好好说明或定义。总会遇到一些奇怪反常规的shell变量，只有反复试验以后才
+能明白。
+
+
+日期: Thu, 14 Nov 1991 11:46:21 PST
+发信人: Stanley's Tool Works <lanning@parc.xerox.com)
+主题: You learn something new every day (每天都有新发现)
+收信人: UNIX-HATERS
+
+运行一下这个脚本：
+
+#!/bin/csh
+unset foo
+if ( ! $?foo ) hen
+echo foo was unset
+else if ("$foo" = "You lose") then
+echo $foo
+endif
+
+会产生如下错误：
+
+foo: Undefined variable.
+
+如果要让这个脚本"正确工作"，你必须求助于以下这个脚本：
+
+#!/bin/csh
+unset foo
+if ( ! $?foo ) hen
+echo foo was unset
+set foo
+else if ("$foo" = "You lose") then
+echo $foo
+endif
+
+
+[注意，我们必须在发现foo没有被定义的时候'set foo'.] 清楚了么？
+
+
+错误码和错误检查
+
+我们上面的例子没有指出file命令如何将错误返回给脚本。事实上，它
+根本就没有返回错误。错误被忽略了。这不是因为我们粗心大意：许多Unix
+shell脚本(以及其他程序)忽略所调用程序所返回的错误码。这个做法是可取的，
+这是因为没有标准的错误码。
+
+也许之所以错误码被广泛地忽略，是因为当用户敲命令的时候这些错误码很少被
+显示出来。错误码和错误检查在Unix阵营中是如此少见，以至于有些程序甚至根
+本就不费劲去报告错误。
+
+
+日期: The, 6 Oct 92 08:44:17 PDT
+发信人: Bjorn Freeman-Benson <bnfb@ursamajor.uvic.ca>
+主题: It's always good news in Unix land (Unix世界里都是好消息)
+收信人: UNIX-HATERS
+
+看看这个tar程序。和所有的Unix"工具"(似乎不太准确)一样，tar的工
+作方式非常奇怪和特别。例如，tar是一个极为乐观向上的程序，它认
+为从不会有什么坏事，所以太从来不返回错误状态。事实上，哪怕是在
+屏幕上打出了错误信息，它返回的仍然是"好消息" (状态0)。运行一下
+这个脚本：
+
+tar cf temp.tar no.such.file
+if ( $status == 0 ) echo "good news! No error."
+
+你将得到如下结果：
+
+tar: no.such.file: No such file or directory
+Good news! No error.
+
+我明白了——我从一开始就不应该奢望什么一致，有用，帮助良好，快
+速，甚至是正确的结果...
+
+Bjorn
+
+OK, 被shell折腾得很爽吧？还没过足瘾？不要紧，下回书我们换个地方，钻进
+Unix下水道(pipe)里体验无穷的痛苦和快乐
+---
+说了世上一无牵挂为何有悲喜
+说了朋友相交如水为何重别离
+说了少年笑看将来为何常回忆
+说了青春一去无悔为何还哭泣
+nshd 发表于：2003-01-14 22:33
+
+发帖： 2
+注册： 2003-01-09
+有意思 继续翻 :)
+scz 发表于：2003-01-15 09:31
+
+发帖： 1400
+注册： 1999-10-26
+标题: 第八章 csh, pipes和find (part 3)
+
+张贴者： pengchengzou (veteran)
+张贴日期 01/14/03 23:20
+
+管道
+
+Unix受虐狂们，欢迎来到Unix下水道。
+
+“在我们这个世纪，巴黎下水道仍是一个神秘的场所。如果知道自己的下面是个
+可怕的大窖，巴黎会感到不安。” —— 雨果 《悲惨世界》
+
+下面只是我自己对Unix的看法。大约六年前(当我有了第一台工作站的时候)，
+我用了很多时间学习Unix。应该学得算是不错的。幸运的是，脑子里的这些垃圾
+正随着时间的推移慢慢降解。可是，自从这个讨论开始以来，不少Unix支持者发
+给我例子来“证明”Unix的强大。这些例子当然唤起了我许多美好的回忆：他们
+都是用一种最怪异的方式去实现一些简单而无用的功能。
+
+有个家伙发了篇贴子讲述一个shell脚本是如何让他获得“圆满”的(这个脚本使
+用了四个噪声一样的命令把他所有的'.pas'后缀的文件改名为'.p'文件)。可我
+还是想把自己的宗教热情留给比改几个文件名更重要的事情上。是的，这就是
+Unix工具留给我的记忆：你用大量的时间去学那些复杂奇特的花架子，可到头来
+却是一场空。我还是去学些有用的真功夫吧。
+
+——Jim Giles
+Los Alamos国家实验室
+
+Unix迷们拜倒在管道(pipe)的真善美之下。他们他们歌唱管道：没有管道就没有
+Unix。他们异口同声地颂扬管道：“管道能够让你用简单的程序去构造更复杂的
+程序。管道能够以意想不到的方式去使用命令，管道使得实现更为简单。”不幸
+的是，颂歌对Unix的作用并不比对伟大旗手的要好多少。
+
+管道并不是一无是处。模块化和抽象化是建立复杂系统中所必需的，这是计算机
+科学的基本原则。基本工具越是优秀，用其建立的复杂系统就会更为成功，可维
+护性也越高。管道作为构造工具还是有价值的。
+
+以下是个管道的例子：
+
+egrep '^To:|^Cc:' /var/spool/mail/$USER | \
+cut -c5- | \
+awk '{ for (i = 1; i <= NF; i++) print $i}' | \
+sed 's/,//g' | grep -v $USER | sort | uniq
+
+
+看明白了么？这个程序通过读取用户的邮箱，得到用户所在的邮件列表(差不多
+是这个意思)。和你家里的水管一样，这个Unix管道也会在特定情况下神秘地破
+裂。
+
+管道有时的确很有用，但它通过连接标准输入输出的方式进行进程间通讯，这个
+机制限制了它的应用。首先，信息只能单向流动。进程无法通过管道进行双向通
+讯。其次，管道不支持任何形式的抽象。发送方和接收方只能使用字符流传输信
+息。比字符稍微复杂一点的对象是不能通过管道直接传输的，必须串行化为字符
+流以后才成，当然接收方必须对得到的字符流进行重新组装。这意味着你无法传
+输一个对象以及用于建立这个对象的定义代码。你无法传输指针到另一个进程的
+地址空间。你无法传输文件句柄或socket句柄或文件权限属性。
+
+冒着被骂做自以为是的风险，我们认为正确的模型应该是过程调用(本地的或是
+远程的)，用以传递第一类结构(first-class structures)(这是C语言从一开始
+就支持的)和函数组合(functional composition)。
+
+管道对简单任务是不错的，比如文本流处理，但用它来建立健壮软件就显得有些
+捉襟见肘了。例如，早期关于管道的一篇论文中说明了如何使用管道把一些小程
+序组合在一起来构成一个拼写检查程序。这是体现简单性的经典之作，但如果真
+的用来检查拼写错误就再糟糕没有了。
+
+管道在shell脚本中有经常能露一小手。程序员用它实现一些简单而脆弱的解决
+方案。这是因为管道使得两个程序之间产生了倚赖关系，如果你修改了一个程序
+的输出格式，就必须同时修改另一个程序的输入处理。
+
+大多数程序是一步步建立起来的：首先制定程序的需求规范，然后程序的内部逐
+渐成型，最后写一个输出处理函数。管道则不把这一套放在眼里：只要有人把一
+个半生不熟的程序放到了管道中，其输出格式就定死了，不管是多么不一致，不
+标准和低效，你都只能认命了。
+
+管道不是程序间通讯的唯一选择。Macintosh就没有管道，我们最喜欢的Unix宣
+传手册是这样写的：
+
+但是，Macintosh采用的则是截然相反的一种模型。系统不和字符流
+打交道。数据文件具有更高的层次，总是和特定的程序相关的。你什么
+时候把一个Mac程序的输出传给另一个过？(如果能找到管道符都算你运
+气)程序自成一体，你必须彻底明白自己在干嘛呢。你无法把MacFoo和
+MacBar搞到一起。
+
+—— 摘自 《Unix生活》 Libes和ressler著
+
+是呀，这些可怜的Mac用户。如果无法把字符流通过管道四处乱传，他们怎么能
+在文档中插入绘画程序制作的图片？怎么能插入一个表格文档？怎么能把这个东
+拼西凑成的用电子邮件发出去？接到以后又怎么能无缝地对它进行浏览和编辑，
+再回复回去？没有管道，我们不能想像这一切在过去的十年中是如何被
+Macintosh做到的。
+
+上次你的Unix工作站和Macintosh一样有用是什么时候？上次你能在它上面跑不
+同公司(甚至是同一公司的不同部门)的软件是什么时候？更不用说这些软件能互
+相通信。如果Unix真做到了这一点，那是因为Mac软件开发商拼了老命把他们的
+软件移植到了Unix上，寄希望于让Unix看起来象Mac一些。
+
+Unix和Macintosh操作系统的根本区别是，Unix是为取悦程序员而设计的，而Mac
+是为了取悦用户。(Windows一门心思想取悦的则是会计，不过这有些跑题了)。
+
+研究表明管道和重定向是难于使用的，不是因为想法本身，而是由于其随意和不
+直观的限制。Unix自己的文档早就指明了只有Unix死党才能体会管道的妙处。
+
+
+日期: thu, 31 Jan 91 14:29:42 EST
+发信人: Jim Davis <jrd@media-lib.media.mit.edu>
+收信人: UNIX-HATERS
+主题: Expertise (专业知识)
+
+今天早上我读到《人机接口杂志》上的一篇文章《计算机操作系统专业
+知识》，是Stephanie M. Doane和其他两位作者写的。猜猜他们研究的
+是什么操作系统？Doane对Unix新手、中手和专家的知识和表现进行了
+研究，下面是一些摘要：
+
+“只有专家能够使用Unix特有的一些功能(例如管道和重定向)来构
+造命令组合”
+
+换句话说，Unix的每个新功能(除了那些从其他系统上生搬硬套过来的)
+都是如此怪异，以至于必须经过多年同样怪异的学习和实践才能掌握。
+
+“这个发现有些出乎意料，因为这些正是Unix的基础功能，而且这
+些功能是所有初级课程都会涉及的”
+
+她还引用了S. W. Draper的一些文章，Draper相信：
+
+“世上根本没有什么Unix专家，如果专家指的是这样一些人，他们
+穷尽了某专业的所有知识，无需再学习什么了。”
+
+这一点我不能苟同。在学习Unix各种荒谬技术的征途上，已经有无数人
+被“穷尽”了。
+
+
+有些程序甚至吃饱了撑的，把管道和文件重定向区别对待了：
+
+
+发信人: Leigh L. Klotz <klotz@adoc.xerox.com>
+收信人: UNIX-HATERS
+主题: | vs. < (|对<)
+日期: Thu, 8 Oct 1992 11:37:14 PDT
+
+collard% xtpanel -file xtpanel.out < .login
+unmatched braces
+unmatched braces
+unmatched braces
+3 unmatched right braces present
+
+collard% cat .login | xtpanel -file xtpanel.out
+collard%
+
+
+你自己琢磨琢磨吧。
+
+Find
+
+
+Unix最为恐怖的是，不管你被它开过多少次瓢，你总是没法失去知觉。它就
+这么开来开去，没完没了。
+——Patrick Sobalvarro
+
+在一个庞大的文件系统中遗失个把文件是常有的事(想像一下大海捞针)。现在由
+于更大更便宜的磁盘的出现，PC和Apple用户也遇到了这样的问题。为了解决这
+个问题，系统往往提供一个搜索程序，根据各种条件(比如文件名称，类型，创
+建时间等等)进行文件搜索。Apple Macintosh和微软Windows都提供强大、方便、
+稳定的文件搜索程序。这些搜索程序的设计中考虑到了用户习惯和现代网络。
+Unix的搜索程序find考虑的则不是用户，而是cpio，一个Unix备
+份工具。Find没能预见到网络的存在和文件系统的新功能(如符号链接)，
+即使是经历了反复修改，它还是无法很好工作。于是，尽管它对于遗失文件的用
+户意义重大，find还是不能稳定、正常的工作。
+
+Unix的作者们努力是find跟上系统其他部分的发展，但这并不容易。今
+天的find有各种特殊的选项用于处理NFS文件系统，符号链接，执行程序，
+交互式地执行程序，甚至直接使用cpio或cpio-c格式对找到的文件进行归档。
+Sun公司修改了find，添加了一个后台程序建立系统上每个文件的索引数
+据库，由于一些奇怪的理由，当你不加任何参数执行"find filename"时，这个
+数据库被用于进行搜索，(够安全的，是吧？) 即使有个这么多修修补补，
+find还是不能正常工作。
+
+例如，csh见到符号链接会顺着走下去，但find不会：
+csh是伯克利(符号链接的发源地)的家伙们写的，可是find是从
+AT&T的原始时代开始就有了。就这样，东西方的文化差异激烈地碰撞了，造成了
+巨大的混乱：
+
+
+日期: Thu, 28 Jun 1990 18:14 EDT
+发信人: pgs@crl.dec.com
+主题: more things to hate about Unix (更多恨的理由，就在Unix)
+收信人: UNIX-HATERS
+
+这个是我的最爱。我在一个目录下工作，想用find去找另一个目录里的
+文件，我是这么做的：
+
+po> pwd
+/ath/u1/pgs
+po> find ~halstead -name "*.trace" -print
+po>
+
+看来没有找到。不过别忙，看看这个：
+
+po> cd ~halsead
+po> find . -name "*.trace" -print
+../learnX/fib-3.trace
+../learnX/p20xp20.trace
+../learnX/fib-3i.trace
+../learnX/fib-5.trace
+../learnX/p10xp10.trace
+po>
+
+嘿！文件就在那里呀！下次如果你想找一个文件，记住随机到各个目录
+下转转，说不定你要的文件就藏在那里呢。Unix这个废物。
+
+
+可怜的Halstead同志的/etc/passwd记录一定是使用了符号链接去指向了真正的
+目录，所以有的命令工作，有的不工作。
+
+为什么不改改find，也让它顺着符号链接呢？这是因为任何一个指向高
+一级目录的符号链接都会把find引入死循环。要处理这种情况需要精心
+的设计和小心的实现，以保证系统不会重复搜索同一个目录。Unix采用了最简单
+的做法：索性不处理符号链接，让用户自己去看着办吧。
+
+联网系统变得越来越复杂，问题也越来越难以解决了：
+
+
+日期: Wed, 2 Jan 1991 16:14:27 PST
+发信人: Ken Harrenstien <klh@nisc.sri.com>
+主题: Why find doesn't find anything (为什么find什么也找不到？)
+收信人: UNIX-HATERS
+
+我刚刚发现为什么"find"不再工作了。
+
+尽管"find"的语法非常恶心怪异，我还在勉强用它，以免几小时泡在在
+迷宫似的文件目录中去寻找文件。
+
+在这个有NFS和符号链接存在的勇敢新世界里，"find"没用了。我们这
+里的所谓文件系统是由众多文件服务器和符号链接组成的一团乱麻，
+"find"哪个也不想去处理，甚至连选项也不提供... 结果是大量的搜索
+路径被无声无息地忽略了。我注意到了这个，是在一个很大的目录下搜
+索时结果一无所获，最后发现是因为那个目录是个符号链接。
+
+我不想自己去检查每一个交给find的搜索目录——这他妈应该是find的
+工作。我不想去每次这类情况发生时都要去调查一下系统软件。我不想
+浪费时间来和SUN或者整个Unix党徒们做斗争。我不想用Unix。恨，恨，
+恨，恨，恨，恨，恨，恨。
+
+——Ken (感觉好些了，可还是有点恼)
+
+
+如果想写个复杂一点的shell脚本对找到的文件进行处理，结果往往会很
+奇怪。这是shell传递参数方式所产生的悲惨后果。
+
+
+日期: Sat, 12 Dec 92 01:15:52 PST
+发信人: Jamie Zawinski <jwz@lucid.com>
+主题: Q: what's the opposite of 'find?' A: 'lose'
+(问题：'find'的反义词是什么？ 答案：丢失)
+收信人: UNIX-HATERS
+
+我想找出一个目录下的所有的没有对应.elc文件存在的.el文件。这应
+该不太难，我用的是find.
+
+不过我错了。
+
+我先是这么干的：
+
+% find . -name '*.el' -exec 'test -f {}c'
+find: incomplete statement
+
+噢，我记起来了，它需要个分号。
+
+% find . -name '*.el' -exec 'test -f {}c'\;
+find: Can't execute test -f {}c:
+No such file or directory
+
+真有你的，竟然没去解析这个命令。
+
+% find . -name '*.el' -exec test -f {}c \;
+
+咦，似乎什么也没做...
+
+% find . -name '*.el' -exec echo test -f {}c \;
+test -f c
+test -f c
+test -f c
+test -f c
+....
+
+明白了。是shell把大括号给展开了。
+
+% find . -name '*.el' -exec test -f '{}'c \;
+test -f {}c
+test -f {}c
+test -f {}c
+test -f {}c
+
+嗯？也许我记错了，{}并不是find使用的那个“替换成这个文件名”的符号。真的么
+？...
+
+% find . -name '*.el' \
+-exec test -f '{}' c \;
+test -f ./bytecomp/bytecomp-runtime.el c
+test -f ./bytecomp/disass.el c
+test -f ./bytecomp/bytecomp.el c
+test -f ./bytecomp/byte-optimize.el c
+....
+
+喔，原来如此。下面该怎么办呢？我想，我似乎可以试试"sed..."
+
+可我忘记了一个深刻的哲理：“当遇到一个Unix问题的时候，有的人会
+想‘我懂，我可以试试sed.’这下他们有两个问题去对付了。”
+
+试验了五次，阅读了sed手册两遍，我得到了这个：
+
+% echo foo.el | sed 's/$/c/'
+
+于是：
+
+% find . -name '*.el' \
+-exec echo test -f `echo '{}' \
+| sed 's/$/c'` \;
+test -f c
+test -f c
+test -f c
+....
+
+OK, 看来只能去试试所有shell引用的排列组合了，总会有一款和我意吧？
+
+% find . -name '*.el' \
+-exec echo test -f "`echo '{}' \
+| sed 's/$/c'`" \;
+Variable syntax.
+% find . -name '*.el' \
+-exec echo test -f '`echo "{}" \
+| sed "s/$/c"`' \;
+test -f `echo "{}" | sed "s/$/c"`
+test -f `echo "{}" | sed "s/$/c"`
+test -f `echo "{}" | sed "s/$/c"`
+....
+
+嗨，最后一个似乎有戏。我只需要这么干一下：
+
+% find . -name '*.el' \
+-exec echo test -f '`echo {} \
+| sed "s/$/c"`' \;
+test -f `echo {} | sed "s/$/c"`
+test -f `echo {} | sed "s/$/c"`
+test -f `echo {} | sed "s/$/c"`
+....
+
+别急，这是我想要的，可是你为什么不把{}替换成文件名呢？你再仔细
+瞅瞅，{}两边不是有空格么？你究竟想要什么？
+
+哦，等等。那个反单引号间的引用被当成了一个元素。
+
+或许我能用sed把这个反单引号过滤掉。嗯，没戏。
+
+于是我用了半分钟去想如何能运行"-exec sh -c..."之类的东西，终于
+出现了曙光，写了一段emcas-lisp代码去做这件事。这不困难，挺快的，
+而且工作了。
+
+我真高兴。我以为一切都过去了。
+
+今天早上我洗澡的时候突然想到了另一种做法。我试了一次又一次，深
+深坠入了她的情网，意乱情迷，无法自拔。醉了。只有罕诺塔的Scribe
+实现曾给过我这样的快感。我仅试了12次就找到了解法。对于每个遍历
+到的文件它只产生两个进程。这才是Unix之道！
+
+% find . -name '*.el' -print \
+| sed 's/^/FOO-/'|\
+sed 's/$/; if [ ! -f ${FOO}c]; then \
+echo \ $FOO; fi/' | sh
+
+
+BWAAAAAHH HAAAAHH HAAAAHH HAAAAHH HAAAAHH HAAAAHH HAAAAHH HAAAAHH!!!!
+
+—Jamie
+
+OK, 在下水道里玩捉迷藏挺有意思的吧？第8章就在欢声笑语中这么结束了。下
+回书我们就要开始编程了，还记得小时候那个可爱迷人的护士阿姨是怎么对你说
+的么？
+
+
+第九章 编程
+
+别惹Unix，它弱不禁风，动不动就吐核(core dump)
+——无名氏
+
+如果你是通过在Unix上写C代码而学会的编程，那么可能会觉得这一章有些别扭。
+不幸的是，Unix如此广泛地被应用到了科研教育领域，很少有学生能意识到Unix
+的许多设计并不是严瑾合理的。
+
+例如，听了我们关于有许多语言和环境比C/Unix要好的说法后，一个Unix爱好者
+是这么为Unix和C辩护的：
+
+
+日期: 1991 Nov 9
+发信人: tmb@ai.mit.edu (Thomas M. Breuel)
+
+Scheme, Smalltalk和Common Lisp这些语言确实提供了强大的编程环境。
+但是Unix内核，shell和C语言则针对的是更为广泛的问题空间，而这些
+问题不是上面那些语言所擅长的（有的根本就无法处理）。
+
+这些问题空间包括内存管理和局部性(locality)(在进程的产生和终止
+中实现)，、持续性(persistency)(使用文件存储数据结构)，并行性
+(parallelism)(通过管道，进程和进程通讯机制来实现)，保护和恢复
+(通过独立的地址空间实现)，以及可直观读取的数据表现方式(使用文
+本文件实现)。从实用的角度来看，Unix能很好地处理这些问题。
+
+
+Thomas Breuel夸奖Unix能够解决复杂的计算机科学问题。幸运的是，这不是其
+他科学领域用来解决问题的方法。
+
+
+日期: Tue, 12 Nov 91 11:36:04 -0500
+发信人: markf@altdorf.ai.mit.edu
+收信人: UNIX-HATERS
+主题: Random Unix similes (随机的Unix笑脸)
+
+通过控制进程的产生与终止来进行内存管理，这就如同通过控制人的生
+死来对付疾病——这忽视了真正问题。
+
+通过Unix文件获得持续性就如同把你所有的衣服仍进衣柜，幻想着能从
+里面找到需要的衣服（不幸的是，我正是这么去做的）。
+
+通过管道，进程和进程通讯机制来实现并行化？Unix进程的代价是如此
+之高，以至于并行化得不偿失。就象是鼓励员工多生孩子，以解决公司
+人力资源短缺问题。
+
+不错，Unix当然可以处理文本。他还能处理文本。嗯，还有，我有没有
+提到过Unix能够很好地处理文本？
+
+——Mark
+
+
+蔚为壮观的Unix编程环境
+
+Unix狂热分子们总在宣扬Unix的所谓“编程环境”。他们说Unix提供了丰富的工
+具，能够使得编程工作更为容易。这是Kernighan和Mashey在《Unix编程环境》
+一文中的说法：
+
+Unix环境最能提高编程效率，这归功于众多的又小又有用的程序——工
+具，这些工具为日常的编程工作提供帮助。下面列举的这些程序被认为
+是其中最为有用的。我们在下文中将以他们为例说明其他观点。
+
+wc files —— 统计文件中的行数，字数和字符数。
+pr files —— 打印文件，支持标题和多栏打印。
+lpr files —— 打印文件
+grep pattern files —— 找到符合某种模式的文件行。
+
+许多程序员的工作就是用它们和一些其他相关程序完成的。例如：
+
+wc *.c
+
+用于对所有C源代码文件进行代码量统计；
+
+grep goto *.c
+
+用于找到所有的goto语句。
+
+
+这些就是“最为有用的”？！？！
+
+有道理。这就是程序员的日常工作。事实上，今天我就用了不少时间来统计我的
+C代码量，以至于没有多少时间去做其他事情。等一下，我想我还得再数一遍。
+
+同一期《IEEE计算机》上还有一篇文章，是Warren Teitelman和Larry Masinter
+写的《Interlisp编程环境》.Interlisp是个极为复杂的编程环境。1981年
+Interlisp就有了Unix程序员到了1984还在梦想的工具。
+
+Interlisp环境的设计者们使用的是完全不同的方法。他们决定开发一个复杂的
+工具，需要花不少时间来掌握，好处是一旦学会了，极大地提高编程效率。听上
+去有些道理。
+
+悲哀的是，今天很少有程序员能体会使用这类环境的感觉了。
+
+在柏拉图的洞穴里编程
+
+我总有一种感觉，计算机语言设计和工具开发的目标应该是提高编程效率而不是降低。
+——comp.lang.c++上的一个贴子
+
+计算机以外的其他产业早就体会到了自动化的意义。当人们走进快餐点，
+他们需要的是一致标准的东西，而不是什么法国大菜。大规模地提供一致的一般
+食物，这比小批量的精耕细作要赚钱得多。
+
+——netnews上一个技术人员的回复
+
+Unix不是世界上最好的软件环境——它甚至不是一个好的环境。Unix编程工具又
+简陋又难用；Unix调试器和PC上的没法比；解析器(interpreters)仍然是富人的
+玩具；修改日志(change log)和审记(audit trail)总是想起来才去做。可Unix
+仍然被当成程序员的梦。也许它只能让程序员梦到了效率的提高，而不是真的提
+高效率。
+
+Unix程序员有点象数学家。你能从他们身上观察到一个神秘现象，我们称之为
+“空头编程”(Programming by Implication)。一次我们和一个Unix程序员聊天，
+谈到需要这样一个工具，能够回答诸如“函数foo被谁调用过？”或者“那个函
+数改变过全局变量bar”之类的问题。他也认为这个工具会很有用，提议到，“
+你们可以自己写一个。”
+
+公平地说，他之所以只是说“你们可以自己写一个”而不是真正写一个，这是因
+为C语言的一些特性和Unix“编程环境”的强强联手，使得写这样的程序难于上
+青天。
+
+使用yacc进行解析(parsing with yacc)
+
+"Yacc"就是我用过yacc(1)之后想喊的。
+——匿名
+
+"YACC"是再一个编译编译器的编译器(Yet Another Compiler Compiler)的意思。
+它接受与上下文无关(context-free)的语法，构造用于解析的下推自动机
+(pushdown automaton)。运行这个自动机，就得到了一个特定语言的解析器。这
+一理论是很成熟的，因为以前计算机科学的一个重要课题就是如何减少编写编译
+器的时间。
+
+这个方法有个小问题：许多语言的语法不是与上下文无关的。这样yacc
+的使用者不得不在每一个状态转换点上加上相关代码，以处理和上下文有关的部
+分(类型检查一般就是这么处理的)。许多C编译器使用的都是yacc生成的解析器；
+GCC 2.1的yacc语法有1650行之多 (如果不用yacc，GCC应该能成为自由
+软件基金会不错的作品)。由yacc生成的代码就更多了。
+
+有些编程语言的语法比较容易解析。比如，Lisp能够用一个递归下降解析器进行
+解析。“递归下降”是一个计算机术语，含义是“喝杯可乐的功夫就能实现”。
+作为试验，我们写了一个Lisp递归下降解析器，只用了250行C代码。如果是用
+Lisp写的，那么一页纸也用不了。
+
+在上面提到的那个计算机科学原始时代，这本书的编辑还没有生出来呢。计算机
+房是恐龙的天下，“真正的人”都在用仪表盘上的开关来编程。今天，社会学家
+和历史工作者想破脑袋也无法理解为什么理智的程序员却设计、实现和传播了如
+此难解析的语言。也许他们那时候极需一个困难的研究项目，设计一个难于解析
+的语言似乎是个不错的课题。
+
+一直想知道他们在那个时代吃的是什么药。
+
+上面提到的那个工具类似于一个C编译器的前端。C编译器前端是个极其复杂的东
+西，这是C的复杂语法和yacc的使用造成的。没有人真正动手去写一个这
+样的工具，这还有什么奇怪的么？
+
+死硬的Unix分子会说你不需要这么一个程序，因为有grep就足够了。而
+且，你还能在shell管道中使用grep。有一天，我们想找出BSD内核源码
+中所有使用min函数的地方。这是其中一个结果：
+
+% grep min netinet/ip_icmp.c
+icmplen = oiplen + min(8, oip->ip_len);
+* that not corrupted and of at least minimum length.
+* If the incoming packet was addressed directly to us,
+* to the incoming interface.
+* Retrieve any source routing from the incoming packet;
+%
+
+
+挺不错的吧，grep找到了所有的min函数调用，而且还不止这些。
+
+
+“不知道怎么做爱。我撤。”("Don't know how to make love. Stop.")
+
+理想的编程工具应该是这样的，它能让简单的问题保持简单，让复杂的问题有解
+决的可能。不幸的是，许多Unix工具过分追求通用性，而忽视了简洁。
+
+Make就是这样一个典型。从抽象意义而言，make的输入是一个倚
+赖关系的描述。倚赖图上的每个节点都对应这一组命令，当节点过期时(由它所
+倚赖的节点来决定)，这些命令会被执行。节点和文件相关，文件的修改时间决
+定了节点是否过期。下面是一个简单的倚赖关系图，也就是Makefile:
+
+
+program: source1.o source2.o
+
+
+cc -o program source1.o source2.o
+
+source1.o: source1.c
+
+cc -c source1.c
+
+source2.o: source2.c
+
+cc -c source2.c
+
+这里program, source1.o, source2.o, source1.c,
+source2.c就是关系图上的节点。节点program倚赖于
+source1.o和source2.o。
+
+如果source1.o或source2.o比program要新，
+make便会运行命令cc -o program source1.o source2.o重新生
+成program。当然，如果修改了source1.c，那么
+source1.o和program都会过时，所以make会重新进行编
+译和链接。
+
+尽管make的模型很通用，可惜设计者从没有考虑过简单性。不过，许多
+Unix新手都能体会到make能多么简单地“钻”(screw)了他们。
+
+继续我们上面的那个例子，假定有个程序员Dennis想调试source1.c，于是要?br>诒嘁胧
+焙蚴褂玫魇匝∠睢Ｋ薷牧艘幌翸akefile:
+
+
+program: source1.o source2.o
+
+cc -o program source1.o source2.o
+
+# I'm debugging source1.c
+source1.o: source1.c
+
+cc -c source1.c
+
+source2.o: source2.c
+
+cc -c source2.c
+
+"#"打头的那行是注释，会被make忽略。可怜的Dennis运行了一下
+make，这是它得到的：
+
+
+Make: Makefile: Must be a speparator on line 4.
+Stop
+
+
+make歇菜了。Dennis盯着Makefile看了有好几分钟，又看了几小时，还是不
+明白哪儿出错了。他觉得是注释行的问题，可不是很肯定。
+
+毛病出在当他加入注释行时，他不小心在第二行开始的制表符(tab)前敲入了一
+个空格。制表符是Makefile语法的一个重要部分。所有的命令行(例子中
+cc开始的行)必须以制表符打头。这就是Dennis的Makefile不工作的原因。
+
+“那又怎样？”你可能会说，“这有什么不对的？”
+
+它本身没什么不对。不过如果你想一下其他Unix编程工具的工作方式，就会觉得
+制表符语法就好象《地雷战》里的头发丝雷，看上去一马平川，踩上去呜呼哀哉。
+
+你知道，制表符、空格符和换行符一般被统称为“白字符”(whitespace
+characters)。“白字符”意味着“你可以放心大胆地忽略它”许多程序正是这
+么做的，对空格和制表符一视同仁。就make孤芳自赏桀骜不驯鹤立鸡群
+冰清玉洁众人皆醉唯我独醒。于是我们这位Dennis兄弟恐怕只能给自己脑袋来一
+枪，告别这悲惨的Unix世界。
+
+可怜的Dennis最终也没有找到自己那个Makefile的毛病，他现在落魄到只好去给
+一个中西部州立大学维护sendmail配置文件。默哀三分钟。
+头文件
+
+C语言有个东西叫头文件，里面是一些说明信息，在编译时被源文件使用。和
+Unix上的其他玩意一样，如果只有一个两个，可以工作得很好，多了就没戏了。
+
+要知道你的源文件该使用那个头文件，这可不是件容易事。头文件是C预处理器
+(preprocessor)根据#include指令(directive)加载的。这个指令有两个
+用法：
+
+#include <header1.h>
+
+和
+
+#include "header2.h"
+
+
+这两种用法的区别和各个C预处理器的实现有关，也就是说，任何实现都可以大
+着胆子撒着欢儿由着性子乱来。
+
+让我们来看看Dennis的朋友Joey，Joey也是个Unix新手。Joey有个C程序
+foo.c，使用了foo.h中定义的一些数据结构，foo.c和
+foo.h放在了同一个目录下。你可能已经知道"foo"是程序员常用的名字。
+Joey机器上的系统程序员也做了一个foo.h文件，并把它放到了缺省系统
+头文件目录/usr/include
+
+倒霉蛋Joey编译了foo.c，得到一堆语法错误。他迷惑不解，编译器总在
+他定义的一些数据结构处报错，可是这些数据结构在foo.h里被定义的好
+好的呀。
+
+你我估计能猜到Joey的问题在哪儿，他一定是这么加载头文件的：
+
+#include <foo.h>
+
+而不是写成：
+
+#include "foo.h"
+
+
+可Joey不知道这个。也可能他确实是用的引号方式，只是他的编译器的查找方式
+有些特别。不管怎样，Joey是被干掉了，很无辜地被干了。
+
+维护很多头文件是件挺头疼的事，不幸的是，如果你写个有用点儿的C程序，这
+是不可避免的。头文件一般糜诙ㄒ迨萁峁梗桓鐾肺募欣涤谄渌恍?
+头文件。去把那些头文件的倚赖关系整理一下，你这回可不愁没事儿做了。
+
+当然，编译器会帮你的。如果你把倚赖关系搞错了，编译器会毫不留情地指出语
+法错误。记住，编译器是个很忙很有身份的程序，它没时间去区分未定义的数据
+结构和输入错误的区别。事实上，即使你只是忘了敲个分号，C编译器也会恼羞
+成怒，立马撂挑子不干了。
+
+在编译器社区，这一现象被称为“错误雪崩”，或者按照编译器自己的说法：
+“我完蛋了，起不来了。” 缺个分号会把解析器彻底搞晕，狂吐不止。这个解
+析器很可能是用yacc写成的，yacc对语法正确的程序(很少见的
+一种情况)处理得很好，但要让它生成健壮容错自动恢复的解析器，这就有点儿
+勉为其难了。有经验的C程序员都知道只有第一条解析错误才是有意义的。
+工具程序和Man手册
+
+Unix工具是自成一体的；可以任意解释命令行参数。这样的自由有些烦人；别以
+为学会了一套命令行规则就一劳永逸了，你必须去读每个命令的Man手册，才能
+知道如何去使用。
+
+知道有那么多清楚明白的Man手册供你参考，你一定很开心吧。
+
+看一下下面这个例子。“摘要”一栏总结得挺不错的，是不是？
+
+
+LS(1) Unix程序员手册 LS(1)
+
+名称
+ls - 列出目录内容
+
+摘要
+ls [ -acdfgilqrstu1ACLFR ] 名称 ...
+
+描述
+对于每个目录参数，ls列举那个目录的内容；对于每个文件参数，
+ls 给出文件名以及要求的其他信息。缺省情况下，输出将按照字
+母顺序排列。如果没有参数，则列举当前目录的内容。如果有不只
+一个参数，这些参数首先会被适当排序，但是文件参数总是会被排
+在目录参数前面。
+
+ls有很多选项：
+
+[ ... ]
+
+BUGS
+文件名中的换行符和制表符会被可打印字符
+
+输出设备会被假设有80列宽
+
+输出会根据输出设备的不同而不同，比如"ls -s"的结果和"ls -s
+| lpr"的结果不一样。这是不正确的，然而如果不这么做，一些倚
+赖这个功能的旧有shell脚本就会完蛋。
+
+如果你想玩个游戏，不妨读一下每个Man手册的BUGS部分，然后想像一下每个bug
+是如何造成的。看一下这个shell的man手册：
+
+SH(1) Unix程序员手册 SH(1)
+
+名称
+sh, for, case, if, while, :, ., break, continue, cd,
+eval, exec, exit, export, login, read, readonly, set,
+shift, times, trap, umask, wait - 命令语言
+
+摘要
+ls [ -ceiknrstuvx ] [参数] ...
+
+描述
+Sh是一个命令程序语言，它执行来自终端或文件的命令。下面是各
+个选项的说明。
+
+[ ... ]
+
+BUGS
+如果把使用<<提供的标准的输入提供给使用&运行起来的非同步的
+进程，shell会搞不清楚输入文档的名字。会生成一个垃圾文件
+/tmp/sh*，shell会抱怨找不到使用另外一个名字的文档。
+
+我们用了好几分钟也没搞明白这个bug究竟是他妈什么意思。一个Unix专家看过
+之后说：“我边看边挠脑袋，有写这段BUGS的功夫，估计足够这家伙改掉这个吊
+玩意了。”
+
+不幸的是，修改bug几乎是不可能的，因为它会随着每个新发布的操作系统而卷
+土重来。在80年代早期，在这些bug还没有被Unix信徒奉为神圣以前，一个BBN的
+程序员真的修改了伯克利make的这个制表符bug。这不是很难，也就是几
+行代码的事儿。
+
+和所有责任感的公民一样，BBN的骇客们把补丁发给了伯克利，希望能把它加入
+主Unix代码中。一年过后，伯克利发布了新版本的Unix，make的这个bug
+还是存在。BBN的骇客第二次做了修改，又把补丁交给了伯克利。
+
+....然而伯克利的第三次发布还是老样子，BBN的程序员彻底失望了。他
+们没有再提交补丁，而是把他们所有的Makefile中空格打头的行替换成了制表
+符。毕竟BBN雇佣他们是来写新程序的，而不是反复修改同一个bug。
+
+(据说，Stu Felman(make的作者)一开始就查觉到了这个问题，他没有修
+改，因为那时已经有10个用户开始用了。)
+
+源码就是文档。哇~~ 牛逼!
+
+如果我写着不容易，那么你理解起来就不应该容易。
+—— 一个Unix程序员
+
+我们在《文档》一章里提到Unix程序员认为操作系统的源代码是最好的文档。一
+个著名的Unix历史学家曾经指出：“毕竟，操作系统自己也是靠读源代码来知道
+下一步该干嘛的。”
+
+可是通过阅读源代码来理解Unix，这就如同开着Ken Thompson的老爷车(对，就
+是闪着大红问号的那辆)周游世界。
+
+Unix内核源码(更准确的说，是ftp.uu.net上发布的伯克利网络磁带2版
+的代码)几乎没有注释，充斥这大"段"没有空行的代码，goto随处可见，
+绞尽脑汁给妄图读懂它的人制造麻烦。有个骇客感叹到：“阅读Unix代码就好象
+走在伸手不见五指的巷子里。我总是停下来摸摸口袋，脑子里回响着一个声音
+‘老天，我就要遭劫了。’”
+
+当然，内核代码有它自己的警报系统。四处散布着这样的小小注释：
+
+/* XXX */
+
+意思是有什么东西不太对劲儿。你应该知道哪儿出事儿了。
+这绝不可能是bug，我的Makefile需要它！
+
+BBN的程序员应该算是另类。大部分Unix程序员是不去修改bug的：他们没有源代
+码。即使修改了也于事无补。这就是为什么Unix程序员遇到bug的第一个反应不
+是修了它，而是绕过它。
+
+于是我们看到了悲惨的一幕：为什么不一劳永逸地解决问题，而是一错再错？也
+许早期的Unix程序员是尼采“永恒轮回”思想的信徒。
+
+对于调试方法，存在着两个截然不同的派别：一个是“外科手术派”，包括流行
+于早期ITS和Lisp系统，程序运行过程中始终有调试器参与，如果程序崩溃了，
+调试器(也就是所谓外科大夫)会对问题进行诊断医治。
+
+Unix是属于更古老的“尸体解剖派”。Unix下如果一个程序崩溃了，会遗留下一
+个core文件，从各个方面看这都和尸体没什么两样。Unix调试器然后会找出死因。
+有趣的是，Unix程序常常和人一样，死于本可治疗的疾病、事故以及疏忽。
+
+对付Core
+
+如果你的程序吐核(core)了，你首先要做的是找到它。这不该太困难，因为core
+文件总是很大——4, 8, 甚至12兆。
+
+core文件之所以这么大，是因为它包括了所有用来调试的信息：堆栈，数据，代
+码指针等等，无所不包，除了程序的动态状态。如果你在调试一个网络程序，在
+你的程序吐核的时候，已经为时太晚了；程序的网络连接已经没有了，更致命的
+一击是，所有打开的文件现在都被关上了。
+
+不幸的是，在Unix上只能如此。
+
+例如，不能把调试器作为命令解析器，或者在内核发生异常时把控制交给调试器。
+如果想让调试器在程序崩溃时进行接管，那你只能在调试器里面运行所有程序
+(是的，有的Unix版本让你用调试器接管一个运行中的进程，但是你手边必须有
+一个还有符号的程序文件)。如果你想调试中断代码，你的调试器必须截获每个
+中断，然后把合适的中断返回给程序。你能想像emacs里每敲一键都发生3个进程
+切换(context switch)的感觉么？显然，例程调试(routine debugging)思想和
+Unix 哲学是格格不入的。
+
+
+日期: Wed, 2 Jan 91 07:42:04 PST
+发信人: Michael Tiemann <cygint!tiemann@labrea.stanford.edu>
+收信人: UNIX-HATERS
+主题: Debuggers (调试器)
+
+想过Unix调试器为什么这么蹩脚么？这是因为如果它想提供什么功能，
+那一定会跟来一堆bug，如果有bug，它一定会吐核(dump core)，如果
+它吐核，靠，你用来调试的那个core文件就会被覆盖。如果能让程序来
+控制如何吐核，何时吐核，以及吐在哪里，那就太好了。
+
+
+bug骨灰盒
+
+和其他操作系统不同，Unix把bug供奉为标准操作。之所以那么多Unix bugs得不
+到修正，这里有个不可告人的原因——如果修正了，那么已有的一些程序就会死
+逼了。然而，荒唐的是，Unix程序员在增加新功能时却从来不去考虑向下兼容。
+
+考虑到这些，Michael Tiemann给出了Unix调试器覆盖core文件的10个理由：
+
+
+日期: Thu, 17 Jan 91 10:28:11 PST
+发信人: Michael Tiemann <tiemann@cygnus.com>
+收信人: UNIX-HATERS
+主题: Unix Debuggers (Unix调试器)
+
+David Letterman (美国著名晚间脱口秀主持人)的10个最佳理由是：
+
+10. 这会破坏已有代码。
+9. 这需要修改文档。
+8. 太难实现了。
+7. 这怎么是调试器的活儿？为什么不写个“工具”做它？
+6. 如果调试器吐了核，你应该丢开你自己的程序，开始调试调试器。
+5. 太难理解了。
+4. 哪儿有饼干？
+3. 为什么非得现在做？
+2. Unix也不是神仙。
+1. 哪儿有问题？
+
+
+Unix程序员总是打着“这会破坏已有代码”的幌子，不愿意修正bug。可这里面
+还有内幕，修正bug不但会破坏已有代码，还必须修改简单完美的Unix接口，而
+这正是Unix教众们的命根子。至于这个接口是否工作，这并不重要。Unix教众们
+不去提出更好的接口，也不去修正bug，而是齐声高唱“Unix接口好简洁，好简洁。
+Unix接口就是美，就是美！Unix无罪！Unix有理！”。
+
+不幸的是，绕过bug是个很恶劣的行为，它使得错误成为了操作系统规范的一部
+分。你越是等，就越难以修正，因为越来越多的程序会尽力绕过bug，以至于没
+有了bug反而活不了了。同理，修改操作系统接口带来的影响更大，因为更多的
+程序必须根据这个正确的新接口进行修改。(这解释了为什么ls有那么多的选项
+来完成几乎一样的工作)。
+
+如果你把一只青蛙仍到开水里，它会马上跳出来。它知道开水很烫。可是，如果
+你把青蛙放到冷水里，再慢慢地加热，青蛙感觉不到什么，直到最后被烫死。
+
+Unix接口已经开锅了。以前，输入/输出的全部接口只包括open,
+close, read和write。网络支持给Unix添了一大把柴禾。
+现在，至少有五种方法向一个文件句柄输入数据：write,
+writev, send, sendto和sendmsg。每个都在内
+核中有不同的实现，这意味着有五倍的可能出现bug，有五种不同的性能结果需
+要考虑。读文件也一样(read, recv, recvfrom和
+recvmsg)。等死吧，青蛙们。
+
+文件名扩展
+
+Unix“所有程序自成一体”的规定有一个例外。Unix程序经常要处理一个或多个
+文件。Unix shells提供了命名一组文件的方法，shell会把这组文件展开，做为
+一个文件列表传递给各个命令。
+
+例如，假设你的目录下有文件A, B和C。如果象删除所有这些文件，你可以运行
+rm *。shell会把"*"扩展成为"A B C"，并把他们做为
+rm的参数传递给它。这个方法有不少问题，这在上一章已经提到过了。
+不过，你应该知道让shell来扩展文件名不是偶然的：而是精心设计的结果。在
+Kernighan和Mashey发表的《Unix编程环境》一文中(IEEE计算机杂志，1981年四
+月)，他们指出：“把这个作为shell的一个机制，这避免了各个程序的重复劳动，
+而且保证了为所有程序提供一致的输入。” (Unix的一个理想是让任何人能够运
+行任何shell。现在你没法运行任何shell；你的shell必须提供文件名扩展)。
+
+别忙。标准输入/输出库(Unix所谓的stdio)不就能“为所有程序提供一致的输入”
+么？提供一个用于扩展文件名的库函数不就成了？这些家伙没有听说过链接库么？
+那些关于性能的说法也是无稽之谈，因为他们无法提供任何的性能数据，他们甚
+至没有说明“性能指标”是什么。指的是开发一个小程序会快一些？还是指能高
+性能地把一个新手的所有文件一扫而光？
+
+大多数情况下，让shell进行文件名扩展也无所谓，因为这和程序自己扩展的结
+果没什么不同。可是，和Unix上的许多玩意一样，它早晚会咬你一口，而且不轻。
+
+假设你是个Unix新手，目录下有两个文件A.m和B.m。你习惯了
+MS-DOS，想把它们的名字换成A.c和B.c。嗯~~ 没找到rename命
+令，不过mv命令似乎差不多。于是你执行mv *.m *.c。shell将这个命令
+扩展为 mv A.m B.m，你辛辛苦苦写了几小时的B.m就这么被干掉了。
+
+再好好思考一下上面这个问题，你就会发现理论上你完全不可能提供一个和
+MS-DOS "rename"一样的功能。对于软件工具，就扯这么多吧。
+
+
+健壮性，或者说“所有输入行必须小于80个字符”
+
+1990年11月份的《ACM通讯》上登了Miller Fredriksen等人写的一篇精采文章，
+题目是《Unix工具的稳定性的经验性研究》。他们使用一些随机数据作为Unix工
+具的输入，发现有24-33%(不同的Unix发布结果有所不同)的工具崩溃了。有时候
+甚至整个系统都完蛋了。
+
+文章是以一个笑话开头的。其中一位作者曾使用一个极差的电话连接工作，发现
+许多工具都垮掉了。于是他决定针对这一现象进行更系统的调查研究。
+
+许多bug都可以归因于C语言的陈规陋习。事实上，Unix的许多内在脑损伤都是C
+语言造成的。Unix的核心以及所有的工具程序都是用C语言写的。著名语言学家
+Benjamin Whorf说过：语言决定思想。Unix有深深的C烙印。C语言使得程序员根
+本无法想像能写出健壮的程序。
+
+C语言是极小的。它被设计成能在各种硬件上快速地进行编译，所以它有着和硬
+件类似的结构。
+
+Unix诞生之初，使用高级语言编写操作系统是个革命性的想法。现在则应该考虑
+使用一种有错误检查的语言了。
+
+C是个最为底层的语言，诞生于硬件更为底层的时代。PDP-11没有的，C语言也不
+会有。过去几十年的编程语言研究表明，语言中加入错误处理，自动内存管理和
+抽象数据类型等功能，会使得开发出的程序更为健壮可靠。你在C里面找不到这
+些东西。C语言太流行了，没人去考虑给它增加诸如数据标记或硬件垃圾回收支
+持等功能。即使硬件提供了垃圾回收功能，也只是多费了一些硅片罢了，因为许
+多C语言编写的程序根本无法使用它。
+
+回想一下，C是无法处理整数溢出的。解决方法是使用超过问题需要的整数大小，
+希望这个大小在你有生之年足够用。
+
+C也没有真正意义上的数组，它有个象是数组的东西，实际不过是一个指向一块
+内存的指针。数组定位表达式(array[index])不过是表达式(*(array+index))的
+简写版。所以你甚至可以说index[array]，这和表达式(*(array+index))是一个
+意思。聪明吧？在字符处理时经常能见到这个用法。数组变量和指针变量经常可
+以互换。
+
+举个例子，假设你有：
+
+char *str = "bugy";
+
+于是下面的这些语句都是一样的：
+
+0[str] == 'b'
+*(str+1) == 'u'
+*(2+str) == 'g'
+str[3] == 'y'
+
+C语言够伟大的吧？
+
+这个做法的问题是C根本不做任何自动数组边界检查。为什么该C去做呢？数组在
+C里只是个指针而已，你可以把指针指向内存的任何地方，是不是？不过，一般
+你不想在内存里乱写乱画，特别在是一些关键的地方，比如程序的堆栈。
+
+这把我们引到了Miller的文章里提到的一类bug。许多程序是在读取输入到堆栈
+上的一块字符缓冲区时崩溃的。许多C程序是这么做的；下面的C程序把一行输入
+读到堆栈上的一个数组里，然后调用do_it函数进行处理。
+
+a_function()
+{
+char c, buff[80];
+int i = 0;
+
+while ((c = getchar()) != '\n')
+buff[i++] = c;
+buff[i] = '\000';
+do_it(buff);
+}
+
+
+这类代码把Unix搞得臭不可闻。知道为什么缓冲区被定为80个字符么？这是因为
+许多Unix文件每行最多有80个字符。知道为什么没有边界检查，也没有文件尾检
+查么？这是因为这个程序员喜欢把c = getchar()这样的赋值语句嵌入到
+while循环中。信不信，有些人还推崇C的这种缩简写法，管他妈什么可读性可维
+护性。最后，调用do_it()，数组摇身一变成了指针，作为第一个参数传
+了进去。
+
+作为练习：如果在一行当中到达了文件尾，这个程序的结果是什么？
+
+当Unix用户查觉到这个内置的限制后，他们想到的不是去修正这个bug，而是想
+方设法躲过它。比如，Unix的磁带备份工具(tape archiver)tar不能处
+理超过100个字符的路径名(包括目录)。解决方法是：不要备份目录到磁带，或
+者使用dump。更好的办法是：不要建立太深的目录，这样文件的绝对路
+径就不会超过100个字符。
+
+2038年1月18日上午10点14分07秒，Unix马虎编程将在这一刻上演精采的一幕，
+那时Unix的32位timeval将耗尽...
+
+再回到我们前面那个例子，假设输入行有85个字符。这个函数毫无问题地接受了
+这个输入，可问题是最后那5个字符会被放到哪里呢？答案是它们会占据任何排
+放在数组后面的5个字节。之前那里放着的是什么呢？
+
+c和i这两个变量可能会被分配在字符数组之后，所以有可能会被
+85字符长的输入冲垮。如果输入了850个字符呢？则可能会毁掉堆栈上的重要的C
+运行环境系统信息，比如返回地址等。毁掉这些信息的最好结果是程序可能崩溃。
+
+我们说“可能崩溃”是因为程序的编写者从没想到过你竟能毁掉堆栈。想像一下
+我们的这个程序读入了很长的一行，约有2,000个字符，这行字符被用来覆盖堆
+栈上的返回地址以及其他环境信息，它将调用2,000个字符里埋藏的一段代码。
+这段代码可能会做一些很有用的事情，比如执行(exec)出一个shell，运行一些
+命令。
+
+Robert T. Morris的著名Unix蠕虫病就是使用了这个机制(以及其他一些技巧)黑
+进Unix主机的。我不知道其他人为什么还会这么做，真的不知道，嘻嘻。
+
+
+日期: Thu, 2 May 91 18:16:44 PDT
+发信人: Jim McDonald <jlm%missoula@lucid.com>
+收信人: UNIX-HATERS
+主题: how many fingers on your hands? (你共有几根手指？)
+
+:( 下面是给我的上司的一个报告：
+
+一个用来更新Make文件的程序使用了一个指针，对它的访问毁掉了
+一个存放倚赖关系的数组，这个倚赖关系被用来生成Makefile。直
+接后果是生成的错误Makefile不能用于编译任何东西，没有生成所
+需的对象文件(.o)，所以编译最终失败了。一天的工作就这么付之
+东流了，只是因为一个傻瓜认为10个头文件足够所有人使用了，然
+后对它进行了极其危险的优化以在1毫秒内生成所有的Make文件！
+
+网络化的坏处是，你没法再闯进某人的办公室里把他的心给挖出来。
+
+
+(关于堆栈溢出攻击，可参考经典论文href=http://www.phrack.org/phrack/49/P49-14>
+Smashing The Stack For Fun And
+Profit --me)
+
+异常处理
+
+编写健壮程序的最大挑战是如何正确处理错误和其他异常。不幸的是，C
+几乎没有为此提供什么帮助。今天在学校里学会编程的人里很少有谁知道异
+常是什么。
+
+异常是函数无法正常运行时所产生的一个状态。异常经常发生在请求系统服务时，
+比如分配内存，打开文件等。由于C没有提供异常处理支持，程序员必须自己在
+服务请求时加入异常处理代码。
+
+例如，下面是所有C语言课本中推荐的使用malloc()分配内存的方法：
+
+
+struct bpt *another_function()
+{
+struct bpt *result;
+
+result = malloc(sizeof(struct bpt));
+if (result == 0) {
+fprintf(stderr, "error: malloc: ???\n");
+
+/* recover gracefully from the error */
+[...]
+return 0;
+}
+/* Do something interesting */
+[...]
+return result;
+}
+
+
+another_function函数分配了一个类型为bpt的结构，返回了一
+个指向这一结构的指针。这段代码说明了如何分配内存给这个结构。因为C没有
+显式的异常处理支持，C程序员必须自己去做这件事(就是粗体的那些代
+码)。
+
+当然你可以不这么干。许多C程序员认为这是小事一桩，从来不做异常处理。他
+们的程序往往是这样的：
+
+
+struct bpt *another_function()
+{
+struct bpt *result = malloc(sizeof(struct bpt));
+
+/* Do something interesting */
+[...]
+return result;
+}
+
+
+多么简单，多么干净，大多数系统服务请求都会成功的，是不是？这样的程序在
+大多数场合运行良好，直到它们被应用到复杂特殊的地方，往往就会神秘地失效。
+
+Lisp的实现总是包括一个异常处理系统。异常条件包括OUT-OF-MEMORY这样的名
+称，程序员可以为特定的异常提供异常处理函数。这些处理函数在异常发生时被
+自动调用——程序员不需要介入，也不需要做特殊的检查。适当地使用，可以让
+程序更为健壮。
+
+CLU这样的编程语言也有内置的异常处理。每个函数定义都有一系列可以发出的
+异常条件。对异常的显式支持可以帮助编译器检查那些未被处理的异常。CLU程
+序总是十分健壮，因为编译器逼着CLU程序员去考虑异常处理问题。C程序是个什
+么样子呢：
+
+
+日期: 16 dec 88 16:12:13 GMT
+主题: Re: GNU Emacs
+发信人: debra@alice.UUCP
+
+＜448＠myab.se> lars@myab.se (Lars
+Pensy)写到：
+> ... 所有的程序都应该检查系统调用(如write)的返回结果，这非常重要。
+
+同意，可不幸的是很少有程序在进行读(read)写(write)时这么做。
+Unix工具程序一般会检查open系统调用的返回值，假设所有随后的read，
+write和close总会成功。
+
+原因很明显：程序员很懒，不做错误处理程序会显得更小更快。(这样你
+的系统会有更优异的性能表现)。
+
+
+这封信的作者继续指出，由于大部分系统工具不对write()等系统调用的返回值
+进行检查，系统管理员就必须保证文件系统时时刻刻都有足够的空间。正是如此：
+许多Unix程序假设它们可以写任何成功打开的文件，想写多少就写多少。
+
+读到这里你可能会皱眉头，"嗯~~”一下。最为可怕的是，就在《Unix工具的稳
+定性的经验性研究》这篇文章的前几页，登载了一份报告，说明休斯顿外层空间
+中心的飞船控制实时数据采集系统是如何转型为Unix系统的。"嗯~~”
+
+
+捕捉bug是社会所不能接收的
+
+不去检查和报告bug，这会使制造商生产的系统显得似乎更为健壮和强大。更重
+要的是，如果Unix系统报告每一个错误，那么就根本不会有人去用它！这是活生
+生的现实。
+
+
+日期: Thu, 11 Jan 90 09:07:05 PST
+发信人: Daniel Weise <daniel@mojave.stanford.edu>
+收信人: UNIX-HATERS
+主题: Now, isn't that clear? (现在明白了么？)
+
+惠普做了一些工作，这样我们的惠普Unix系统能够报告一些可
+能会影响它的网络错误。这些惠普系统和SUN, MIPS, DEC工作站共享一
+个网络。我们经常会发现其他机器所引发的问题，可是当我们通知给那
+些机器的主人时(因为这些系统不报告错误，他们不知道自己的机器有
+一半时间是用在重发数据包上了)，他们往往反称是我们这里的问题，
+因为只有我们这里报出了错误。
+
+“两国相争，不斩来使”，不过在Unix世界里，你最好别当信使。
+
+
+修不了？重启！
+
+如果某个关键软件不能适当处理错误的数据和操作条件，那么系统管理员该如何
+是好呢？嗯~~，如果它能在一段时间里正常工作，你就能通过不断重启它来凑合
+着运行。这个法子不是很可靠，也不具有扩展性，不过足够让Unix苟延残喘一阵
+子了。
+
+下面就是这么一个例子，说明如何在named程序不稳定的情况下提供邮件
+服务：
+
+
+日期: 14 May 91 05:43:35 GMT
+发信人: tytso@athena.mit.edu (Theodore Ts'o) (著名的Ted Ts'o? --me)
+主题: Re: DNS performance metering: a wish list for bind 4.8.4
+(DNS性能测试：bind 4.8.4的期待功能表)
+收信人: comp.protocols.tcp-ip.domains
+
+我们现在是这么解决这个问题的：我写了一个叫"ninit"的程序以非精
+灵(deamon)模式(nofork)运行named，然后等待它退出。当named退出时，
+ninit重新启动一个新的named。另外，每隔五分钟，ninit会醒来一次
+发给named一个SIGIOT信号，named接到这个信号后会包一些状态信息写
+入/usr/tmp/named.stats文件中。每隔60秒钟，ninit会用本地named进
+行一次域名解析。如果短时间内没有得到结果，它会杀掉named，重新
+启动一个新的。
+
+我们在MIT的名称服务器上和我们的邮件网关(mailhub)上运行了这个程
+序。我们发现它很有用，能够捕捉named的神秘死亡或僵死。这在我们
+的邮件网关上更是不可缺少，因为即使域名解析中断一小会儿，我们的
+邮件队列也会给撑炸了。
+
+
+当然，这类办法会引发这样的问题：如果ninit有bug，那么该怎么办呢？
+难道也要写一个程序不断重启ninit么？如果写了，你又如何保证那
+个正常工作呢？
+
+对于软件错误的这种态度并不少见。下面这个man手册最近出现在我桌上。我们
+还不能肯定这是不是个玩笑。BUGS部分很是发人深省，因为那里列举的bug是
+Unix程序员总也无法从代码中剔除的：
+
+NANNY(8) Unix程序员手册 NANNY(8)
+
+名称
+nanny - 奶妈，运行所有服务的服务
+
+摘要
+/etc/nanny [switch [argument]] [...switch [argument]]
+
+描述
+许多系统都为用户提供各种服务(server)功能。不幸的是，这些服
+务经常不明不白地罢工，造成用户无法获得所需要的服务。Nanny
+(奶妈)的作用就是照看(babysit)好这些服务，避免关键服务的失
+效，而不需要系统管理员的随时监视。
+
+另外，许多服务使用日志文件作为输出。这些数据常会很讨厌地充
+满磁盘。可是，这些数据又是重要的跟踪记录，应该尽量保存。
+Nanny会定期把日志数据重定向到新文件。这样，日志数据被化整
+为零，旧的日志文件就能被任意转移走，而不对服务构成影响。
+(现在这成了logrotate的任务 --me)
+
+最后，nanny还提供了一些控制功能，使得系统管理员能够对nanny
+以及它所照看的服务进行运行时操作。
+
+选项
+...
+
+BUGS
+有个服务在nanny中做分离fork(detaching fork)。nanny会错误地
+认为这个服务死掉了，不断重启它。
+
+到目前为止，nanny还不能容忍配置文件的错误，如果配置文件的
+路径不对或者内容有错误，nanny必死无疑。
+
+不是所有的选项都被实现了。
+
+Nanny倚赖系统提供的网络功能进行进程间通讯。如果网络代码有
+错误，nanny将无法处理这些错误，可能僵死或是死循环。
+
+对不稳定软件经常重启，这已经成了MIT雅典娜计划(Project Athena)的日常工
+作，现在他们每星期天的凌晨4点都会重启AFS(Andrew File System, 一种网络
+文件系统)服务器。但愿没有人周末熬夜赶写下周一要交的作业...
+
+
+---------------------------------------------------------------------------
+---
+怎么样，Unix编程很有趣吧？惊险，刺激，痛并快乐！该回家了，休息一下，大
+麻没劲了，有海洛英；C用腻了，我们还有C++！放心，离死不远了。
+---
+说了世上一无牵挂为何有悲喜
+说了朋友相交如水为何重别离
+说了少年笑看将来为何常回忆
+说了青春一去无悔为何还哭泣
+scz 发表于：2003-01-20 10:36
+
+发帖： 1400
+注册： 1999-10-26
+标题: 第十章 C++
+
+张贴者： pengchengzou (veteran)
+张贴日期 01/19/03 19:52
+
+第十章 C++
+90年代的COBOL
+
+---------------------------------------------------------------------------
+---
+问："C"和"C++"的名字是怎么来的？
+答：这是他们的成绩
+
+——Jerry Leichter
+
+再没有比C++更能体现Unix“绝不给用户好脸”的哲学思想的了。
+
+面向对象编程可以追溯到60年代的Simula语言，在70年代的Smalltalk语言上得
+到极大发展。许多书会告诉你面向对象语言如何能提高编程效率，使代码更健壮，
+和减少维护费用。不过你甭想在C++里得到这些。
+
+这是因为C++根本就没理解面向对象的实质。非但没有简化什么，反而增加了更
+多的复杂性。和Unix一样，C++从没被好好设计过，它从一个错误走向另一个错
+误，是件打满补丁的破衣服。连自己的语法都没有严格定义(没一个语言敢这样)，
+所以你甚至无法知道一行代码是不是合法。
+
+把C++比做COBOL，其实是对COBOL的污辱。COBOL在那个时代的技术条件下，是做
+出了很不同凡响的贡献的。如果有谁用C++做成过什么事，那就算是很不同凡响
+了。幸运的是，很多不错的程序员知道必须尽量避免C++的伤害，他们只用C，对
+那些荒唐费解的功能敬而远之。通常，这意味着他们必须自己写个非面向对象的
+工具，以获得自己想要的功能。当然，他们的代码会显得极为怪异，失去兼容性，
+难于理解和重用。不过只要有一点儿C++的味道，就足够说服头头批准他们的项
+目。
+
+许多公司已经被多年遗留下来的混乱难懂的COBOL代码搞得焦头烂额了。那些转
+而使用C++的公司刚刚意识到自己上了当。当然，这已经太晚了。软件灾难的种
+子已经播下了，浇水施肥，得到悉心照料，就等着十几年后长成参天大树了。等
+着瞧吧！
+
+
+面向对象的汇编语言
+
+C++没有一丝一毫高层次语言的特性。为什么这么说？让我们看看高层次语言应
+该具备那些特性：
+
+
+优雅：在表示方式及其所表达的概念之间有着简单易懂的关系
+
+抽象：高层次语言的每个表达式只表示一个概念。概念能够被独立表达?br>⒛茏杂勺
+楹稀?
+
+强大：高层次语言的能够对任何精确完整的程序行为进行提供直接了当?br>拿枋龇绞健?
+
+
+高层次语言使程序员能够采用问题空间的方式描述解决方案。高层次的程序很容
+易维护，因为它们的目的性(intent)十分明确。根据一行高层次程序代码，现代
+编译器能够为各种平台生成高效的代码，所以高层次程序的可移植性和可重用性
+自然会很强。
+
+使用低层次语言则需要对考虑无数细节，其中大部分是和机器内部操作有关的东
+西，而不是要解决的问题本身。这不但造成代码难于理解，而且很容易过时。现
+在几乎每隔今年就要更新系统，过时的必须花费很高代价修改低层代码或者彻底
+重写。
+
+
+对不起，你的内存泄漏了
+
+高层次语言对于常见问题有内置解决方案。例如，众所周知内存管理是产生错误
+最多的地方。在使用一个对象之前，你必须为它分配内存，适当进行初始化，小
+心跟踪使用，并正确释放。当然，每件事儿都异常乏味而且很容易出错，极小的
+一个错误可能会导致灾难性后果。定位和修改这类错误是臭名昭著的困难，因为
+它们对于配置或使用方式的变化极其敏感。
+
+使用未分配内存的结构指针会造成程序崩溃。使用未正确初始化的结构也会使你
+的程序崩溃，不过不一定立刻完蛋。如果未能好好跟踪结构的使用情况，则很可
+能释放一块还在使用中的内存。还是崩溃。最好再分配一些结构用来跟踪那些结
+构对象。不过如果你太保守，不去释放那些不很肯定未在使用的内存，那么你可
+要小心了。内存中很快就会充斥着无用的对象，直到内存耗尽，程序崩溃。这就
+是恐怖的“内存泄漏”。
+
+如果你的内存空间碎片太多，那该怎么办呢？解决办法是通过移动对象对内存重
+新归整，不过在C++里没戏——如果你忘了更新对象的所有引用(reference)，那
+么你就会搞乱程序，结果还是崩溃。
+
+很多真正的高层次语言提供了解决办法——那就是垃圾回收(garbage
+collector)。它记录跟踪所有的对象，如果对象用完了会加以回收，永远不会出
+错。如果你使用有垃圾回收功能的语言，会得到不少好处：
+
+大量的bug立马无影无踪。是不是很爽呀？
+
+代码会变得更短小更易读，因为它不必为内存管理的细节操心。
+
+代码更有可能在不同平台和不同配置下高效运行。
+
+唉，C++用户必须自己动手去拣垃圾。他们中的许多人被洗了脑子，认为这样会
+比那些专家提供的垃圾回收工具更为高效，如果要建立磁盘文件，他们估计不会
+使用文件名，而更愿意和磁道扇区打交道。手动回收垃圾可能会对一两中配置显
+得更高效些，不过你当然不会这么去使用字处理软件。
+
+你不必相信我们这里说的。可以去读一下B. Zorn的《保守垃圾回收的代价测量》
+(科罗拉多大学Boulder分校，技术报告CU-CS-573-92)，文中对程序员用C手动优
+化的垃圾回收技术和标准垃圾回收器进行了性能比较，结果表明C程序员自己写
+的垃圾回收器性能要差一些。
+
+OK，假设你是个幡然醒悟的C++程序员，想使用垃圾回收。你并不孤单，很多人
+认为这是个好主意，决定写一个。老天爷，猜猜怎么着？你会发现根本没法在
+C++中提供其他语言内置的那样好的垃圾回收。其中一个原因是，(惊讶！)C++里
+的对象在编译后和运行时就不再是对象了。它们只是一块十六进制的烂泥巴。没
+有动态类型信息——垃圾回收器(还有调试器)没法知道任何一块内存里的对象究
+竟是什么，类型是什么，以及是否有人此时正在使用它。
+
+另一个原因是，即使你能写个垃圾回收器，如果你用了其他未使用垃圾
+回收功能的代码，你还是会被干掉。因为C++没有标准的垃圾回收器，而且很有
+可能永远也不会有。假设我写了一个使用了我的垃圾回收功能的数据库程序，你
+写了一个使用你自己的垃圾回收功能的窗口系统。但你关闭一个装有我的数据记
+录的窗口，你的窗口不会去通知我的数据记录，告诉它已经没有人引用它了。这
+个对象将不会被释放，直到内存耗尽——内存泄漏，老朋友又见面了。
+
+
+学起来困难？这就对了
+
+C++和汇编语言很相象——难学难用，要想学好用好就更难了。
+
+
+日期: Mon, 8 Apr 91 11:29:56 PDT
+发信人: Daniel Weise <daniel@mojave.stanford.edu>
+收信人: UNIX-HATERS
+主题: From their cradle to our grave (从他们的摇篮到我们的坟墓)
+
+造成Unix程序如此脆弱的一个原因是C程序员从启蒙时期就是这么被教
+育的。例如，Stroustrup(C++之父)的《C++编程语言》第一个完整
+程序(就是那个300K大小的"hello world"程序之后的那个)是一个英制/
+公制转换程序。用户用结尾"i"表示英制输入，用结尾"c"表示公制输入。
+下面是这个程序的概要，是用真正的Unix/C风格写的：
+
+
+#include <stream.h>
+
+main() {
+[变量声明]
+cin >> x >> ch;
+;; A design abortion.
+;; 读入x，然后读入ch。
+
+if (ch == 'i') [handle "i" case]
+else if (ch == 'c') [handle "c" case]
+else in = cm = 0;
+;; 好样的，决不报告错误。
+;; 随便做点儿什么就成了。
+
+[进行转换]
+
+往后翻13页(第31页)，给了一个索引范围从n到m的数组(而不是从0到
+m)的实现例子。如果程序员使用了超出范围的索引，这个程序只是笑
+嬉嬉地返回数组的第一个元素。Unix的终极脑死亡。
+语法的吐根糖浆(Syrup of Ipecac，一种毒药)
+
+语法糖蜜(Syntactic sugar)是分号癌症的罪魁祸首。
+——Alan Perlis
+
+在使用C编程语言中所能遇到的所有语法错误几乎都能被C++接受，成功编译。不
+幸的是，这些语法错误并不总能生成正确的代码，这是因为人不是完美
+的，他们总是敲错键盘。C一般总能在编译是发现这些错误。C++则不然，它让你
+顺利通过编译，不过如果真的运行起来，就等着头痛吧。
+
+C++的语法形成也和它自身的发展密不可分。C++从来没有被好好设计过：它只是
+逐步进化。在进化过程中，一些结构的加入造成了语言的二义性。特别
+的规则被用于解决这些二义性，这些难懂的规则使得C++复杂难学。于是不少程
+序员把它们抄在卡片上以供不时之需，或者根本就不去使用这些功能。
+
+例如，C++有个规则说如果一个字符串既可以被解析为声明也可以被解析为语句，
+那么它将被当做声明。解析器专家看到这个规则往往会浑身发冷，他们知道很难
+能正确实现它。AT&T自己甚至都搞不对。比如，当Jim Roskind想理解一个结构
+的意思时(他觉得正常人会对它有不同的理解)，他写了段测试代码，把它交给
+AT&T的"cfront"编译器。Cfront崩溃了。
+
+事实上，如果你从ics.uci.edu上下载Jim Roskind的开放C++语法，你会发现
+ftp/pub目录里的c++grammar2.0.tar.Z有这样的说明：“注意我
+的语法和cfront不一定保持一致，因为 a) 我的语法内部是一致的(这源于它的
+规范性以及yacc的确证。b) yacc生成的解析器不会吐核(core
+dump)。(这条可能会招来不少臭鸡蛋，不过...每次当我想知道某种结构的语法
+含义是，如果ARM(Annotated C++ Reference Manual, 带注释的C++参考手册)对
+它的表述不清楚，我就会拿cfront来编译它，cfront这时总是吐核(core dump))”
+
+
+日期: Sun, 21 May 89 18:02:14 PDT
+发信人: tiemann (Michael Tiemann)
+收信人: sdm@cs.brown.edu
+抄送: UNIX-HATERS
+主题: C++ Comments (C++注释)
+
+日期: 21 May 89 23:59:37 GMT
+发信人: sdm@cs.brown.edu (Scott Meyers)
+新闻组: comp.lang.c++
+组织: 布朗大学计算机系
+
+看看下面这行C++代码：
+
+//********************** color=green>
+
+C++编译器该如何处理它呢？GNU g++编译器认为这是一行由一堆星星
+(*)组成的注释，然而AT&T编译器认为这是一个斜杠加上一个注释开始
+符(/*)。我想知道哪个是正确解析方式，可是Stroustrup的书(《C++编
+程语言》)里面却找不到答案。
+
+实际上如果使用-E选项进行编译，就会发现是预处理器(preprocessor)
+搞的鬼，我的问题是：
+
+
+这是否AT&T预处理器的bug？如果不是，为什么？如果是bug，2.0版是否会得到修
+正？还是只能这么下去了？
+
+这是否GNU预处理器的bug？如果是，为什么？
+
+
+Scott Meyers
+sdm@cs.brown.edu
+
+UNIX解析中有个古老的规则，尽量接受最长的语法单元(token)。这样'
+foo'就不会被看成三个变量名('f', 'o'和'o')，而只被当成一个变量'
+foo'。看看这个规则在下面这个程序中是多么的有用(还有选择'/*'作
+为注释开始符是多么的明智)：
+
+double qdiv (p, q)
+double *p, *q;
+{
+return *p/*q;
+}
+
+
+为什么这个规则没有被应用到C++中呢？很简单，这是个bug。
+
+Michael
+
+
+糟糕的还在后头，C++最大的问题是它的代码难读难理解，即使对于每天都用它
+的人也是如此。把另一个程序员的C++的代码拿来看看，不晕才怪。C++没有一丝
+品位，是个乱七八糟的丑八怪。C++自称为面向对象语言，却不愿意承担任何面
+向对象的责任。C++认为如果有谁的程序复杂到需要垃圾回收，动态加载或其他
+功能，那么说明他有足够的能力自己写一个，并且有足够的时间进行调试。
+
+C++操作符重载(operator overloading)的强大功能在于，你可以把一段明显直
+白的代码变成能和最糟糕的APL, ADA或FORTH代码相媲美的东西。每个C++程序员
+都能创建自己的方言(dialect)，把别的C++程序员彻底搞晕。
+
+不过——嘿——在C++里甚至标准的方言也是私有的(private)。
+
+抽象些什么？
+
+你可能会觉得C++语法是它最糟糕的部分，不过当你开始学习C++时，就会知道你
+错了。一旦你开始用C++编写一个正式的大型软件，你会发现C++的抽象机制从根
+儿上就烂了。每本计算机科学教材都会这样告诉你，抽象是良好设计之源。
+
+系统各个部分的关联会产生复杂性。如果你有一个100,000行的程序，其中每一
+行都和其他行代码的细节相关，那你就必须照应着10,000,000,000种不同的关联。
+抽象能够通过建立清晰的接口来减少这种关联。一段实现某种功能的代码被隐藏
+在模块化墙壁之后发挥作用。
+
+类(class)是C++的核心，然而类的实现却反而阻碍着程序的模块化。类暴露了如
+此多的内部实现，以至于类的用户强烈倚赖着类的具体实现。许多情况下，对类
+做一点儿改变，就不得不重新编译所有使用它的代码，这常常造成开发的停滞。
+你的软件将不再“柔软”和“可塑”了，而成了一大块混凝土。
+
+你将不得不把一半代码放到头文件里面，以对类进行声明。当然，类声明所提供
+的public/private的区分是没有什么用的，因为“私有”(private)信息就放在
+了头文件里，所以成了公开(public)信息。一旦放到头文件里，你就不大愿意去
+修改它，因为这会导致烦人的重编译。程序员于是通过修补实现机制，以避免修
+改头文件。当然还有其他一些保护机制，不过它们就象是减速障碍一样，可以被
+心急的家伙任意绕过。只要把所有对象都转换(cast)成void*，再也没有
+了讨厌的类型检查，这下世界清净了。
+
+其他许多语言都各自提供了设计良好的抽象机制。C++丢掉了其中一些最为重要
+的部分，对于那些提供的部分也叫人迷惑不解。你是否遇到过真正喜欢模板
+(template)的人？模板使得类的实现根据上下文不同而不同。许多重要的概念无
+法通过这种简单的方式加以表达；即使表达出来了，也没法给它一个直接的名字
+供以后调用。
+
+例如，名空间(namespace)能够避免你一部分代码的名字和其他部分发生冲突。
+一个服装制造软件可能有个对象叫做"Button"(钮扣)，它可能会
+和一个用户界面库进行链接，那里面也有个类叫做"Button"(按钮
+)。如果使用了名空间，就不会有问题了，因为用法和每个概念的意思都很
+明确，没有歧义。
+
+C++里则并非如此。你无法保证不会去使用那些已经在其他地方被定义了的名字，
+这往往会导致灾难性后果。你唯一的希望是给名称都加上前缀，比如
+ZjxButton，并但愿其他人不会用同一个名字。
+
+
+日期: Fri, 18 Mar 94 10:52:58 PST
+发信人: Scott L. Burson <gyro@zeta-soft.com>
+主题: preprocessor (预处理器)
+
+C语言迷们会告诉你C的一个最好的功能是预处理器。可事实上，它可能
+一个最蹩脚的功能。许多C程序由一堆蜘蛛网似的#ifdef组成 (如果各
+个Unix之间能够互相兼容，就几乎不会弄成这样)。不过这仅仅是开始。
+
+C预处理器的最大问题是它把Unix锁在了文本文件的监牢里，然后扔掉
+了牢门钥匙。这样除了文本文件以外，C源代码不可能以任何其他方式
+存储。为什么？因为未被预处理的C代码不可能被解析。例如：
+
+
+#ifdef BSD
+int foo() {
+#else
+void foo() {
+#endif
+/* ... */
+}
+
+
+这里函数foo有两种不同的开头，根据宏'BSD'是否被定义而不同。直接
+对它进行解析几乎是不可能的 (就我们所知，从来没实现过)。
+
+这为什么如此可恶？因为这阻碍了我们为编程环境加入更多智能。许多
+Unix程序员从没见过这样的环境，不知道自己被剥夺了什么。可是如果
+能够对代码进行自动分析，那么就能提供很多非常有用的功能。
+
+让我们再看一个例子。在C语言当道的时代，预处理器被认为是唯一能
+提供开码(open-coded，是指直接把代码嵌入到指令流中，而不是通过
+函数调用)的方式。对于每个简单常用的表达式，开码是一个很高效的
+技术。比如，取小函数min可以使用宏实现：
+
+#define main(x,y) ((x) < (y) ? (x) : (y))color=green>
+
+
+假设你想写个工具打印一个程序中所有调用了min的函数。听上去不是
+很难，是不是？但是你如果不解析这个程序就无法知道函数的边界，你
+如果不做经过预处理器就无法进行解析，可是，一旦经过了预处理，所
+有的min就不复存在了！所以，你的只能去用grep了。
+
+使用预处理器实现开码还有其他问题。例如，在上面的min宏里你一定
+注意到了那些多余的括号。事实上，这些括号是必不可少的，否则当
+min在另一个表达式中被展开时，结果可能不是你想要的。(老实说，这
+些括号不都是必需的——至于那些括号是可以省略的，这留做给读者的
+练习吧)。
+
+min宏最险恶的问题是，虽然它用起来象是个函数调用，它并不真是函
+数。看这个例子：
+
+a = min(b++, c);
+
+
+预处理器做了替换之后，变成了：
+
+a = ((b++) < (c) ? (b++) : (c)color=green>
+
+
+如果'b'小于'c'，'b'会被增加两次而不是一次，返回的将
+是'b'的原始值加一。
+
+如果min真是函数，那么'b'将只会被增加一次，返回值将是'b'的原
+始值。
+
+C++对于C来说，就如同是肺癌对于肺
+
+“如果说C语言给了你足够的绳子吊死自己，那么C++给的绳子除了够你上
+吊之外，还够绑上你所有的邻居，并提供一艘帆船所需的绳索。”
+——匿名
+
+悲哀的是，学习C++成了每个计算机科学家和严肃程序最为有利可图的投资。它
+迅速成为简历中必不可少的一行。在过去的今年中，我们见过不少C++程序员，
+他们能够用C++写出不错的代码，不过...
+
+....他们憎恶它。
+程序员进化史
+
+初中/高中
+
+
+10 PRINT "HELLO WORLD"
+20 END
+
+
+大学一年级
+
+
+program Hello(input, output);
+begin
+writeln('Hello world');
+end.
+
+
+大学四年级
+
+
+(defun hello ()
+(print (list 'HELLO 'WORLD)))
+
+
+刚参加工作
+
+
+#include <stdio.h>
+main (argc, argv)
+int argc;
+char **argv; {
+printf ("Hello World!\n");
+}
+
+
+老手
+
+
+#include <stream.h>
+
+const int MAXLEN = 80;
+
+class outstring;
+class outstring {
+private:
+
+int size;
+char str[MAXLEN];
+
+public:
+outstring() { size=0; }
+~outstring() { size=0; }
+void print();
+void assign(char *chrs);
+};
+void outstring::print() {
+int in;
+for (i=0; i<size; i++)
+cout << str[i];
+cout << "\n";
+}
+void outstring::assign(char* chrs) {
+int i;
+for (i=0; chars[i]!='\0'; i++)
+str[i] = chrs[i];
+size=i;
+}
+
+main (int argc, char **argv) {
+outstring string;
+string.assign("Hello World!");
+string.print();
+}
+
+
+老板
+
+
+“乔治，我需要一个能打印'Hello World!'的程序”
+   Zer4tul制作 欢迎分享
+Powered By CNFUG & Linux Focus
