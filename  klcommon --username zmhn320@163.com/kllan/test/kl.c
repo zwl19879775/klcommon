@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 struct FileInfo
 {
@@ -64,7 +65,8 @@ static void exec_file( struct FileInfo *file_s )
 
 int main( int argc, char **argv )
 {
-	printf( "kl interpreter v0.1.0 2009 by Kevin Lynx.\n" );
+	printf( "kl script interpreter v%s 2009 by Kevin Lynx.\n",
+		 kl_version() );
 	if( argc < 2 )
 	{
 		print_usage( argv[0] );

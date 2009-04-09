@@ -4,19 +4,23 @@
 #  Kevin Lynx
 #  3.23.2009
 #
-# compiled on MingW
 #
 CC = gcc
 LINK = gcc
-CFLAG = -c -Wall -I../../src -o
+override CFLAG += -c -Wall -I../../src -o
 LINKFLAG = -shared -o
 MMFLAG = -MM -I../../src 
-RM = del
+RM = rm
 SRCDIR = ./
 TARGET = ../../bin/2dim_plugin.dll
 SRCLIST = $(wildcard *.c)
 OBJLIST = $(SRCLIST:%.c=%.o)
 DEPLIB = ../../lib/libkl.a
+
+ifeq ($(OS),Windows)
+	TARGET = ..\..\bin\2dim_plugin.dll
+	RM = del
+endif
 
 all: Makefile.obj $(TARGET)
 
@@ -34,9 +38,13 @@ $(TARGET): $(OBJLIST) $(DEPLIB)
 clean:
 	-$(RM) *.o
 
-rebuild: clean all
+distclean: clean
+	-$(RM) $(TARGET)
 
-.PHONY: clean all rebuild
+rebuild: distclean all
+
+.PHONY: clean all rebuild distclean
+
 
 
 

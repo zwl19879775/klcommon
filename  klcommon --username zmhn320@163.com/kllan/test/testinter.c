@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 int indentno = 0;
 

@@ -1,5 +1,13 @@
 history
 
+4.9.2009
+
+- 为libloader加入linux支持
+- 修正atoi编译错误，用sprintf代替
+- 修改makefile文件，使其跨平台
+- 去除kl_memcheck.h文件，及相关包含文件
+- 增加kl_version函数，及版本号宏
+- 修正部分文件在linux下的编译警告
 
 3.25.2009
 

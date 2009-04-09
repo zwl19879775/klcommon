@@ -8,7 +8,6 @@
 #include <malloc.h>
 #include <memory.h>
 #include <string.h>
-#include "klmemcheck.h"
 
 /* the hash function */
 static int sym_hash( const char *key )

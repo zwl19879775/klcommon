@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
-#include "klmemcheck.h"
+#include <stdlib.h>
+
 
 void _log( size_t lineno, const char *format, ... )
 {

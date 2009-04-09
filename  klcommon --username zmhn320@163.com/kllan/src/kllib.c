@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <malloc.h>
 #include <string.h>
-#include "klmemcheck.h"
+
 
 /**
  * register some build-in symbol
@@ -143,3 +143,13 @@ int kl_run( struct klState *kl, char *source )
 	kl_call( kl, "main", 0 );
 	return 0;
 }
+
+const char *kl_version()
+{
+	static char ver[128];
+	sprintf( ver, "%d.%d.%d", KL_VERSION_MAJOR, 
+			(unsigned char)KL_VERSION_MINOR,
+			(unsigned char)KL_VERSION_PATCH );
+	return ver;
+}
+

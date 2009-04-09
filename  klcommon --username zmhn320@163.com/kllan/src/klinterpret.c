@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
-#include "klmemcheck.h"
 
 /**
  * function executed result type
@@ -646,7 +645,7 @@ static void inter_build_string_st( struct interEnv *env, struct treeNode *root )
 	   	val.sval = root->attr.val.sval;
 		val.type = SB_VAR_STRING;	
 		/* make the address as the symbol name */
-		itoa( (int) root->attr.val.sval, name, 10 );
+		sprintf( name, "%d", (int) root->attr.val.sval );
 		sym_insert( env->global_st, name, val );
 	}
 
