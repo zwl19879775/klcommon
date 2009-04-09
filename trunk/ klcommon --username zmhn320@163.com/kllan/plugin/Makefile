@@ -1,17 +1,26 @@
+# makefile for kl script base plugin and libloader plugin
 CC = gcc
 LINK = gcc
 AR = ar
-CFLAG = -c -Wall -g -I../src -o
+override CFLAG += -c -Wall -I../src -o
 LINKFLAG = -o
 MMFLAG = -MM -I../src
 ARFLAG = crv
-RM = del
+RM = rm
 SRCDIR = ./
-TMPDIR = ../tmp
 LIBDIR = ../lib
 TARGET = $(LIBDIR)/libklplugin.a
 SRCLIST = $(wildcard *.c)
 OBJLIST = $(SRCLIST:%.c=%.o)
+
+ifeq ($(OS), Windows)
+	MACRO = -D_WIN32 
+	LIBDIR = ..\lib
+	TARGET = $(LIBDIR)\libklplugin.a
+	RM = del
+else
+	MACRO = -D_UNIX
+endif
 
 all: Makefile.obj $(TARGET)
 
@@ -21,7 +30,7 @@ Makefile.obj: $(SRCLIST)
 include Makefile.obj
 
 %.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAG) $@ $<
+	$(CC) $(MACRO) $(CFLAG) $@ $<
 
 $(TARGET): $(OBJLIST)
 	$(AR) $(ARFLAG) $@ $^ 
@@ -29,7 +38,10 @@ $(TARGET): $(OBJLIST)
 clean:
 	-$(RM) *.o
 
-rebuild: clean all
+distclean: clean
+	-$(RM) $(TARGET)
 
-.PHONY: clean all rebuild
+rebuild: distclean all
+
+.PHONY: clean all rebuild distclean
 

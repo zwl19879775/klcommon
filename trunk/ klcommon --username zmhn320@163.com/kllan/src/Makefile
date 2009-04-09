@@ -1,17 +1,25 @@
+# makefile for kl script core
 CC = gcc
 LINK = gcc
 AR = ar
-CFLAG = -c -Wall -g -o
+override CFLAG += -c -Wall -o
 LINKFLAG = -o
 MMFLAG = -MM
 ARFLAG = crv
-RM = del
+RM = rm 
 SRCDIR = ./
-TMPDIR = ../tmp
 LIBDIR = ../lib
 TARGET = $(LIBDIR)/libkl.a
 SRCLIST = $(wildcard *.c)
 OBJLIST = $(SRCLIST:%.c=%.o)
+
+ifeq ($(OS), Windows)
+	RM = del
+	LIBDIR = ..\lib
+    TARGET = $(LIBDIR)\libkl.a	
+else
+	RM = rm
+endif
 
 all: Makefile.obj $(TARGET)
 
@@ -29,7 +37,10 @@ $(TARGET): $(OBJLIST)
 clean:
 	-$(RM) *.o
 
-rebuild: clean all
+distclean: clean
+	-$(RM) $(TARGET)
 
-.PHONY: clean all rebuild
+rebuild: distclean all
+
+.PHONY: clean all rebuild distclean
 

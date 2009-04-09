@@ -3,5 +3,5 @@ testinter.o: testinter.c ../src/klinterpret.h ../src/klsymtab.h \
   ../src/klparser.h ../src/klsymtab.h ../src/kllex.h
 testlex.o: testlex.c ../src/kllex.h
 testplugin.o: testplugin.c ../src/kllib.h ../plugin/kllibbase.h \
-  ../plugin/kllibloader.h ../src/klmemcheck.h
+  ../plugin/kllibloader.h
 testsyntax.o: testsyntax.c ../src/kllex.h ../src/klparser.h

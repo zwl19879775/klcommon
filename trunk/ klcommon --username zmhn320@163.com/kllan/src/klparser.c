@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <memory.h>
-#include "klmemcheck.h"
 
 /**
  * create a new expression node 

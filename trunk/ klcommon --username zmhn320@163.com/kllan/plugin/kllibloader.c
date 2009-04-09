@@ -9,10 +9,31 @@
 
 #ifdef _WIN32
 #include <windows.h>
+static void *dl_load( const char *file )
+{
+	return LoadLibraryA( file );
+}
+
+static void dl_unload( void *lib )
+{
+	FreeLibrary( (HINSTANCE) lib );
+}
+
+static void *dl_sym( void *lib, const char *sym_name )
+{
+	return GetProcAddress( (HINSTANCE) lib, sym_name );
+}
+
+#elif defined _UNIX
+#include <dlfcn.h>
+#define dl_load( file ) dlopen( (const char*) file, RTLD_NOW )
+#define dl_unload( lib ) dlclose( lib )
+#define dl_sym( lib, sym_name ) dlsym( lib, sym_name )
+#endif
 
 static void *loader_load( struct klState *kl, const char *path )
 {
-	HINSTANCE lib = LoadLibraryA( path );
+	void *lib = dl_load( path );
 	if( lib == 0 )
 	{
 		kl->log( 0, ">>lib error->load library file [%s] failed.", path );
@@ -22,19 +43,18 @@ static void *loader_load( struct klState *kl, const char *path )
 
 static void loader_unload( void *lib )
 {
-	FreeLibrary( (HINSTANCE) lib );
+	dl_unload( lib );
 }
 
 static void *loader_getsym( struct klState *kl, void *lib, const char *sym_name )
 {
-	void *sym = GetProcAddress( (HINSTANCE) lib, sym_name );
+	void *sym = dl_sym( lib, sym_name ); 
 	if( sym == 0 )
 	{
 		kl->log( 0, ">>lib error->Symbol [%s] not found.", sym_name );
 	}
 	return sym;
 }
-#endif
 
 static struct TValue loader_import( ArgType arg )
 {

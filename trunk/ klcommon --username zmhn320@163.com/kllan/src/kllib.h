@@ -8,6 +8,11 @@
 
 #include <stddef.h>
 
+#define KL_VERSION_MAJOR 1
+#define KL_VERSION_MINOR 0
+#define KL_VERSION_PATCH 0
+#define KL_VERSION ((KL_VERSION_MAJOR<<16)|(KL_VERSION_MINOR<<8)|KL_VERSION_PATCH )
+
 struct symTable;
 struct klState;
 struct interEnv;
@@ -194,5 +199,9 @@ struct TValue kl_call( struct klState *kl, const char *name, ArgType args );
  */
 int kl_run( struct klState *kl, char *source );
 
+/**
+ * get the version string description
+ */
+const char *kl_version();
 
 #endif 

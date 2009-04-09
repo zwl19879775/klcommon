@@ -12,7 +12,12 @@ clean:
 	cd plugin && $(MAKE) clean
 	cd test && $(MAKE) clean
 
-rebuild: clean all
+distclean: 
+	cd src && $(MAKE) distclean
+	cd plugin && $(MAKE) distclean
+	cd test && $(MAKE) distclean
 
-.PHONY: all clean rebuild
+rebuild: distclean all
+
+.PHONY: all clean rebuild distclean
 
