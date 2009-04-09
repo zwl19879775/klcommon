@@ -8,6 +8,7 @@ history
 - 去除kl_memcheck.h文件，及相关包含文件
 - 增加kl_version函数，及版本号宏
 - 修正部分文件在linux下的编译警告
+- 修正在linux下的BUG
 
 3.25.2009
 

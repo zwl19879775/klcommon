@@ -640,7 +640,7 @@ static void inter_build_string_st( struct interEnv *env, struct treeNode *root )
 	}
 	if( root->type == NT_EXP && root->subtype.exp == ET_STRING )
 	{
-		char name[8];
+		char name[128];
 		struct Value val;
 	   	val.sval = root->attr.val.sval;
 		val.type = SB_VAR_STRING;	
