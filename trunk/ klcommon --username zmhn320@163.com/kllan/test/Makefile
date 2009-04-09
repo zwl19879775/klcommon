@@ -26,6 +26,7 @@ else
 	TESTPLUGIN = $(BINDIR)/testplugin
 	KLINTERPRETER = $(BINDIR)/kl
 	RM = rm
+	LINKFLAG = -ldl -o
 endif
 
 all: Makefile.obj $(TESTLEX) $(TESTSYNTAX) $(TESTINTER) $(TESTPLUGIN) $(KLINTERPRETER)
