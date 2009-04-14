@@ -1,5 +1,6 @@
 function main()
 {
+	print( "input:" );
 	n = input( "%d" );
 	print( "fac(" + n + ") = " + fac( n ) );
 }
