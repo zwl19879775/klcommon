@@ -110,7 +110,7 @@ int sym_insert_array( struct symTable *st, const char *name, size_t size )
 	}
 	else
 	{
-		int i;
+		size_t i;
 		int index = sym_hash( name );
 		struct Symbol *head = st->table[index];
 		struct Symbol *new_sb = (struct Symbol*) malloc( sizeof( struct Symbol ) );
