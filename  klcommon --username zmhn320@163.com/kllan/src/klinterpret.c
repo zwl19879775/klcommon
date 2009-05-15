@@ -408,7 +408,7 @@ static int _kl_run_plugin( struct interEnv *env, const char *name, struct treeNo
 		
 static struct Value inter_expression( struct interEnv *env, struct treeNode *node )
 {
-	struct Value ret ;
+	struct Value ret = { { 0 }, SB_VAR_NUM } ;
 
 	switch( node->subtype.exp )
 	{
