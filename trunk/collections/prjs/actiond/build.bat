@@ -1,0 +1,1 @@
+g++ -o actiond.exe actiond.cpp klwin/libklwin.a -mwindows
