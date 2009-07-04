@@ -2,6 +2,7 @@
 ///
 ///
 #include "klwin/klwin_window.h"
+#include "klwin/klwin_button.h"
 #include "kl_logger.h"
 #include <list>
 #include <string>
@@ -17,14 +18,49 @@ extern std::vector<std::string> spitCmdLine();
 
 typedef std::list<std::string> TitleList;
 
-static const char *GetLogFileName()
+static const char *GetLogFileName( const char *localPath )
 {
 	static char s_file[512];
 	SYSTEMTIME time;
 	GetLocalTime( &time );
-	sprintf( s_file, "log/actiond_%02d-%02d-%2d-%2d-%2d.log",
+	sprintf( s_file, "%s/actlog/actiond_%02d-%02d-%2d-%2d-%2d.log",
+			localPath,
 			time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond );
 	return s_file;
+}
+
+static const char *GetSelfPath()
+{
+	static char s_path[512];
+	::GetModuleFileName( NULL, s_path, sizeof( s_path ) );
+	size_t len = ::strlen( s_path );
+	for( size_t i = len - 1; i >= 0; -- i )
+	{
+		if( s_path[i] == '\\' || s_path[i] == '/' )
+		{
+			s_path[i] = '\0';
+			break;
+		}
+	}
+	return s_path;
+}
+
+static void CreateLogDir( const char *localPath )
+{
+	char dir[512];
+	sprintf( dir, "%s\\actlog\\", localPath );
+	::CreateDirectory( dir, NULL );
+}
+
+static void SetAutoRun( const char *key, const char *cmd )
+{
+	HKEY regkey;
+	const char *auto_key = "SOFTWARE\\Microsoft\\windows\\currentversion\\run";
+	RegOpenKey( HKEY_LOCAL_MACHINE,
+			auto_key, &regkey );
+	RegSetValueEx( regkey, key, 0, REG_SZ, 
+			(const BYTE*)cmd, strlen( cmd ) );
+	RegCloseKey( regkey );	
 }
 
 class Configer
@@ -97,8 +133,11 @@ public:
 	}
 	bool Init()
 	{
+		InitCtls();
+		const char *localPath = GetSelfPath();
+		CreateLogDir( localPath );
 		_configer.ParseCmd();
-		_output.open( GetLogFileName() );
+		_output.open( GetLogFileName( localPath ) );
 		_logger.set_output( &_output );
 		_logger.set_level( _configer._loglevel );
 		_logger.write( kl_common::LL_INFO, "Server start.\n" );
@@ -209,6 +248,15 @@ private:
 					}
 				}
 				break;
+
+			case WM_COMMAND:
+				{
+					if( HIWORD( wParam ) == BN_CLICKED )
+					{
+						OnBtnClicked( (HWND) lParam );
+					}	
+				}
+				break;
 		}
 		return handleDefaultMessage( msg, wParam, lParam ); 
 	}
@@ -232,12 +280,34 @@ private:
 			}
 		}
 	}
+
+	void OnBtnClicked( HWND hBtn )
+	{
+		if( hBtn == _regbtn.getHandle() )
+		{
+			char file[512], cmd[512];
+			::GetModuleFileName( NULL, file, sizeof( file ) );
+			sprintf( cmd, "%s %u %d", file, 
+				_configer._checkinterval, _configer._loglevel );
+			SetAutoRun( "actiond", cmd );
+			::MessageBox( getHandle(), "Write AUTO REG finished.", "OK",
+				MB_OK );	
+		}
+	}
+
+	void InitCtls()
+	{
+		_regbtn.create( 30, 10, 80, 30, this );
+		_regbtn.setWindowText( "WriteREG" );
+	}
+	
 private:
 	kl_common::logger<kl_common::file_output> _logger;
 	kl_common::file_output _output;
 	CachedTitle _titlecache;
 	bool _checking;
 	Configer _configer;
+	klwin::PushButton _regbtn;
 };
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPTSTR lpCmdLine, int )
