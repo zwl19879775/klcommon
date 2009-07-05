@@ -10,6 +10,8 @@
 #include <vector>
 
 extern std::vector<std::string> spitCmdLine();
+extern void OnProcessCheck( const std::vector<std::string> &tl, 	
+		kl_common::logger<kl_common::file_output> *logger ) ;
 
 #define CHECK_TIMER 1000
 #define SHOW_HOTKEY 50111
@@ -128,9 +130,12 @@ private:
 class MyWindow : public klwin::Window
 {
 public:
+	typedef std::vector<std::string> CheckProcessList;
+public:
 	MyWindow()
 	{
 		_checking = false;
+		_checkprocessflag = true;
 	}
 	bool Init()
 	{
@@ -146,6 +151,7 @@ public:
 		::RegisterHotKey( getHandle(), SHOW_HOTKEY, MOD_CONTROL | MOD_ALT, VK_LEFT ) ;
 		::RegisterHotKey( getHandle(), CHECK_HOTKEY, MOD_CONTROL | MOD_ALT, VK_RIGHT ) ;
 
+		_checkprocess.push_back( "DNFchina.exe" );
 		return true;
 	}
 
@@ -223,6 +229,12 @@ public:
 		{
 			_logger.write( kl_common::LL_DEBUG, "Get foreground window failed.\n" );
 		}
+
+		// check some process which should be terminated.
+		if( _checkprocessflag )
+		{
+			OnProcessCheck( _checkprocess, &_logger );
+		}
 	}
 
 private:
@@ -268,6 +280,7 @@ private:
 	{
 		if( wParam == SHOW_HOTKEY )
 		{
+			SetCheckProcessBtnText();
 			this->show();
 			::SetForegroundWindow( this->getHandle() );
 		}
@@ -303,14 +316,28 @@ private:
 			sprintf( cmd, "explorer.exe %s", logPath );
 			::WinExec( cmd, SW_SHOW );
 		}
+		else if( hBtn == _checkprocessbtn.getHandle() )
+		{
+			_checkprocessflag = !_checkprocessflag;
+			SetCheckProcessBtnText();
+		}
+	}
+
+	void SetCheckProcessBtnText()
+	{
+		_checkprocessbtn.setWindowText( _checkprocessflag ?
+				"ChkProcess:E" : "ChkProcess:D" );
+
 	}
 
 	void InitCtls()
 	{
-		_regbtn.create( 30, 10, 80, 30, this );
+		_regbtn.create( 30, 10, 100, 30, this );
 		_regbtn.setWindowText( "WriteREG" );
-		_logbtn.create( 30, 50, 80, 30, this );
+		_logbtn.create( 30, 50, 100, 30, this );
 		_logbtn.setWindowText( "CheckLog" );
+		_checkprocessbtn.create( 30, 90, 100, 30, this );
+		_checkprocessbtn.setWindowText( "ChkProcess" );
 	}
 	
 private:
@@ -321,6 +348,9 @@ private:
 	Configer _configer;
 	klwin::PushButton _regbtn;
 	klwin::PushButton _logbtn;
+	klwin::PushButton _checkprocessbtn;
+	bool _checkprocessflag;
+	CheckProcessList _checkprocess;
 };
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPTSTR lpCmdLine, int )
