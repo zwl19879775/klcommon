@@ -15,16 +15,17 @@ extern std::vector<std::string> spitCmdLine();
 #define SHOW_HOTKEY 50111
 #define CHECK_HOTKEY 50112
 #define CLEAR_INTER (60*60*1000)
+#define LOGPATH "actlog"
 
 typedef std::list<std::string> TitleList;
 
-static const char *GetLogFileName( const char *localPath )
+static const char *GetLogFileName( const char *logPath )
 {
 	static char s_file[512];
 	SYSTEMTIME time;
 	GetLocalTime( &time );
-	sprintf( s_file, "%s/actlog/actiond_%02d-%02d-%2d-%2d-%2d.log",
-			localPath,
+	sprintf( s_file, "%s\\actiond_%02d-%02d-%2d-%2d-%2d.log",
+			logPath,
 			time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond );
 	return s_file;
 }
@@ -45,11 +46,11 @@ static const char *GetSelfPath()
 	return s_path;
 }
 
-static void CreateLogDir( const char *localPath )
+static const char *GetLogPath( const char *logdir )
 {
-	char dir[512];
-	sprintf( dir, "%s\\actlog\\", localPath );
-	::CreateDirectory( dir, NULL );
+	static char s_path[512];
+	sprintf( s_path, "%s\\%s", GetSelfPath(), logdir );
+	return s_path;
 }
 
 static void SetAutoRun( const char *key, const char *cmd )
@@ -134,10 +135,10 @@ public:
 	bool Init()
 	{
 		InitCtls();
-		const char *localPath = GetSelfPath();
-		CreateLogDir( localPath );
+		const char *logPath = GetLogPath( LOGPATH );
+		::CreateDirectory( logPath, NULL );	
 		_configer.ParseCmd();
-		_output.open( GetLogFileName( localPath ) );
+		_output.open( GetLogFileName( logPath ) );
 		_logger.set_output( &_output );
 		_logger.set_level( _configer._loglevel );
 		_logger.write( kl_common::LL_INFO, "Server start.\n" );
@@ -167,6 +168,7 @@ public:
 			_logger.write( kl_common::LL_INFO, "Start to check [%u].\n", 
 				   _configer._checkinterval );
 			::SetTimer( getHandle(), CHECK_TIMER, _configer._checkinterval, NULL );
+			this->setWindowText( "ENABLED" );
 			_checking = true;
 		}
 	}
@@ -181,6 +183,7 @@ public:
 		{
 			_logger.write( kl_common::LL_INFO, "Stop checking.\n" );
 			::KillTimer( getHandle(), CHECK_TIMER );
+			this->setWindowText( "DISABLED" );
 			_checking = false;
 		}
 	}
@@ -199,7 +202,7 @@ public:
 			int ret = ::GetWindowText( hWnd, title, sizeof( title ) );
 			if( ret == 0 )
 			{
-				_logger.write( kl_common::LL_INFO, "Get window text failed, error code : %u.\n", 
+				_logger.write( kl_common::LL_DEBUG, "Get window text failed, error code : %u.\n", 
 						::GetLastError() );
 			}
 			else
@@ -218,7 +221,7 @@ public:
 		}
 		else
 		{
-			_logger.write( kl_common::LL_INFO, "Get foreground window failed.\n" );
+			_logger.write( kl_common::LL_DEBUG, "Get foreground window failed.\n" );
 		}
 	}
 
@@ -293,12 +296,21 @@ private:
 			::MessageBox( getHandle(), "Write AUTO REG finished.", "OK",
 				MB_OK );	
 		}
+		else if( hBtn == _logbtn.getHandle() )
+		{
+			const char *logPath = GetLogPath( LOGPATH );
+			char cmd[512];
+			sprintf( cmd, "explorer.exe %s", logPath );
+			::WinExec( cmd, SW_SHOW );
+		}
 	}
 
 	void InitCtls()
 	{
 		_regbtn.create( 30, 10, 80, 30, this );
 		_regbtn.setWindowText( "WriteREG" );
+		_logbtn.create( 30, 50, 80, 30, this );
+		_logbtn.setWindowText( "CheckLog" );
 	}
 	
 private:
@@ -308,6 +320,7 @@ private:
 	bool _checking;
 	Configer _configer;
 	klwin::PushButton _regbtn;
+	klwin::PushButton _logbtn;
 };
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPTSTR lpCmdLine, int )
