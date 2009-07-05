@@ -1,0 +1,92 @@
+///
+///
+///
+#include <windows.h>
+#include <tlhelp32.h>
+#include <string>
+#include <vector>
+#include "kl_logger.h"
+
+struct ProcessInfo
+{
+	unsigned long id;
+	std::string name;	
+};
+typedef std::vector<ProcessInfo> ProcessListType;
+
+size_t GetProcessList( ProcessListType *pl )
+{
+	HANDLE handle = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+	if( handle == NULL )
+	{
+		return 0;
+	}
+	PROCESSENTRY32 process;
+	process.dwSize = sizeof( process );
+	Process32First( handle, &process );
+	while( Process32Next( handle, &process ) != FALSE )
+	{
+		ProcessInfo pi = { process.th32ProcessID, process.szExeFile };
+		pl->push_back( pi );	
+	}
+	CloseHandle( handle );
+	return pl->size();
+}
+
+void TerminateProcessByID( unsigned long process_id )
+{
+	HANDLE h = OpenProcess( PROCESS_TERMINATE, FALSE, process_id );
+	if( h == NULL )
+	{
+		return ;
+	}
+	TerminateProcess( h, 0 );
+}
+
+#ifdef DUMPPROCESS
+void DumpProcess( const ProcessListType &pl )
+{
+	static int s_index = 1;
+	char file[512];
+	sprintf( file, "process_list%d.txt", s_index++ );
+	FILE *fp = fopen( file, "w" );
+	fprintf( fp, "ID  \t\tName\n" );
+	for( ProcessListType::const_iterator it = pl.begin();
+			it != pl.end(); ++ it )
+	{
+		fprintf( fp, "%4u\t\t%s\n", 
+				it->id, it->name.c_str() );
+	}
+	fclose( fp );
+}
+#else
+#define DumpProcess( t )
+#endif
+
+void OnProcessCheck( const std::vector<std::string> &tl, 	
+		kl_common::logger<kl_common::file_output> *logger )
+{
+	if( tl.size() == 0 )
+	{
+		return ;
+	}
+	ProcessListType pl;
+	GetProcessList( &pl );
+	DumpProcess( pl );
+	for( std::vector<std::string>::const_iterator it = tl.begin();
+			it != tl.end(); ++ it )
+	{
+		for( ProcessListType::const_iterator pit = pl.begin();
+				pit != pl.end(); ++ pit )
+		{
+			if( *it == pit->name )
+			{
+				logger->write( kl_common::LL_INFO, 
+						"Find process [%s], terminate it.\n", (*it).c_str() );
+				TerminateProcessByID( pit->id );
+			}
+		}
+	}
+}
+
+
