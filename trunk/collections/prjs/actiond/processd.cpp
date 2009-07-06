@@ -5,6 +5,7 @@
 #include <tlhelp32.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "kl_logger.h"
 
 struct ProcessInfo
