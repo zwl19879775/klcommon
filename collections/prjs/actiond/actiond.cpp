@@ -10,8 +10,10 @@
 #include <vector>
 
 extern std::vector<std::string> spitCmdLine();
-extern void OnProcessCheck( const std::vector<std::string> &tl, 	
+extern void OnProcessCheckInvalid( const std::vector<std::string> &validp, 	
 		kl_common::logger<kl_common::file_output> *logger ) ;
+extern size_t LoadValidProcess( std::vector<std::string> &tl );
+extern void DumpValidProcess();
 
 #define CHECK_TIMER 1000
 #define SHOW_HOTKEY 50111
@@ -32,7 +34,7 @@ static const char *GetLogFileName( const char *logPath )
 	return s_file;
 }
 
-static const char *GetSelfPath()
+const char *GetSelfPath()
 {
 	static char s_path[512];
 	::GetModuleFileName( NULL, s_path, sizeof( s_path ) );
@@ -94,7 +96,6 @@ public:
 	{
 		_lastclear = ::timeGetTime();
 	}
-
 	bool IsInCache( const std::string &title ) const
 	{
 		return std::find( _cached.begin(), _cached.end(), title )
@@ -130,7 +131,7 @@ private:
 class MyWindow : public klwin::Window
 {
 public:
-	typedef std::vector<std::string> CheckProcessList;
+	typedef std::vector<std::string> ProcessNameList;
 public:
 	MyWindow()
 	{
@@ -147,11 +148,11 @@ public:
 		_logger.set_output( &_output );
 		_logger.set_level( _configer._loglevel );
 		_logger.write( kl_common::LL_INFO, "Server start.\n" );
-		StartCheck();
 		::RegisterHotKey( getHandle(), SHOW_HOTKEY, MOD_CONTROL | MOD_ALT, VK_LEFT ) ;
 		::RegisterHotKey( getHandle(), CHECK_HOTKEY, MOD_CONTROL | MOD_ALT, VK_RIGHT ) ;
-
-		_checkprocess.push_back( "DNFchina.exe" );
+		_logger.write( kl_common::LL_INFO, "Load [%u] valid process.\n",
+				LoadValidProcess( _validprocess ) );
+		StartCheck();
 		return true;
 	}
 
@@ -233,7 +234,7 @@ public:
 		// check some process which should be terminated.
 		if( _checkprocessflag )
 		{
-			OnProcessCheck( _checkprocess, &_logger );
+			OnProcessCheckInvalid( _validprocess, &_logger );
 		}
 	}
 
@@ -321,6 +322,12 @@ private:
 			_checkprocessflag = !_checkprocessflag;
 			SetCheckProcessBtnText();
 		}
+		else if( hBtn == _dumpprocessbtn.getHandle() )
+		{
+			DumpValidProcess();
+			::MessageBox( getHandle(), "Dump valid process finished.", "OK",
+					MB_OK );
+		}
 	}
 
 	void SetCheckProcessBtnText()
@@ -338,6 +345,8 @@ private:
 		_logbtn.setWindowText( "CheckLog" );
 		_checkprocessbtn.create( 30, 90, 100, 30, this );
 		_checkprocessbtn.setWindowText( "ChkProcess" );
+		_dumpprocessbtn.create( 30, 130, 100, 30, this );
+		_dumpprocessbtn.setWindowText( "DumpProcess" );
 	}
 	
 private:
@@ -349,8 +358,9 @@ private:
 	klwin::PushButton _regbtn;
 	klwin::PushButton _logbtn;
 	klwin::PushButton _checkprocessbtn;
+	klwin::PushButton _dumpprocessbtn;
 	bool _checkprocessflag;
-	CheckProcessList _checkprocess;
+	ProcessNameList _validprocess;
 };
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPTSTR lpCmdLine, int )
