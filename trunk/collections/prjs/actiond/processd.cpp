@@ -14,7 +14,27 @@ struct ProcessInfo
 };
 typedef std::vector<ProcessInfo> ProcessListType;
 
-size_t GetProcessList( ProcessListType *pl )
+struct StringInSensCmp
+{
+	StringInSensCmp( const std::string &l ) : _l( l )
+	{
+	}
+
+	bool operator() ( const std::string &r )
+	{
+		return ::stricmp( _l.c_str(), r.c_str() ) == 0;
+	}
+
+	template <typename _Tp>
+	bool operator() ( const _Tp &r )
+	{
+		return operator() ( r.name );
+	}
+
+	const std::string &_l;
+};
+
+size_t GetProcessList( ProcessListType *pl, bool ignore_same )
 {
 	HANDLE handle = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
 	if( handle == NULL )
@@ -26,8 +46,17 @@ size_t GetProcessList( ProcessListType *pl )
 	Process32First( handle, &process );
 	while( Process32Next( handle, &process ) != FALSE )
 	{
-		ProcessInfo pi = { process.th32ProcessID, process.szExeFile };
-		pl->push_back( pi );	
+		bool add = true;
+		if( ignore_same && std::find_if( pl->begin(), pl->end(), StringInSensCmp( process.szExeFile ) )
+				!= pl->end() )
+		{
+			add = false;
+		}
+		if( add )
+		{
+			ProcessInfo pi = { process.th32ProcessID, process.szExeFile };
+			pl->push_back( pi );	
+		}
 	}
 	CloseHandle( handle );
 	return pl->size();
@@ -63,6 +92,7 @@ void DumpProcess( const ProcessListType &pl )
 #define DumpProcess( t )
 #endif
 
+
 void OnProcessCheck( const std::vector<std::string> &tl, 	
 		kl_common::logger<kl_common::file_output> *logger )
 {
@@ -71,7 +101,7 @@ void OnProcessCheck( const std::vector<std::string> &tl,
 		return ;
 	}
 	ProcessListType pl;
-	GetProcessList( &pl );
+	GetProcessList( &pl, false );
 	DumpProcess( pl );
 	for( std::vector<std::string>::const_iterator it = tl.begin();
 			it != tl.end(); ++ it )
@@ -89,4 +119,64 @@ void OnProcessCheck( const std::vector<std::string> &tl,
 	}
 }
 
+void OnProcessCheckInvalid( const std::vector<std::string> &validp,
+		kl_common::logger<kl_common::file_output> *logger )
+{
+	if( validp.size() == 0 )
+	{
+		return ;
+	}
+	ProcessListType pl;
+	GetProcessList( &pl, false );
+	for( ProcessListType::iterator it = pl.begin(); it != pl.end(); ++ it )
+	{
+		std::vector<std::string>::const_iterator tit = std::find_if(
+				validp.begin(), validp.end(), StringInSensCmp( it->name ) );
+		if( tit == validp.end() )
+		{
+			logger->write( kl_common::LL_INFO, 
+					"Find invalid process [%s], terminate it.\n", it->name.c_str() );
+			TerminateProcessByID( it->id );
+		}
+	}	
+}
+
+extern const char *GetSelfPath();
+#define VALIDPROCESS "validprocess.cfg"
+void DumpValidProcess()
+{
+	ProcessListType pl;
+	GetProcessList( &pl, true );
+	char file[512];
+	sprintf( file, "%s\\%s", GetSelfPath(), VALIDPROCESS );
+	FILE *fp = fopen( file, "w" );
+	if( fp == NULL )
+	{
+		return ;
+	}
+	for( ProcessListType::iterator it = pl.begin();
+			it != pl.end(); ++ it )
+	{
+		fprintf( fp, "%s\n", it->name.c_str() );
+	}
+	fclose( fp );
+}
+
+size_t LoadValidProcess( std::vector<std::string> &tl )
+{
+	char file[512];
+	sprintf( file, "%s\\%s", GetSelfPath(), VALIDPROCESS );
+	FILE *fp = fopen( file, "r" );
+	if( fp == NULL )
+	{
+		return 0;
+	}
+	char name[512];
+	while( fscanf( fp, "%s", name ) != EOF )
+	{
+		tl.push_back( name );
+	}
+	fclose( fp );
+	return tl.size();
+}
 
