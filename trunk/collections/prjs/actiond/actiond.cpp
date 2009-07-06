@@ -136,7 +136,7 @@ public:
 	MyWindow()
 	{
 		_checking = false;
-		_checkprocessflag = true;
+		_checkprocessflag = false;
 	}
 	bool Init()
 	{
