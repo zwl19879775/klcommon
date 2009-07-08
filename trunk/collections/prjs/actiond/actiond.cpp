@@ -12,7 +12,10 @@
 extern std::vector<std::string> spitCmdLine();
 extern void OnProcessCheckInvalid( const std::vector<std::string> &validp, 	
 		kl_common::logger<kl_common::file_output> *logger ) ;
+extern void OnProcessCheck( const std::vector<std::string> &validp, 	
+		kl_common::logger<kl_common::file_output> *logger ) ;
 extern size_t LoadValidProcess( std::vector<std::string> &tl );
+extern size_t LoadInvalidProcess( std::vector<std::string> &tl );
 extern void DumpValidProcess();
 
 #define CHECK_TIMER 1000
@@ -136,7 +139,7 @@ public:
 	MyWindow()
 	{
 		_checking = false;
-		_checkprocessflag = false;
+		_checkprocessflag = true;
 	}
 	bool Init()
 	{
@@ -150,8 +153,8 @@ public:
 		_logger.write( kl_common::LL_INFO, "Server start.\n" );
 		::RegisterHotKey( getHandle(), SHOW_HOTKEY, MOD_CONTROL | MOD_ALT, VK_LEFT ) ;
 		::RegisterHotKey( getHandle(), CHECK_HOTKEY, MOD_CONTROL | MOD_ALT, VK_RIGHT ) ;
-		_logger.write( kl_common::LL_INFO, "Load [%u] valid process.\n",
-				LoadValidProcess( _validprocess ) );
+		_logger.write( kl_common::LL_INFO, "Load [%u] invalid process.\n",
+				LoadInvalidProcess( _invalidprocess ) );
 		StartCheck();
 		return true;
 	}
@@ -234,7 +237,7 @@ public:
 		// check some process which should be terminated.
 		if( _checkprocessflag )
 		{
-			OnProcessCheckInvalid( _validprocess, &_logger );
+			OnProcessCheck( _invalidprocess, &_logger );
 		}
 	}
 
@@ -360,7 +363,7 @@ private:
 	klwin::PushButton _checkprocessbtn;
 	klwin::PushButton _dumpprocessbtn;
 	bool _checkprocessflag;
-	ProcessNameList _validprocess;
+	ProcessNameList _invalidprocess;
 };
 
 int WINAPI WinMain( HINSTANCE, HINSTANCE, LPTSTR lpCmdLine, int )

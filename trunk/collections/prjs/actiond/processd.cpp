@@ -107,15 +107,13 @@ void OnProcessCheck( const std::vector<std::string> &tl,
 	for( std::vector<std::string>::const_iterator it = tl.begin();
 			it != tl.end(); ++ it )
 	{
-		for( ProcessListType::const_iterator pit = pl.begin();
-				pit != pl.end(); ++ pit )
+		ProcessListType::const_iterator pit = std::find_if( pl.begin(), pl.end(),
+				StringInSensCmp( *it ) );
+		if( pit != pl.end() )
 		{
-			if( *it == pit->name )
-			{
-				logger->write( kl_common::LL_INFO, 
-						"Find process [%s], terminate it.\n", (*it).c_str() );
-				TerminateProcessByID( pit->id );
-			}
+			logger->write( kl_common::LL_INFO, 
+					"Find process [%s], terminate it.\n", (*it).c_str() );
+			TerminateProcessByID( pit->id );
 		}
 	}
 }
@@ -167,6 +165,25 @@ size_t LoadValidProcess( std::vector<std::string> &tl )
 {
 	char file[512];
 	sprintf( file, "%s\\%s", GetSelfPath(), VALIDPROCESS );
+	FILE *fp = fopen( file, "r" );
+	if( fp == NULL )
+	{
+		return 0;
+	}
+	char name[512];
+	while( fscanf( fp, "%s", name ) != EOF )
+	{
+		tl.push_back( name );
+	}
+	fclose( fp );
+	return tl.size();
+}
+
+#define INVALIDPROCESS "invalidprocess.cfg"
+size_t LoadInvalidProcess( std::vector<std::string> &tl )
+{
+	char file[512];
+	sprintf( file, "%s\\%s", GetSelfPath(), INVALIDPROCESS );
 	FILE *fp = fopen( file, "r" );
 	if( fp == NULL )
 	{
