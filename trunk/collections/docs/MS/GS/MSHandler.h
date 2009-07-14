@@ -17,6 +17,9 @@ namespace MServer
 		/// 初始化网络服务
 		bool Init();
 
+		/// 开启对MS的网络监听
+		bool StartAccept();
+
 		/// 销毁网络服务等
 		void Release();
 
