@@ -37,14 +37,19 @@ namespace MServer
 	public:
 		enum
 		{
-			NOT_DIS = -1
+			/// 没有找到分配
+			NOT_DIS = -1,
+			/// 动态分配
+			DYNA_DIS = 0,
 		};
 	public:
 		/// 解码配置
 		void Decode( DBReadSet &db );
 
-		/// 获取场景模板被分配的MS ID，没有找到返回NOT_DIS
+		/// 获取场景模板被分配的MS ID，没有找到返回NOT_DIS，动态分配返回
+		/// DYNA_DIS,
 		/// 该函数作为场景判断自身是否需要发送到MS上被使用
+		/// 该函数首先在静态配置里查找，然后在动态分配配置里查找
 		long GetDisMS( long rgn_id );
 
 	private:
