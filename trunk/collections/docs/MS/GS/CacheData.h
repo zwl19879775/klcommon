@@ -24,14 +24,14 @@ namespace MServer
 		/// 建立场景到MS ID的映射
 		typedef std::map<CGUID, long> Guid2Long;
 	public:
-		/// 添加缓存场景
+		/// 添加缓存场景，如果MS已连接，会立即发送数据
 		void AddRegion( long id, const CGUID &rgn );
 
 		/// 不指定ID时则为动态添加场景，主要是添加副本，
 		/// 该副本会被放置在负载场景最少的MS
 		long AddRegion( const CGUID &rgn );
 
-		/// 删除场景
+		/// 删除场景，立即给MS发送删除消息
 		void DelRegion( const CGUID &rgn );
 
 		/// 添加缓存怪物
@@ -45,6 +45,12 @@ namespace MServer
 
 		/// 发送缓存怪物给指定MS
 		void SendMonsters( long id );	
+
+		/// 获取指定场景所在的MS ID，简单的从m_Rgn2ID查找
+		long GetMSForRgn( const CGUID &rgn );
+		
+		/// 获取指定怪物所在MS ID，简单的从m_Monster2ID查找
+		long GetMSForMonster( const CGUID &monster );
 	private:
 		void SendRegion( long socketid, const CGUID &rgn );
 		void SendMonster( long socketid, const CGUID &monster );

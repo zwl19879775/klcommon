@@ -7,6 +7,7 @@ namespace MServer
 	struct MSRgnInfo
 	{
 		long ms_id;
+		/// 保存场景模板ID
 		std::vector<long> rgn_list;
 
 		/// 编码该结构，编码结构为：
@@ -26,13 +27,21 @@ namespace MServer
 	/// 配置单个GS上对应的MS列表
 	struct GSRgnInfo
 	{
+		/// <ms_id, ...>
 		std::map<long, MSRgnInfo> ms_rgn_table;
+
+		/// 动态分配的场景列表
+		std::vector<long> dyna_rgn_list;
 
 		/// 编码该结构，编码结构为：
 		/*
 		 ms_rgn_table_size(long),
 		 ms_rgn_info1,
 		 ms_rgn_info2,
+		 ...
+		 dyna_rgn_list_size(long),
+		 dyna_rgn_id1,
+		 dyna_rgn_id2,
 		 ...
 		*/
 		static void Encode( const GSRgnInfo &gs_rgn, DBWriteSet &db );
