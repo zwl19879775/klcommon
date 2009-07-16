@@ -40,7 +40,56 @@
 		pos_y(float)
 		add_flag(byte) : 指示是否需要解码该玩家，一般表示MS上没有此玩家
 		raw_data : 玩家详细数据
-		
+	怪物AI唤醒：将来可以直接在MS上检测唤醒，目前可以直接利用GS上的机制
+		SAT_MONSTER_WAKEUP
+		monster_id(CGUID)
+		rgn_id(CGUID) : 传入场景可以让MS在查找怪物时变快
+	怪物被攻击触发：技能模块触发，对于被动怪而言一般意味着怪物将进入战斗状态
+		SAT_MONSTER_HURT
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		attacker_type(long)
+		attacker_id(CGUID)
+		hurt(long) : 为-1时表示被杀死
+	怪物使用技能结束：可考虑通过在MS保存技能动作时间放到MS计算
+		SAT_MONSTER_SKILLEND
+		monster_id(CGUID)
+		rgn_id(CGUID)
+	删除怪物：对于不需要重生的怪物，怪物死亡一定时间后会删除
+		SAT_MONSTER_DEL
+		monster_id(CGUID)
+		rgn_id(CGUID)
+	怪物重生：可先暂时编码怪物所有数据
+		SAT_MONSTER_REBORN
+		raw_data(monster)
+
+ MS到GS的同步操作被称为请求(REQUEST)，相反，GS对于这些请求的反馈成为回应(RESPONSE)。
+所有的请求包括：
+	怪物移动：怪物移动时需要发送一个移动请求，当得到回应后才真正改变坐标
+		RT_MOVE
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		dir(long) : 默认按照此方向移动一格
+	怪物使用技能：发出使用技能请求，技能在GS运作
+		RT_USESKILL
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		skill_id(long)
+		skill_level(long)
+		target_id(CGUID)
+所有的回应包括：
+	怪物移动
+		RT_RES_MOVE
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		pos_x(float)
+		pos_y(float)
+	怪物使用技能：主要用于怪物使用技能失败时的处理
+		RT_RES_USESKILL
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		ret(byte) : 1：成功，0：失败，失败时需要重新驱动AI
+
 */
 namespace MServer
 {
@@ -57,7 +106,11 @@ namespace MServer
 	/// 同步动作(SYN_ACT)类型，其值需要与同步数据不同
 	enum SyncActType
 	{
-		SAT_WAKEUP = SDT_MAX,
+		SAT_MONSTER_WAKEUP = SDT_MAX,
+		SAT_MONSTER_HURT,
+		SAT_MONSTER_SKILLEND,
+		SAT_MONSTER_DEL,
+		SAT_MONSTER_REBORN,
 		SAT_PLAYER_MOVE,
 		SAT_PLAYER_LEAVERGN,
 		SAT_PLAYER_ENTERRGN

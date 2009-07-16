@@ -48,6 +48,22 @@ namespace MServer
 		 */
 		void SyncPlayerChangeRgn( CPlayer *player, CServerRegion *old_rgn,
 				CServerRegion *new_rgn );
+
+		/// 同步怪物AI唤醒
+		void SyncMonsterWakeup( const CGUID &monster, const CGUID &rgn );
+
+		/// 同步怪物被攻击
+		void SyncMonsterHurt( const CGUID &monster, const CGUID &rgn, 
+				long atker_type, const CGUID &atker_id, long hurt );
+
+		/// 同步怪物使用技能结束
+		void SyncMonsterSkillEnd( const CGUID &monster, const CGUID &rgn );
+
+		/// 同步怪物删除
+		void SyncMonsterDel( const CGUID &monster, const CGUID &rgn );
+
+		/// 同步怪物重生，暂时编码怪物所有数据
+		void SyncMonsterReborn( const CGUID &monster, void *data, size_t size );
 	}
 }
 
