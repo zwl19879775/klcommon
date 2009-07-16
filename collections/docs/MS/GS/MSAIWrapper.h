@@ -11,6 +11,12 @@ namespace MServer
 		/// 否则不需要编码。
 		void OnBoring();
 
+		/// 删除怪物
+		void OnDel();
+
+		/// 重生
+		void OnReBorn();
+
 		/// 技能结束回调，需要发消息给MS
 		BOOL OnSkillEnd( long lAddSub );
 
@@ -25,6 +31,13 @@ namespace MServer
 
 		/// 被打死
 		BOOL WhenBeenKilled( long type, const CGUID &guid );
+
+	public:
+		/// MS请求怪物移动
+		void ReqMove( long dir );
+
+		/// MS请求怪物使用技能
+		void ReqUseSkill( long skill_id, long skill_lvl, const CGUID &target_id );	
 
 	private:
 		/// 标志是否是第一次创建
