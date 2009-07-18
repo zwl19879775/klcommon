@@ -37,6 +37,11 @@ static void thread_resume( void *t )
 	ResumeThread( (HANDLE) t );
 }
 
+static void thread_join( void *t )
+{
+	WaitForSingleObject( (HANDLE) t, INFINITE );
+}
+
 #else
 #include <pthread.h>
 #include <stdlib.h>
@@ -95,6 +100,11 @@ static void thread_resume( void *t )
 	pthread_mutex_unlock( &h->mutex );
 }
 
+static void thread_join( void *t )
+{
+	static thread_h *h = (struct thread_h*) t;
+	pthread_join( h->t, 0 );
+}
 #endif
 
 static 
@@ -113,19 +123,21 @@ thread_func( void *arg )
 	thread_suspend( op->h );
 	while( !op->stop )	
 	{
-		op->routine( op->arg );	
-		if( op->stop ) break;
-		thread_suspend( op->h );
+		if( op->routine( op->arg ) )
+		{	
+			if( op->stop ) break;
+			thread_suspend( op->h );
+		}
 	}
 	return 0;
 }
 
-int async_init( struct async_oper *op, void (*routine)( void* ), void *arg )
+int async_init( struct async_oper *op, int (*routine)( void* ), void *arg )
 {
 	op->arg = arg;
 	op->stop = 0;
 	op->routine = routine;
-	op->h = thread_create( thread_func, op->arg );
+	op->h = thread_create( thread_func, op );
 	return op->h == 0;
 }
 
@@ -137,6 +149,9 @@ int async_start( struct async_oper *op )
 
 int async_release( struct async_oper *op )
 {
+	op->stop = 1;
+	thread_resume( op->h );
+	thread_join( op->h );
 	thread_destroy( op->h );
 	return 0;
 }
