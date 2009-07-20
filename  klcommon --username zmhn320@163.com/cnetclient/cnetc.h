@@ -29,7 +29,7 @@ struct cnetc
 	struct evbuffer *write_buf;
 	struct evbuffer *read_buf;
 	void (*err_log)( const char *fmt, ... );
-	void (*notify_fn)( int event, struct cnetc *cc ); 
+	void (*notify_fn)( int event, struct cnetc *cc, int bytes ); 
 	unsigned long sip;
 	unsigned short sport;
 	unsigned char connect_flag;
@@ -45,7 +45,7 @@ struct cnetc
 */
 struct cnetc *cnetc_connect( const char *sip, unsigned short sport, 
 		void (*err_log)( const char *fmt, ... ), 
-	    void (*notify_fn)( int, struct cnetc * ) );
+	    void (*notify_fn)( int, struct cnetc *, int bytes ) );
 
 /**
   Reconnect to another server using the exist file descriptior.
