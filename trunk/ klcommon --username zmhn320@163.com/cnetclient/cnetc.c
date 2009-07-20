@@ -52,14 +52,14 @@ struct cnetc *cnetc_connect( const char *sip, unsigned short sport,
 	BASE( cc ).connect_flag = 0;
 	BASE( cc ).err_log = err_log;
 	BASE( cc ).notify_fn = notify_fn;
+	BASE( cc ).read_buf = evbuffer_new();
+	BASE( cc ).write_buf = evbuffer_new();
 	BASE( cc ).fd = socket( AF_INET, SOCK_STREAM, 0 );
 	if( cnetc_reconnect( CAST_CNETC( cc ), sip, sport ) != 0 )
 	{
 		cnetc_disconnect( CAST_CNETC( cc ) );
 		return 0;
 	}
-	BASE( cc ).read_buf = evbuffer_new();
-	BASE( cc ).write_buf = evbuffer_new();
 	return CAST_CNETC( cc );
 }
 
