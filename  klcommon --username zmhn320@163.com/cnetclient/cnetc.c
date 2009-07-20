@@ -44,6 +44,12 @@ static void set_fd( struct cnetc_impl *cc_impl )
 	FD_SET( BASE( cc_impl ).fd, &cc_impl->fd_write );
 }
 
+static void cnetc_close( struct cnetc_impl *cc_impl )
+{
+	BASE( cc_impl ).connect_flag = 0;
+	closesocket( BASE( cc_impl ).fd );
+}
+
 struct cnetc *cnetc_connect( const char *sip, unsigned short sport, 
 		void (*err_log)( const char *fmt, ... ),
 	   	void (*notify_fn)( int, struct cnetc *, int bytes ) )
@@ -101,8 +107,13 @@ int cnetc_poll( struct cnetc *cc, unsigned long sec )
 	{
 		ev |= CC_RECV;
 		bytes = evbuffer_read( cc->read_buf, cc->fd, 4096 );
+		if( bytes == 0 )
+		{
+			cnetc_close( cc_impl );
+		}
 	}
-	if( EVBUFFER_LENGTH( cc->write_buf ) && FD_ISSET( cc->fd, &cc_impl->fd_write ) )
+	if( ISCONNECT( cc ) &&
+		EVBUFFER_LENGTH( cc->write_buf ) && FD_ISSET( cc->fd, &cc_impl->fd_write ) )
 	{
 		ev |= CC_SEND;
 		bytes = evbuffer_write( cc->write_buf, cc->fd );
@@ -117,7 +128,7 @@ int cnetc_poll( struct cnetc *cc, unsigned long sec )
 void cnetc_disconnect( struct cnetc *cc )
 {
 	struct cnetc_impl *cc_impl = CAST_CNETC_IMPL( cc );
-	closesocket( BASE( cc_impl ).fd );
+	cnetc_close( cc_impl );
 	evbuffer_free( BASE( cc_impl ).read_buf );
 	evbuffer_free( BASE( cc_impl ).write_buf );
 	free( cc_impl );
