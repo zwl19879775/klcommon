@@ -1,0 +1,6 @@
+///
+/// Œ¨ª§π÷ŒÔæ≤Ã¨ Ù–‘
+///
+class CMonsterStaticProMgr
+{
+};

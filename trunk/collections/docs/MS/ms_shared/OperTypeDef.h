@@ -77,6 +77,11 @@
 		skill_id(long)
 		skill_level(long)
 		target_id(CGUID)
+	怪物改变状态
+		RT_CHANGESTATE
+		monster_id(CGUID)
+		rgn_id(CGUID)
+		state(long)
 所有的回应包括：
 	怪物移动
 		RT_RES_MOVE
@@ -120,7 +125,8 @@ namespace MServer
 	enum RequestType
 	{
 		RT_MOVE,
-		RT_USESKILL
+		RT_USESKILL,
+		RT_CHANGESTATE,
 	};
 
 	/// GS回应MS请求类型

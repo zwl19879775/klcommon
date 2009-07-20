@@ -9,4 +9,8 @@ namespace ReqOper
 	/// 请求怪物使用技能
 	void ReqMonsterUseSkill( const CGUID &monster, const CGUID &rgn, 
 			long skill_id, long skill_lvl, const CGUID &target_id );
+
+	/// 请求怪物改变状态
+	void ReqMonsterChangeState( const CGUID &monster, const CGUID &rgn,
+			long state );
 }
