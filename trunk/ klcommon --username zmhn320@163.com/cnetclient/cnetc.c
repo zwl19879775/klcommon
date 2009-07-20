@@ -46,7 +46,7 @@ static void set_fd( struct cnetc_impl *cc_impl )
 
 struct cnetc *cnetc_connect( const char *sip, unsigned short sport, 
 		void (*err_log)( const char *fmt, ... ),
-	   	void (*notify_fn)( int, struct cnetc * ) )
+	   	void (*notify_fn)( int, struct cnetc *, int bytes ) )
 {
 	struct cnetc_impl *cc = (struct cnetc_impl*) malloc( sizeof( struct cnetc_impl ) );
 	BASE( cc ).connect_flag = 0;
@@ -89,6 +89,7 @@ int cnetc_poll( struct cnetc *cc, unsigned long sec )
 	struct cnetc_impl *cc_impl = CAST_CNETC_IMPL( cc );
 	struct timeval timeout;
 	int ev = 0;
+	int bytes = 0;
 	set_fd( cc_impl );
 	memset( &timeout, 0, sizeof( timeout ) );
 	timeout.tv_sec = sec;
@@ -99,16 +100,16 @@ int cnetc_poll( struct cnetc *cc, unsigned long sec )
 	if( FD_ISSET( cc->fd, &cc_impl->fd_read ) )
 	{
 		ev |= CC_RECV;
-		evbuffer_read( cc->read_buf, cc->fd, 4096 );
+		bytes = evbuffer_read( cc->read_buf, cc->fd, 4096 );
 	}
 	if( EVBUFFER_LENGTH( cc->write_buf ) && FD_ISSET( cc->fd, &cc_impl->fd_write ) )
 	{
 		ev |= CC_SEND;
-		evbuffer_write( cc->write_buf, cc->fd );
+		bytes = evbuffer_write( cc->write_buf, cc->fd );
 	}
 	if( ev != CC_NONE )
 	{
-		cc->notify_fn( ev, cc );
+		cc->notify_fn( ev, cc, bytes );
 	}
 	return 0;
 }
