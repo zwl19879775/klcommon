@@ -20,7 +20,7 @@ namespace kl_common
 			void *arg;
 		};
 	
-		bool operator < ( const timer &t1, const timer &t2 )
+		inline bool operator < ( const timer &t1, const timer &t2 )
 		{
 			return t1.timeout > t2.timeout;
 		}
@@ -33,11 +33,11 @@ namespace kl_common
 	class timer_queue
 	{
 	private:
-		typedef std::priority_queue<timer> TimerQueueT;
+		typedef std::priority_queue<Private::timer> TimerQueueT;
 	public:
-		void schedule( unsigned long timeout, timer::callback_fn_T fn, void *arg )
+		void schedule( unsigned long timeout, Private::timer::callback_fn_T fn, void *arg )
 		{
-			timer t = { timeout, fn, arg };
+			Private::timer t = { timeout, fn, arg };
 			_timer_queue.push( t );
 		}
 
@@ -45,7 +45,7 @@ namespace kl_common
 		{
 			while( !_timer_queue.empty() )
 			{
-				timer &t = _timer_queue.top();
+				Private::timer &t = _timer_queue.top();
 				if( t.timeout <= cur_time )
 				{
 					t.callback( t.arg );
