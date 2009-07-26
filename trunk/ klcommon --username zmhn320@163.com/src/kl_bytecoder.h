@@ -117,6 +117,7 @@ public:
 	/// get string in the buffer.
 	std::string &get( std::string &str )
 	{
+		str.clear();
 		for( buffer_type::iterator it = _buf.begin(); (char)(*it) != '\0' && it != _buf.end(); ++ it )
 		{
 			str.push_back( *it );
