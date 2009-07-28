@@ -15,6 +15,8 @@ namespace kl_common
 		struct timer
 		{
 			unsigned long timeout;
+			unsigned long interval;
+			unsigned long id;
 			typedef void (*callback_fn_T)( void * );
 			callback_fn_T callback;
 			void *arg;
@@ -30,26 +32,61 @@ namespace kl_common
 	/// usage:schedule a timer by 'schedule' function, and should be checked
 	/// every program loop by called 'run'.
 	///
-	class timer_queue
+	class timer_queue : protected std::priority_queue<Private::timer>
 	{
 	private:
-		typedef std::priority_queue<Private::timer> TimerQueueT;
+		typedef std::priority_queue<Private::timer> BaseT;
 	public:
-		void schedule( unsigned long timeout, Private::timer::callback_fn_T fn, void *arg )
+		timer_queue()
 		{
-			Private::timer t = { timeout, fn, arg };
-			_timer_queue.push( t );
+			_id_index = 1;
+		}
+
+		///
+		/// schedule a timer.
+		/// @param timeout the first timer timeout time.
+		/// @param interval 0 to schedule a one-time timer.
+		/// @return timer id
+		///
+		unsigned long schedule( unsigned long timeout, unsigned long interval,
+			Private::timer::callback_fn_T fn, void *arg )
+		{
+			unsigned long id = get_id();
+			Private::timer t = { timeout, interval, id, fn, arg };
+			push( t );
+			return id;
+		}
+
+		/// cancel a timer
+		bool cancel( unsigned long id )
+		{
+			for( BaseT::container_type::iterator it = BaseT::c.begin();
+				it != BaseT::c.end(); ++ it )
+			{
+				if( it->id == id )
+				{
+					BaseT::c.erase( it );
+					std::make_heap( BaseT::c.begin(), BaseT::c.end(), BaseT::comp );
+					return true;
+				}
+			}
+			return false;
 		}
 
 		void run( unsigned long cur_time )
 		{
-			while( !_timer_queue.empty() )
+			while( !empty() )
 			{
-				Private::timer &t = _timer_queue.top();
+				Private::timer t = top();
 				if( t.timeout <= cur_time )
 				{
 					t.callback( t.arg );
-					_timer_queue.pop();
+					pop();
+					if( t.interval != 0 )
+					{
+						t.timeout = cur_time + t.interval;
+						push( t );
+					}
 				}
 				else
 				{
@@ -60,10 +97,15 @@ namespace kl_common
 
 		size_t size() const
 		{
-			return _timer_queue.size() ;
+			return BaseT::size();
 		}
 	private:
-		TimerQueueT _timer_queue;
+		unsigned long get_id() 
+		{
+			return _id_index ++;
+		}
+	private:
+		unsigned long _id_index;
 	};
 }
 
