@@ -47,6 +47,11 @@ namespace kl_common
 	template <typename Prototype, long id>
 	class lua_binder;
 
+	///
+	/// when id greater than BASE_YIELD_ID, these binded functions will yield lua thread.
+	///
+#define BASE_YIELD_ID (4096)
+
 #define RESULT_COUNT \
 	lua::return_number_traits<result_type>::count
 
@@ -77,6 +82,9 @@ namespace kl_common
 		{ \
 			DEF_GET_PARAM( n ) \
 			caller<result_type>::call( L, DEF_FUNC_ARG( n ) ); \
+			if( id > BASE_YIELD_ID ) \
+				return ::lua_yield( L, RESULT_COUNT ); \
+			else \
 			return RESULT_COUNT; \
 		} \
 	private: \
@@ -122,8 +130,10 @@ namespace kl_common
 		{
 			// when result_type is void, there's no result to return.
 			caller<result_type>::call( L );
-
-			return RESULT_COUNT;
+			if( id > BASE_YIELD_ID )
+				return ::lua_yield( L, 0 );
+			else
+				return RESULT_COUNT;
 		}
 
 	private:
