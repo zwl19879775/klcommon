@@ -21,7 +21,7 @@ namespace kl_common
 			callback_fn_T callback;
 			void *arg;
 		};
-	
+
 		inline bool operator < ( const timer &t1, const timer &t2 )
 		{
 			return t1.timeout > t2.timeout;
@@ -75,23 +75,41 @@ namespace kl_common
 
 		void run( unsigned long cur_time )
 		{
+			struct executor
+			{
+				Private::timer::callback_fn_T fn;
+				void *arg;
+			};
+			std::queue<executor> exe_queue;
+
 			while( !empty() )
 			{
-				Private::timer t = top();
+				Private::timer &t = top();
 				if( t.timeout <= cur_time )
 				{
-					t.callback( t.arg );
-					pop();
+					executor exe = { t.callback, t.arg };
+					exe_queue.push( exe );
 					if( t.interval != 0 )
 					{
 						t.timeout = cur_time + t.interval;
-						push( t );
+						std::make_heap( BaseT::c.begin(), BaseT::c.end(), BaseT::comp );
+					}
+					else
+					{
+						pop();
 					}
 				}
 				else
 				{
 					break;
 				}
+			}
+
+			while( !exe_queue.empty() )
+			{
+				executor &exe = exe_queue.front();
+				exe.fn( exe.arg );
+				exe_queue.pop();
 			}
 		}
 
