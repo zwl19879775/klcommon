@@ -94,6 +94,13 @@ public:
 		}
 	}
 
+	/// add a byte_coder, it will copy the source byte_coder content.
+	template <typename _Tp>
+	void add( byte_coder<_Tp> &other )
+	{
+		_buf.insert( _buf.end(), other._buf.begin(), other._buf.end() );
+	}
+
 	/// get data, if no data to return, it will return Tp().
 	template <typename _Tp>
 	_Tp get( _Tp *buf = 0 )
@@ -132,6 +139,10 @@ public:
 	{
 		std::size_t buf_size = this->size();
 		std::size_t copy_size = buf_size < size ? buf_size : size;
+		if( copy_size == 0 )
+		{
+			return buf;
+		}
 		memcpy( buf, &_buf[0], copy_size );
 		_buf.erase( _buf.begin(), _buf.begin() + copy_size );
 		return buf;
