@@ -198,6 +198,11 @@ namespace kl_common
 	template <typename binder_type>
 	void lua_bind( lua_State *L, typename binder_type::func_type &func, const char *name, int idx = LUA_GLOBALSINDEX )
 	{
+		if( binder_type::_func )
+		{
+			// to cause an error
+			assert( "tow or more lua_binders shared the same id." && 0 );
+		}
 		binder_type::_func = func;
 		lua_pushcfunction( L, binder_type::lua_adapter );
 		lua_setfield( L, idx, name );
