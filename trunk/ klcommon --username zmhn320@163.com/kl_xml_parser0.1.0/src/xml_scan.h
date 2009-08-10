@@ -45,7 +45,11 @@ unsigned long xmlscan_line();
 /**
   init scanning setttings
 */
+#ifdef XML_USE_FILE
 void xmlscan_init( FILE *infile );
+#else
+void xmlscan_init( const void *buf, size_t size );
+#endif
 
 /** a helper macro to create objects */
 #define NEW( type ) (type*) malloc( sizeof( type ) )

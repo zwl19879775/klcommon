@@ -4,6 +4,7 @@
   @author Kevin Lynx
 */
 #include <stdio.h>
+#include <string.h>
 #include "xml_helper.h"
 
 #define ACCESS_ATTRIBUTE( node, name, format, value ) \
