@@ -32,14 +32,23 @@ struct xmlNode
 */
 struct xmlDocument
 {
+#ifdef XML_USE_FILE
 	FILE *xmlfile; /* the xml input file */
+#else
+	void *buf;
+	size_t size;
+#endif
 	struct xmlNode *root; /* the root node of this xml file, you can access other nodes by it */
 };
 
 /**
   create a new xml document, only malloc the memory.
 */
+#ifdef XML_USE_FILE
 struct xmlDocument *xmldoc_new( FILE *fp );
+#else
+struct xmlDocument *xmldoc_new( const void *buf, size_t size );
+#endif
 
 /**
   free a xml document.

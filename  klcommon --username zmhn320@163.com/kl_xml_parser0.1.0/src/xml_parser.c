@@ -3,7 +3,8 @@
   @brief to parse the simple xml file
 */
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
+#include <string.h>
 #include "xml_scan.h"
 #include "xml_parser.h"
 
@@ -210,6 +211,7 @@ static struct xmlNode *_match_node( struct xmlNode *parent, struct xmlNode *prev
 	return node;
 }
 
+#ifdef XML_USE_FILE
 struct xmlDocument *xmldoc_new( FILE *fp )
 {
 	struct xmlDocument *doc = NEW( struct xmlDocument );
@@ -217,17 +219,35 @@ struct xmlDocument *xmldoc_new( FILE *fp )
 	doc->root = 0;
 	return doc;
 }
+#else
+struct xmlDocument *xmldoc_new( const void *buf, size_t size )
+{
+	struct xmlDocument *doc = NEW( struct xmlDocument );
+	doc->buf = malloc( size );
+	doc->size = size;
+	memcpy( doc->buf, buf, size );
+	doc->root = 0;
+	return doc;
+}
+#endif
 
 void xmldoc_free( struct xmlDocument *doc )
 {
 	_free_node( doc->root );
+#ifndef XML_USE_FILE
+	free( doc->buf );
+#endif
 	free( doc );
 }
 
 int xml_parse( struct xmlDocument *doc )
 {
 	struct Token token;
+#ifdef XML_USE_FILE
 	xmlscan_init( doc->xmlfile );
+#else
+	xmlscan_init( doc->buf, doc->size );
+#endif
 	token = xmlscan_gettoken();
 	if( token.type != LB )
 	{

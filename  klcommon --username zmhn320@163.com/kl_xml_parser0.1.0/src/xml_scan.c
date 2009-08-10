@@ -4,6 +4,8 @@
   @see also Tiny Compiler scan.c
 */
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 #include "xml_scan.h"
 
 /**
@@ -21,12 +23,17 @@ enum
 
 #define BUFLEN 512
 
+#ifdef XML_USE_FILE
 static char line_buf[BUFLEN];
+static FILE *filein = 0;
+#else
+static const char *content_buf = 0;
+#endif
+static unsigned long lineno = 0;
 static int line_pos = 0;
 static int buf_size = 0;
-static FILE *filein = 0;
-static unsigned long lineno = 0;
 
+#ifdef XML_USE_FILE
 static int getNextChar()
 {
 	if( !( line_pos < buf_size ) )
@@ -35,7 +42,7 @@ static int getNextChar()
 		lineno ++;
 		if( fgets( line_buf, BUFLEN - 1, filein ) )
 		{
-			buf_size = strlen( line_buf );
+			buf_size = (int)strlen( line_buf );
 			line_pos = 0;
 			return line_buf[line_pos++];
 		}
@@ -49,6 +56,16 @@ static int getNextChar()
 		return line_buf[line_pos++];
 	}
 }
+#else
+static int getNextChar()
+{
+	if( line_pos >= buf_size )
+	{
+		return EOF;
+	}
+	return content_buf[line_pos++];
+}
+#endif
 
 static void ungetNextChar()
 {
@@ -210,6 +227,7 @@ unsigned long xmlscan_line()
 	return lineno;
 }
 
+#ifdef XML_USE_FILE
 void xmlscan_init( FILE *fp )
 {
 	lineno = 0;
@@ -218,6 +236,14 @@ void xmlscan_init( FILE *fp )
 	buf_size = 0;
 	line_buf[0] = 0;
 }
-
+#else
+void xmlscan_init( const void *buf, size_t size )
+{
+	content_buf = buf;
+	lineno = 0;
+	line_pos = 0;
+	buf_size = (int)size;
+}
+#endif
 
 
