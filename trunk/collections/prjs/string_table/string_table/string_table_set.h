@@ -14,7 +14,13 @@ namespace stable
 	{
 	public:
 		typedef unsigned long id_type;
-		typedef std::map<id_type, string_table*> TableSetT;
+		struct config
+		{
+			string_table *st;
+			typedef std::map<id_type, std::string> FileTableT;
+			FileTableT ft;
+		};
+		typedef std::map<id_type, config> TableSetT;
 
 	public:
 		~string_table_set()
@@ -32,6 +38,7 @@ namespace stable
 		
 		string_table *get_key_st();
 
+		void update_key_st_ids();
 	private:
 		TableSetT _tables;
 		id_type _keyTable;

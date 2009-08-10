@@ -76,12 +76,12 @@ namespace stable
 		_ids.clear();
 	}
 
-	bool string_table::add( id_type type, id_type id, const std::string &str )
+	bool string_table::add( id_type type, const std::string &str )
 	{
 		StringsT *strs = get_strings( type );
 		if( strs == NULL )
 		{
-			return false;
+			strs = new_strings( type );
 		}
 		for( StringsT::iterator it = strs->begin(); it != strs->end(); ++ it )
 		{
@@ -90,21 +90,30 @@ namespace stable
 				return false;
 			}
 		}
-		strs->insert( std::make_pair( id, str ) );
+		strs->insert( std::make_pair( alloc_id( strs ), str ) );
 		return true;
 	}
 
-	void string_table::build_id_table()
+	void string_table::update_id_table()
 	{
 		for( StringsTableT::iterator it = _stable.begin(); it != _stable.end(); ++ it )
 		{
 			StringsT *strs = it->second;
-			IDListT *id_list = new IDListT();
+			IDListTableT::iterator id_it = _ids.find( it->first );
+			IDListT *id_list = NULL;
+			if( id_it == _ids.end() )
+			{
+				id_list = new IDListT();
+				_ids[it->first] = id_list;
+			}
+			else
+			{
+				id_list = id_it->second;
+			}
 			for( StringsT::iterator sit = strs->begin(); sit != strs->end(); ++ sit )
 			{
-				id_list->insert( std::make_pair( sit->second, sit->first ) );
+				(*id_list)[sit->second] = sit->first;
 			}
-			_ids.insert( std::make_pair( it->first, id_list ) );
 		}
 	}
 
@@ -138,6 +147,11 @@ namespace stable
 			return 0;
 		}
 		return strs->size();
+	}
+
+	string_table::id_type string_table::alloc_id( const StringsT *st )
+	{
+		return (id_type)st->size() + 1;
 	}
 
 	string_table::StringsT *string_table::get_strings( id_type type )

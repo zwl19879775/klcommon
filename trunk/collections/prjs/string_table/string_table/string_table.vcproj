@@ -206,6 +206,50 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="xml"
+			>
+			<File
+				RelativePath=".\xml\tinystr.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\xml\tinystr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xml\tinyxml.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\xml\tinyxml.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xml\tinyxmlerror.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\xml\tinyxmlparser.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="test"
+			>
+			<File
+				RelativePath=".\test.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="st_impl"
+			>
+			<File
+				RelativePath=".\string_table_impl.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

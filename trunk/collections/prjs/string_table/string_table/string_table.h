@@ -29,9 +29,9 @@ namespace stable
 
 		void clear();
 
-		void build_id_table();
+		void update_id_table();
 
-		bool add( id_type type, id_type id, const std::string &str );
+		bool add( id_type type, const std::string &str );
 
 		id_type query_id( id_type type, const std::string &str );
 
@@ -40,6 +40,8 @@ namespace stable
 		size_t size( id_type type ) const;
 
 	private:
+		id_type alloc_id( const StringsT *st );
+
 		StringsT *get_strings( id_type type );
 
 		const StringsT *get_strings( id_type type ) const;
