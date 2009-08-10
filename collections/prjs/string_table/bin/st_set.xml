@@ -1,0 +1,17 @@
+<StringTableSet>
+	<StringType>
+		<value="1" desc="region_name"/>
+		<value="2" desc="goods_name"/>
+	</StringType>
+	<StringTable key="1">
+		<Language id="1" desc="tw">
+			<Strings value="1" file="data/tw_rgn.txt"/>
+			<Strings value="2" file="data/tw_goods.txt"/>
+		</Language>
+		<Language id="2" desc="simple">
+			<Strings value="1" file="data/sim_rgn.txt"/>
+			<Strings value="2" file="data/sim_goods.txt"/>
+		</Language>
+	</StringTable>
+</StringTableSet>
+
