@@ -20,7 +20,8 @@ extern "C"
 
 namespace kl_common
 {
-	
+
+
 	/// 
 	/// You donot need use this class below, instead i suggest you use lua_bind function.
 	/// Everytime you want to bind a function in lua, you should only do 2 steps :
@@ -64,6 +65,80 @@ namespace kl_common
 
 #define DEF_GET_PARAM( n ) REPEAT_##n( n, GET_PARAM, GET_PARAM_END )
 
+	namespace Private
+	{
+		///
+		/// to determine how to call _func, because the void return type.
+		///
+		template <typename _Tp>
+		struct caller0
+		{
+			template <typename _Func>
+			static void call( _Func &fn, lua_State *L )
+			{
+				result_type r = fn();
+				SET_RESULT( L, r );
+			}
+		};
+
+		///
+		/// when result is void, i should only write '_func' code line.
+		///
+		template <>
+		struct caller0<void>
+		{
+			template <typename _Func>
+			static void call( _Func &fn, lua_State *L )
+			{
+				fn();
+			}
+		};
+
+#define PRIVATE_CREATE_CALLER( n ) \
+		template <typename _Tp, DEF_PARAM( n) > \
+		struct CHR( caller, n ) \
+		{ \
+			DEF_PARAM_TYPE( n ); \
+			typedef _Tp result_type; \
+			template <typename _Func> \
+			static void call( _Func &fn, lua_State *L, DEF_FUNC_PARAM_REF( n ) ) \
+			{ \
+				result_type r = fn( DEF_FUNC_ARG( n ) ); \
+				SET_RESULT( L, r ); \
+			} \
+		}; \
+		template <DEF_PARAM( n)> \
+		struct CHR( caller, n )<void, DEF_ARG( n ) > \
+		{ \
+			DEF_PARAM_TYPE( n ); \
+			template <typename _Func> \
+			static void call( _Func &fn, lua_State *L, DEF_FUNC_PARAM_REF( n ) ) \
+			{ \
+				fn( DEF_FUNC_ARG( n ) ); \
+			} \
+		};
+#ifdef __BORLANDC__
+	// borland compiler doesnot support some macros here, so i generate these
+	// codes in a vc program.
+#include "kllua-binder-call-gen.h"
+#else
+		PRIVATE_CREATE_CALLER( 1 );
+		PRIVATE_CREATE_CALLER( 2 );
+		PRIVATE_CREATE_CALLER( 3 );
+		PRIVATE_CREATE_CALLER( 4 );
+		PRIVATE_CREATE_CALLER( 5 );
+		PRIVATE_CREATE_CALLER( 6 );
+		PRIVATE_CREATE_CALLER( 7 );
+		PRIVATE_CREATE_CALLER( 8 );
+		PRIVATE_CREATE_CALLER( 9 );
+		PRIVATE_CREATE_CALLER( 10);
+		PRIVATE_CREATE_CALLER( 11 );
+		PRIVATE_CREATE_CALLER( 12 );
+		PRIVATE_CREATE_CALLER( 13);
+		PRIVATE_CREATE_CALLER( 14 );
+		PRIVATE_CREATE_CALLER( 15 );
+#endif
+	}
 
 	///
 	/// The macro template is to create lua_binder.( 1 -- n parameters )
@@ -74,42 +149,24 @@ namespace kl_common
 	{ \
 	public: \
 		typedef R result_type; \
-		typedef functor<result_type, STATIC_TYPE_LIST##n> func_type; \
+		typedef functor<result_type, STATIC_TYPE_LIST##n > func_type; \
 		DEF_PARAM_TYPE( n ); \
 		enum { param_count = n }; \
 	public: \
 		static int lua_adapter( lua_State *L ) \
 		{ \
 			DEF_GET_PARAM( n ) \
-			caller<result_type>::call( L, DEF_FUNC_ARG( n ) ); \
+			Private::CHR( caller, n )<result_type, DEF_ARG( n )>::call( _func, L, DEF_FUNC_ARG( n ) ); \
 			if( id > BASE_YIELD_ID ) \
 				return ::lua_yield( L, RESULT_COUNT ); \
 			else \
 			return RESULT_COUNT; \
 		} \
-	private: \
-		template <typename _Tp> \
-		struct caller \
-		{ \
-			static void call( lua_State *L, DEF_FUNC_PARAM_REF( n ) ) \
-			{ \
-				result_type r = _func( DEF_FUNC_ARG( n ) ); \
-				SET_RESULT( L, r ); \
-			} \
-		}; \
-		template <> \
-		struct caller<void> \
-		{ \
-			static void call( lua_State *L, DEF_FUNC_PARAM_REF( n ) ) \
-			{ \
-				_func( DEF_FUNC_ARG( n ) ); \
-			} \
-		}; \
 	public: \
 		static func_type _func; \
 	}; \
 	template <typename R, DEF_PARAM( n ), long id > \
-	typename lua_binder<R ( DEF_ARG( n ) ), id>::func_type lua_binder<R ( DEF_ARG( n ) ), id>::_func 
+	typename lua_binder<R ( DEF_ARG( n ) ), id>::func_type lua_binder<R ( DEF_ARG( n ) ), id>::_func;
 
 	///
 	/// 0 parameter.
@@ -129,45 +186,23 @@ namespace kl_common
 		static int lua_adapter( lua_State *L )
 		{
 			// when result_type is void, there's no result to return.
-			caller<result_type>::call( L );
+			Private::caller0<result_type>::call( _func, L );
 			if( id > BASE_YIELD_ID )
 				return ::lua_yield( L, 0 );
 			else
 				return RESULT_COUNT;
 		}
-
-	private:
-		///
-		/// to determine how to call _func, because the void return type.
-		///
-		template <typename _Tp>
-		struct caller
-		{
-			static void call( lua_State *L )
-			{
-				result_type r = _func();
-				SET_RESULT( L, r );
-			}
-		};
-
-		///
-		/// when result is void, i should only write '_func' code line.
-		///
-		template <>
-		struct caller<void>
-		{
-			static void call( lua_State *L )
-			{
-				_func();
-			}
-		};
-
 	public:
 		static func_type _func;
 	};
 	template <typename R, long id>
 	typename lua_binder<R (), id>::func_type lua_binder<R (), id>::_func;
 
+#ifdef __BORLANDC__
+	// borland compiler doesnot support some macros here, so i generate these
+	// codes in a vc program.
+#include "kllua-binder-gen.h"
+#else
 	CREATE_LUA_BINDER( 1 );
 	CREATE_LUA_BINDER( 2 );
 	CREATE_LUA_BINDER( 3 );
@@ -183,7 +218,7 @@ namespace kl_common
 	CREATE_LUA_BINDER( 13 );
 	CREATE_LUA_BINDER( 14 );
 	CREATE_LUA_BINDER( 15 );
-
+#endif
 	///
 	/// This function is the only interface to you, you can use it to bind any function to
 	/// lua script. Currently it only support c-functions, operator(), and member functions.
@@ -221,7 +256,8 @@ namespace kl_common
 	void lua_bind( lua_State *L, BindType fn, const char *name, int idx = LUA_GLOBALSINDEX )
 	{
 		typedef lua_binder< FuncType, id> binder_type;
-		lua_bind<binder_type>( L, binder_type::func_type( fn ), name );
+		binder_type::func_type func( fn );
+		lua_bind<binder_type>( L, func, name, idx );
 	}
 }
 

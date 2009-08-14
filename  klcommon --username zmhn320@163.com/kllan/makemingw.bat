@@ -1,1 +1,2 @@
 make OS=Windows
+pause 

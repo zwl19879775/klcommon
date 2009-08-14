@@ -7,6 +7,7 @@
 #define ___KL_BYTECODER_H_
 
 #include <assert.h>
+#include <memory.h>
 #include "kl_compiler_cfg.h"
 #include <string>
 

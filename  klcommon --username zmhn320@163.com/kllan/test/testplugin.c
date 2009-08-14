@@ -52,8 +52,9 @@ void test_plugin( const char *file )
 			kl_new_arg( arg_list );
 			kl_add_number( arg_list, 1 );
 			kl_add_string( arg_list, "a string from c" );
-			ret = kl_call( kl, "func", arg_list );
-			printf( "\nfunc returns %lf\n", ret.dval );
+			/*ret = kl_call( kl, "func", arg_list );
+			printf( "\nfunc returns %lf\n", ret.dval );*/
+			kl_call( kl, "script_fn", 0 );
 			kl_free_arg( arg_list );
 		}
 		kl_free( kl );

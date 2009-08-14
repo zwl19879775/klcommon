@@ -136,7 +136,7 @@ namespace kl_common
 	///
 #define CREATE_LUA_CALLER( n ) \
 	template <typename R, DEF_PARAM( n ) > \
-	class lua_caller<R ( DEF_ARG( n ) ) > \
+	class lua_caller<R ( DEF_ARG( n ) ) >  \
 	{ \
 	public: \
 		typedef R result_type; \
@@ -178,7 +178,7 @@ namespace kl_common
 	private: \
 		lua_State *_L; \
 		std::string _fn; \
-	}
+	};
 
 	///
 	/// 0 parameter
@@ -231,6 +231,11 @@ namespace kl_common
 		std::string _fn;
 	};
 
+#ifdef __BORLANDC__
+	// borland compiler doesnot support some macros here, so i generate these
+	// codes in a vc program.
+#include "kllua-caller-gen.h"
+#else
 	CREATE_LUA_CALLER( 1 );
 	CREATE_LUA_CALLER( 2 );
 	CREATE_LUA_CALLER( 3 );
@@ -246,7 +251,7 @@ namespace kl_common
 	CREATE_LUA_CALLER( 13 );
 	CREATE_LUA_CALLER( 14 );
 	CREATE_LUA_CALLER( 15 );
-
+#endif
 }
 
 #endif // ___KL_LUA_CALLER_H

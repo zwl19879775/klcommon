@@ -153,7 +153,7 @@ public:
 
 private:
 	/// thread main function
-	friend static unsigned int __stdcall ThreadFunc( void *p )
+	static unsigned int __stdcall ThreadFunc( void *p )
 	{
 		param *_param = (param*) p;
 		assert( _param != NULL && "ThreadFunc : invalid thread parameter!" );

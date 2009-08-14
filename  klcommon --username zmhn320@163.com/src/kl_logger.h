@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <time.h>
 #include <fstream>
 #include "kl_compiler_cfg.h"
