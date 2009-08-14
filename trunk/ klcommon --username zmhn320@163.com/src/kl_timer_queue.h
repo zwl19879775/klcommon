@@ -26,6 +26,12 @@ namespace kl_common
 		{
 			return t1.timeout > t2.timeout;
 		}
+
+		struct executor
+		{
+			 Private::timer::callback_fn_T fn;
+			 void *arg;
+		};
 	}
 
 	///
@@ -75,19 +81,15 @@ namespace kl_common
 
 		void run( unsigned long cur_time )
 		{
-			struct executor
-			{
-				Private::timer::callback_fn_T fn;
-				void *arg;
-			};
-			std::queue<executor> exe_queue;
+
+			std::queue<Private::executor> exe_queue;
 
 			while( !empty() )
 			{
 				Private::timer &t = top();
 				if( t.timeout <= cur_time )
 				{
-					executor exe = { t.callback, t.arg };
+					Private::executor exe = { t.callback, t.arg };
 					exe_queue.push( exe );
 					if( t.interval != 0 )
 					{
@@ -107,7 +109,7 @@ namespace kl_common
 
 			while( !exe_queue.empty() )
 			{
-				executor &exe = exe_queue.front();
+				Private::executor &exe = exe_queue.front();
 				exe.fn( exe.arg );
 				exe_queue.pop();
 			}
@@ -118,7 +120,7 @@ namespace kl_common
 			return BaseT::size();
 		}
 	private:
-		unsigned long get_id() 
+		unsigned long get_id()
 		{
 			return _id_index ++;
 		}
