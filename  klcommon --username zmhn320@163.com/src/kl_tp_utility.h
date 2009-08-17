@@ -158,6 +158,26 @@ namespace kl_common
 	{
 		return _map_func_second_pred<_Func>( func );
 	}
+
+	///
+	/// Cast interger values to a pointer.
+	///
+	template <typename _Tp>
+	void *PTR_CAST( _Tp v )
+	{
+		__int64 t = (__int64) v;
+		return (void*) t;
+	}
+
+	/// 
+	/// Cast a pointer to an integet.
+	///
+	template <typename _Tp>
+	_Tp CAST_PTR( void *p )
+	{
+		__int64 t = (__int64) p;
+		return (_Tp) t;
+	}
 }
 
 #endif // ___KL_TP_UTILITY_H_
