@@ -36,7 +36,7 @@
 #define FUNC_PARAM_REF_END p1_type &p1
 
 ///
-/// to expand a string like : ,p1_type &p1, p2_type &p2
+/// to expand a string like : p1_type &p1, p2_type &p2
 ///
 #define DEF_FUNC_PARAM_REF( n ) REPEAT_##n( n, FUNC_PARAM_REF, FUNC_PARAM_REF_END )
 
@@ -44,10 +44,17 @@
 #define FUNC_PARAM_END p1_type p1
 
 ///
-/// to expand a string like : ,p1_type p1, p2_type p2
+/// to expand a string like : p1_type p1, p2_type p2
 ///
 #define DEF_FUNC_PARAM( n ) REPEAT_##n( n, FUNC_PARAM, FUNC_PARAM_END )
 
+#define FUNC_PARAM_P( n ) ,P##n p##n
+#define FUNC_PARAM_P_END P1 p1
+
+///
+/// to expand a string like : P1 p1, P2 p2
+///
+#define DEF_FUNC_PARAM_P( n ) REPEAT_##n( n, FUNC_PARAM_P, FUNC_PARAM_P_END )
 
 #define FUNC_ARG( n ) ,p##n
 #define FUNC_ARG_END p1
@@ -56,5 +63,21 @@
 /// to expand a string like : p1, p2, p3
 ///
 #define DEF_FUNC_ARG( n ) REPEAT_##n( n, FUNC_ARG, FUNC_ARG_END )
+
+#define VAR_DEF( n ) ;p##n##_type p##n
+#define VAR_DEF_END p1_type p1
+
+///
+/// to expand a string like : p1_type p1; p2_type p2
+///
+#define DEF_VAR_DEF( n ) REPEAT_##n( n, VAR_DEF, VAR_DEF_END )
+
+#define MEM_VAR_ASSIGN( n ) ;this->p##n##=p##n
+#define MEM_VAR_ASSIGN_END this->p1=p1
+
+///
+/// to expand a string like : this->p1=p1; this->p2=p2
+///
+#define DEF_MEM_VAR_ASSIGN( n ) REPEAT_##n( n, MEM_VAR_ASSIGN, MEM_VAR_ASSIGN_END )
 
 #endif // ___KL_MACRO_PARAMS_H_
