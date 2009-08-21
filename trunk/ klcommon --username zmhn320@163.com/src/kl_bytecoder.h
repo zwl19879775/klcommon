@@ -131,7 +131,11 @@ public:
 		{
 			str.push_back( *it );
 		}
-
+		if( it != _buf.end() )
+		{
+			// remove '\0' character.
+			++ it;
+		}
 		_buf.erase( _buf.begin(), it );
 		return str;
 	}
