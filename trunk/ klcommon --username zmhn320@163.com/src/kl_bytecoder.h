@@ -126,12 +126,13 @@ public:
 	std::string &get( std::string &str )
 	{
 		str.clear();
-		for( buffer_type::iterator it = _buf.begin(); (char)(*it) != '\0' && it != _buf.end(); ++ it )
+		buffer_type::iterator it;
+		for( it = _buf.begin(); (char)(*it) != '\0' && it != _buf.end(); ++ it )
 		{
 			str.push_back( *it );
 		}
 
-		_buf.erase( _buf.begin(), _buf.begin() + str.length() + 1 );
+		_buf.erase( _buf.begin(), it );
 		return str;
 	}
 
