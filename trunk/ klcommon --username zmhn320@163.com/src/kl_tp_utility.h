@@ -30,6 +30,17 @@ namespace kl_common
 	}
 
 	///
+	/// cast any basic type to a std::string.
+	///
+	template <typename _Tp>
+	std::string to_string( _Tp t )
+	{
+		std::stringstream stream;
+		stream << t;
+		return stream.str();
+	}
+
+	///
 	/// A tiny macro to make your map::find.It will expand some codes to find something in map.
 	///
 	/// usage :
