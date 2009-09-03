@@ -1,0 +1,185 @@
+1.vc自带的std::string没有copy-on-write机制：
+	std::string s = "hello";
+	std::string s2 = s;
+
+  copy-ctor :
+  xstring 1021 assign :
+	_Traits_helper::copy_s<_Traits>(_Myptr(), _Myres, _Right._Myptr() + _Roff, _Num);
+
+2.SGI stl使用了copy-on-write机制，
+	std::string s = "hello";
+	std::string s2 = s;
+
+  basic_string.tcc 184 : copy-ctor entry
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>::
+    basic_string(const basic_string& __str)
+    : _M_dataplus(__str._M_rep()->_M_grab(_Alloc(__str.get_allocator()),
+					  __str.get_allocator()),
+		  __str.get_allocator())
+    { }
+
+  构造_M_dataplus对象，该对象类型为：
+  mutable _Alloc_hider	_M_dataplus;
+  struct _Alloc_hider : _Alloc
+  {
+	_Alloc_hider(_CharT* __dat, const _Alloc& __a)
+	: _Alloc(__a), _M_p(__dat) { }
+
+	_CharT* _M_p; // The actual data.
+  };
+
+  第一个参数为字符串指针，第二个参数是STL内部的alloctor相关，忽略。
+  于是断定__str._M_rep()->_M_grab函数返回的是字符串指针，查看该函数代码：
+
+	_CharT*
+	_M_grab(const _Alloc& __alloc1, const _Alloc& __alloc2)
+	{
+	  return (!_M_is_leaked() && __alloc1 == __alloc2)
+	          ? _M_refcopy() : _M_clone(__alloc1);
+	}
+
+  该函数要么返回_M_refcopy()的返回值，要么返回_M_clone()的返回值，分别查看两个函
+  数代码：
+
+	_CharT*
+	_M_refcopy() throw()
+	{
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+	  if (__builtin_expect(this != &_S_empty_rep(), false))
+#endif
+            __gnu_cxx::__atomic_add(&this->_M_refcount, 1);
+	  return _M_refdata();
+	} 
+
+  可见，this->_M_refcount用于拷贝引用计数，__atomic_add正是封装了多线程环境，对
+  _M_refcount进行原子+1操作；进一步查看_M_refdata()函数实现：
+
+	_CharT*
+	_M_refdata() throw()
+	{ return reinterpret_cast<_CharT*>(this + 1); }
+  
+  该函数返回被拷贝string的"this+1"。
+
+  综合来说，_M_refcopy返回的就是被拷贝字符串内部的字符数组指针（单从该函数的命名
+  也可看出）。继续跟_M_clone函数：
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    _CharT*
+    basic_string<_CharT, _Traits, _Alloc>::_Rep::
+    _M_clone(const _Alloc& __alloc, size_type __res)
+    {
+      // Requested capacity of the clone.
+      const size_type __requested_cap = this->_M_length + __res;
+      _Rep* __r = _Rep::_S_create(__requested_cap, this->_M_capacity,
+				  __alloc);
+      if (this->_M_length)
+	traits_type::copy(__r->_M_refdata(), _M_refdata(),
+			  this->_M_length);
+
+      __r->_M_length = this->_M_length;
+      __r->_M_refdata()[this->_M_length] = _Rep::_S_terminal;
+      return __r->_M_refdata();
+    }
+
+  从名字大致可以看出，该函数先分配内存（_S_create）然后再拷贝内存（
+  traits_type::copy）。不用再继续跟下去了，_S_create是一个典型的内存逐块分配函数
+  。
+
+  回头看看basic_string::_Rep结构体，_Rep派生于_Rep_base：
+
+      struct _Rep_base
+      {
+	size_type		_M_length;
+	size_type		_M_capacity;
+	_Atomic_word		_M_refcount;
+      };
+
+      struct _Rep : _Rep_base
+
+  从之前的代码看来，可以知道其实basic_string内部真正用于保存字符串的就是这个
+  _Rep。按STL大部分容器的概念来看，_M_length表示字符串长度，_M_capacity表示
+  string当前持有的内存大小，_M_refcount表示拷贝引用计数。
+
+  以上数据成员就是_Rep所有的成员变量，但是并没有看到用于保存字符串的char*之类。
+  这可以从成员函数_M_clone一探究竟。上面罗列过_M_clone的代码，进一步查看该函数内
+  部使用的_S_create。_S_create前部分是计算分配内存大小的，直接查看分配内存部分：
+
+      void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
+      _Rep *__p = new (__place) _Rep;
+      __p->_M_capacity = __capacity;
+      __p->_M_set_sharable();  // One reference.
+      __p->_M_length = 0;
+  
+  其中，_Rep *__p = new (__place) _Rep很可疑，它把一个_Rep对象放置于刚分配的内存
+  首部，而且，在之前的分配大小的计算中：
+
+  	size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+ 
+  可以看出这里分配的内存不仅仅是用来保存一个_Rep对象的。再根据_M_clone函数是用来
+  拷贝一个字符串的，即可断定，这里分配的内存的其他部分，正是用来保存这个字符串本
+  身的。所以，我们在_M_refdata函数里看到：
+
+	_CharT*
+	_M_refdata() throw()
+	{ return reinterpret_cast<_CharT*>(this + 1); }
+  
+  this加1就得到字符串的地址，这里的this正是_Rep *const类型，那么this+1正好到达
+  _Rep对象末端。_Rep对字符串的存储为：
+
+	[_Rep_this][string characters...]
+
+ 
+  ---------------------------------------------------------------------------
+  既然拷贝构造函数拷贝了相同的指针，那么在另一个会改写字符串的地方必然会涉及到在
+  分配，随便看一个会改写字符串的函数，例如operator[]：
+
+      reference
+      operator[](size_type __pos)
+      {
+	_GLIBCXX_DEBUG_ASSERT(__pos < size());
+	_M_leak();
+	return _M_data()[__pos];
+      }
+
+  查看_M_leak函数：
+
+      void
+      _M_leak()    // for use in begin() & non-const op[]
+      {
+	if (!_M_rep()->_M_is_leaked())
+	  _M_leak_hard();
+      }
+
+  进一步查看_M_leak_hard：
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    void
+    basic_string<_CharT, _Traits, _Alloc>::_M_leak_hard()
+    {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
+      if (_M_rep() == &_S_empty_rep())
+	return;
+#endif
+      if (_M_rep()->_M_is_shared())
+	_M_mutate(0, 0, 0);
+      _M_rep()->_M_set_leaked();
+    }
+
+  其中，_M_mutate就涉及到拷贝新的字符串：
+
+	  const allocator_type __a = get_allocator();
+	  _Rep* __r = _Rep::_S_create(__new_size, capacity(), __a);
+
+	  if (__pos)
+	    traits_type::copy(__r->_M_refdata(), _M_data(), __pos);
+	  if (__how_much)
+	    traits_type::copy(__r->_M_refdata() + __pos + __len2,
+			      _M_data() + __pos + __len1, __how_much);
+ 
+ 减少引用计数：
+
+	  _M_rep()->_M_dispose(__a);
+
+
