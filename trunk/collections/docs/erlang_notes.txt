@@ -1,0 +1,190 @@
+
+Chapter 2. Getting Started
+
+2.6 Variables
+
+Erlang has single assignment variables. As the name suggests, single assignment
+variables can be given a value only once. A variable that has had a value
+assigned to it is called a bound variable; otherwise, it is called an unbound
+variable. All variable start off unbound.
+
+In Erlang, however, = denotes a pattern matching operation.
+
+2.8 Atoms
+
+In Erlang, atoms are used to represent different non-numerical constant values.
+
+2.9 Tuples
+
+You can create a tuple by enclosing the values you want to represent in curly
+bracket and separating them with commas.
+
+X = { 10, 45 }
+
+2.10 Lists
+
+We create a list by enclosing the list elements in sequare brackets and
+separating them with commas.
+
+ThingsToBuy = [ {apples, 10}, {pears, 6}, {milk, 3} ].
+
+2.11 Strings
+
+Strickly speaking, there are no strings in Erlang. Strings are really just lists
+of integers. Strings are enclosed in double quotation marks(').
+
+Chapter 3. Sequential Programming
+
+3.1 Modules
+
+Modules are the basic unit of code in Erlang. Modules are stored in files with
+.erl extensions.
+
+Where Has My Code Gone ?
+
+You have to make sure that when you run the compiler from the shell, you are in
+the right directory so that the system can find your code. If you are running on
+a system with a command shell, then you should change direcories to the
+directory where your code is before trying to compile the example code.
+
+In the shell, "pwd()." echo the current directory to find source files, and "cd"
+to change the directory.
+
+3.3 Functions with the same Name and Different Arity
+
+The arity of a function is the number of arguments that the function has. In
+Erlang, two functions with the same name and different arity in the same module
+represent entirely different functions.
+
+3.4 Funs
+
+Funs are "anonymous" functions: Z=fun(X) -> 2*X end. which "fun" is a keyword.
+
+Functions that return funs, or functions that can accept funs as their
+arguments, are called higher-order functions.
+
+3.6 List Comprehensions
+
+List comprehensions are expressions that create lists without having to use
+funs, maps, or filters.
+
+The notation [F(X) || X <- L] means "the list of F(X) where X is taken from the
+list L".
+
+3.8 Guards
+
+Guards are constructs that we can use to increase the power of pattern
+matching.
+
+some_fun(X) when some_expression -> ...
+
+A guard sequence is either a single guard or a series of guards, separated by
+semicolons (;). A guard is a series of guard expressions, separated by
+commas(,).
+
+3.9 Records
+
+-record( Name, { key1 = Default1, key2, ... } ).
+
+3.10 case and if Expressions
+
+Sometimes defining separate function clauses for everything is rather
+inconverient. When this happens we can use case and if expressions.
+
+Syntax:
+case Expression of
+	Pattern1 [when Guard1] -> Expr_seq1;
+	Pattern2 [when Guard2] -> Expr_seq2;
+	...
+end
+
+if 
+	Guard1 ->
+		Expr_seq1;
+	Guard2 ->
+		Expr_seq2;
+	...
+end
+
+Chapter 4. Exceptions
+
+4.1 Exceptions
+
+Exceptions are raised by the system when internal errors are encountered or
+explicitly in code by calling throw(Exception), exit(Exception), or
+erlang:error(Exception).
+
+Erlang has two methods of catching an exceptions. One is to enclose the call to
+the function, which raised the exception within a try...catch expression. The
+other is to enclose the call in a catch expression.
+
+...
+
+Chapter 5. Advanced Sequential Programming
+
+Binaries: This is a data type that we use to store raw chunks of memory in an
+efficient mannuer.
+
+The bit syntax: This is a pattern matching syntax used for packing and unpacking
+bit fields from binaries.
+
+5.2 Binaries
+
+Binaries are written and printed as sequences of integers or strings, enclosed
+in double less-than and greater-than brackets.
+
+When you use integers in a binary, each must be in the range 0 to 255.
+
+We can build a binary and extract the elements of a binary using a BIF, or we
+can use the bit syntax.
+
+5.3 The Bit Syntax
+
+M = << X:3, Y:7, Z:6>>
+Bit syntax expressions are of the following form:
+<<>>
+<<E1, E2, ..., En>>
+Each element Ei specifies a single segment of the binary. Each element Ei can
+have one of four possible forms:
+Ei = Value |
+	 Value:Size |
+	 Value/TypeSpecifierList |
+	 Value:Size/TypeSpecifierList
+
+Whatever form you use, the total number of bits in the binary must be evenly
+divisible by 8.
+
+5.4 Miscellaneous Short Topics
+
+The BIF apply(Mod, Func, [Arg1, Arg2, ..., ArgN] ) applies the function Func in
+the module Mod to the arguments Arg1, Arg2, ..., ArgN. What makes it different
+from calling the function directly is that the module name and/or the function
+name can be computed dynamically.
+
+Module attributes have the syntax -AtomTag(...) and are used to define certain
+properties of a file. There are two types of module attributes: predefined and
+user-defined.
+
+You can use block expressions to group a sequence of expressions, similar to a
+clause body. The value of a begin...end block is the value of the last
+expression in the block.
+	begin
+		Expr1,
+		...
+		ExprN
+	end
+
+Erlang source code files are assumed to be encoded in the ISO-8859-l character
+set.
+
+Comments in Erlang start with a percent character(%) and extend to the end of
+line. There are no block comments.
+
+In Erlang, anything that can be evaluated to produce a value is called an
+expression. Expression sequences are sequences of expressions separated by
+commas. The value of the expression sequence E1, E2, ..., En is defined to be
+the value of the last expression in the sequence.
+
+++and -- are infix operators for list addition and subtraction. A ++ B adds
+(that is, appends) A and B. A -- B subtracts the list B from the list A.
+Subtraction means that every element in B is removed from A.
