@@ -22,6 +22,9 @@ namespace kl_common
 	public:
 		virtual ~state() { }
 
+		/// Receive some conditions to transform to other states.
+		virtual void receive( void *cond ) { }
+
 		/// Execute when enter this state.
 		virtual void enter( entity_type* )  { }
 
