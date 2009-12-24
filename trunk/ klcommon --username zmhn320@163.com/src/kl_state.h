@@ -67,12 +67,19 @@ namespace kl_common
 		void clear()
 		{
 			_cur_state = 0;
+			_pre_state = 0;
 		}
 
 		/// Return true if the machine has a state.
 		bool has_state() const
 		{
 			return _cur_state != 0;
+		}
+
+		/// Get the current state.
+		state_type *cur_state()
+		{
+			return _cur_state;
 		}
 
 		/// Check whether is in the specified state.
@@ -102,11 +109,21 @@ namespace kl_common
 				_cur_state->leave();
 			}
 			other->enter();
+			_pre_state = _cur_state;
 			_cur_state = other;
 		}
 
+		/// Revert the previous state.
+		void revert()
+		{
+			if( _pre_state != 0 )
+			{
+				change( _pre_state );
+			}
+		}
 	private:
 		state_type *_cur_state;
+		state_type *_pre_state;
 		entity_type *_owner;
 	};
 }
