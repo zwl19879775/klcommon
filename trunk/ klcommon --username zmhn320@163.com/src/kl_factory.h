@@ -54,21 +54,32 @@ namespace kl_common
 			_policies.clear();
 		}
 
-		/// Add a creator in the factory.
-		void add( id_type id, const life_policy &lp )
+		/// Check whether the creator already exists.
+		bool exist( id_type id ) const
 		{
-			_policies[id] = lp;
+			return _policies.find( id ) != _policies.end();
 		}
 
-		void add( id_type id, creator_type c, destroyer_type d )
+		/// Add a creator in the factory.
+		bool add( id_type id, const life_policy &lp )
 		{
-			add( id, life_policy( c, d ) );
+			if( exist( id ) )
+			{
+				return false;
+			}
+			_policies.insert( policy_table_type::value_type( id, lp ) );
+			return true;
+		}
+
+		bool add( id_type id, creator_type c, destroyer_type d )
+		{
+			return add( id, life_policy( c, d ) );
 		}
 
 		/// Remove a creator from the factory.
-		void remove( id_type id )
+		bool remove( id_type id )
 		{
-			_policies.erase( id );
+			return _policies.erase( id ) != 0;
 		}
 
 		/// Create a product, return the pointer. If there's no creator
