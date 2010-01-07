@@ -87,6 +87,23 @@ namespace Win32
 		return tcps.size();
 	}
 
+	bool TcpTable::ProcessHasTcp( const char *PName )
+	{
+		TcpInfoList tcps;
+		if( Get( tcps ) == FAILED )
+		{
+			return false;
+		}
+		for( size_t i = 0; i < tcps.size(); ++ i )
+		{
+			if( stricmp( PName, tcps[i].PName ) == 0 )
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static char TcpState[][32] = {
 		"???",
 		"CLOSED",

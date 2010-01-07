@@ -37,6 +37,10 @@ int main()
 		printf( "%s\t%s\t%s\t%s\n", info.PName, localAddr, remoteAddr, 
 			Win32::StatusDesc( info.status ) );
 	}
+
+	const char *testProcess = "dnf.exe" ;
+	bool ret = tcpTable.ProcessHasTcp( testProcess ) ;
+	printf( "%s %s tcp connections.\n", testProcess, ret ? "has" : "hasnot" );
 	tcpTable.Release();
 	WSACleanup();
 	return 0;

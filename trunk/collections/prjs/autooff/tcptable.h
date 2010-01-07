@@ -66,6 +66,8 @@ namespace Win32
 
 		void Release();
 
+		bool ProcessHasTcp( const char *PName );
+
 		size_t Get( TcpInfoList &tcps );
 
 	private:
