@@ -6,7 +6,11 @@
 ///
 #include "resource.h"
 #include <windows.h>
+#include <stdio.h>
 #include "check.h"
+
+#define VERSION_STR "0.1.0"
+#define IDM_ABOUTBOX (0x0010)
 
 INT_PTR uidlg_create( HINSTANCE inst );
 void uidlg_destroy();
@@ -61,14 +65,46 @@ void OnStop( HWND hDlg )
 	CheckStop( hDlg );
 }
 
+BOOL OnInitDlg( HWND hDlg )
+{
+	CheckDlgButton( hDlg, IDC_CHECKPROCESS, BST_CHECKED );
+	CheckDlgButton( hDlg, IDC_CHECKNET, BST_CHECKED );
+
+	// append 'about' item to the system menu
+	HMENU hMenu = GetSystemMenu( hDlg, FALSE );
+	AppendMenu( hMenu, MF_STRING, IDM_ABOUTBOX, "¹ØÓÚ" );	
+	return TRUE;
+}
+
+void ShowAboutDlg( HWND hDlg )
+{
+	char info[256];
+	sprintf( info, 
+"\n"
+"AutoOff(v%s) tool basically used for DNF game.\n"
+"Author: Kevin Lynx, contact me at bbs.duowan.com.\n",
+		VERSION_STR );
+	MessageBox( hDlg, info, "About", MB_OK | MB_ICONINFORMATION );
+}
+
 BOOL CALLBACK DlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
 {
 	switch( message )
 	{
 	case WM_INITDIALOG:
 		{
-			CheckDlgButton( hDlg, IDC_CHECKPROCESS, BST_CHECKED );
-			CheckDlgButton( hDlg, IDC_CHECKNET, BST_CHECKED );
+			return OnInitDlg( hDlg );
+		}
+		break;
+
+	case WM_SYSCOMMAND:
+		{
+			if( ( wParam & 0xfff0 ) == IDM_ABOUTBOX )
+			{
+				ShowAboutDlg( hDlg );
+			}
+			DefWindowProc( hDlg, message, wParam, lParam );
+			return TRUE;
 		}
 		break;
 
