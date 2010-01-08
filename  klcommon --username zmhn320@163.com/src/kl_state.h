@@ -90,7 +90,7 @@ namespace kl_common
 		}
 
 		/// Query the machine.
-		machine_type *get_machine()
+		machine_type *get_machine() const
 		{
 			return _machine;
 		}
@@ -181,6 +181,12 @@ namespace kl_common
 			{
 				change( _pre_state, tran );
 			}
+		}
+
+		/// Get the entity object.
+		entity_type *get_entity() const
+		{
+			return _owner;
 		}
 	private:
 		concrete_type *_cur_state;
