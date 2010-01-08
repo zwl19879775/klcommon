@@ -1,5 +1,7 @@
 ///
-///
+/// Check current tcp connections in system.
+/// Kevin Lynx
+/// 1.8.2010
 ///
 #include "tcptable.h"
 #include <tlhelp32.h>

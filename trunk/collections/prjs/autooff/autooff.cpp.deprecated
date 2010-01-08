@@ -1,5 +1,6 @@
 ///
-///
+/// autooff tool especially for dnf game, this file has been
+/// deprecated because it use klwin gui.
 ///
 #include "klwin_window.h"
 #include "win32funcs.h"
