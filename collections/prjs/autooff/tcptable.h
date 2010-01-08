@@ -1,4 +1,7 @@
 ///
+/// Check current tcp connections in system.
+/// Kevin Lynx
+/// 1.8.2010
 /// GetExtendedTcpTable, to query all tcp connections in the system.
 ///
 #ifndef ___WIN32_TCPTABLE_H_

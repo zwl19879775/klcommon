@@ -1,3 +1,6 @@
+///
+/// Some usful win32 functions
+///
 #ifndef ___WIN32_FUNCS_H_
 #define ___WIN32_FUNCS_H_
 

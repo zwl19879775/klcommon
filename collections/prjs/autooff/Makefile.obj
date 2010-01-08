@@ -1,0 +1,4 @@
+check.o: check.cpp win32funcs.h tcptable.h utils.h check.h
+tcptable.o: tcptable.cpp tcptable.h
+uidlg.o: uidlg.cpp resource.h check.h
+win32funcs.o: win32funcs.cpp win32funcs.h utils.h
