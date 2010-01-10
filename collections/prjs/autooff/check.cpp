@@ -9,16 +9,15 @@
 #include "tcptable.h"
 #include "utils.h"
 #include "check.h"
+#include "notifydlg.h"
 
 #define TIMER (1001)
-#ifdef COMPILE_DIST
-#define TARGET_NAME "dnf.exe"
-#else
-#define TARGET_NAME "calc.exe"
-#endif
 
 static Win32::TcpTable tcpTable;
 static CheckConfig checkConfig;
+/// the initial port and ip
+static WORD originalPort;
+static DWORD originalAddr;
 
 static bool ProcessExist( const char *name )
 {
@@ -28,9 +27,25 @@ static bool ProcessExist( const char *name )
 			!= pl.end() ;
 }
 
-static bool ProcessHasTcp( const char *name )
+static bool ProcessTcpExist( const char *name )
 {
-	return tcpTable.ProcessHasTcp( name );
+	Win32::TcpInfoList tcps;
+	size_t ret = tcpTable.Get( name, tcps );
+	if( ret == 0 || ret == Win32::TcpTable::FAILED )
+	{
+		return false;
+	}
+
+	for( size_t i = 0; i < ret; ++ i )
+	{
+		if( tcps[i].remotePort == originalPort &&
+			tcps[i].remoteAddr == originalAddr )
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool CheckInit()
@@ -43,10 +58,59 @@ bool CheckInit()
 	return tcpTable.Init();
 }
 
+bool GetInitAddr( WORD *port, char *ip )
+{
+	Win32::TcpInfoList tcps;
+	size_t ret = tcpTable.Get( TARGET_NAME, tcps );
+	if( ret == 0 || ret == Win32::TcpTable::FAILED )
+	{
+		return false;
+	}
+	for( size_t i = 0; i < ret; ++ i )
+	{
+		if( htons( tcps[i].remotePort ) > 10000 )
+		{
+			// specially for dnf.exe
+			originalPort = tcps[i].remotePort;
+			originalAddr = tcps[i].remoteAddr;
+			strcpy( ip, Win32::IpDesc( originalAddr ) );
+			*port = htons( originalPort );
+
+			return true;
+		}
+	}	
+	return false;
+}
+
 void CheckRelease()
 {
 	tcpTable.Release();
 	WSACleanup();
+}
+
+static void DoShutdown( HWND hWnd, int reason )
+{
+	CheckStop( hWnd );
+	INT_PTR nRet = notifydlg_popup( GetModuleHandle( NULL ) );
+	if( nRet == IDCANCEL )
+	{
+		void OnStop( HWND hDlg );
+		// i know it's ugly here.:(
+		OnStop( hWnd );
+		return;
+	}
+#ifdef COMPILE_DIST
+	Win32::ShutdownSystem( checkConfig.safeShutdown );
+#else
+	if( reason == 1 )
+	{
+		MessageBox( hWnd, "Process does not exist", "INFO", MB_OK );
+	}
+	else if( reason == 2 )
+	{
+		MessageBox( hWnd, "Process has not tcp conn.", "INFO", MB_OK );
+	}
+#endif
 }
 
 void CALLBACK TimerProc( HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
@@ -55,21 +119,11 @@ void CALLBACK TimerProc( HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
 	{
 		if( checkConfig.checkProcess && !ProcessExist( TARGET_NAME ) )
 		{
-			CheckStop( hWnd );
-#ifdef COMPILE_DIST
-			Win32::ShutdownSystem( checkConfig.safeShutdown );
-#else
-			MessageBox( hWnd, "Process does not exist", "INFO", MB_OK );
-#endif
+			DoShutdown( hWnd, 1 );
 		}
-		else if( checkConfig.checkNet && !ProcessHasTcp( TARGET_NAME ) )
+		else if( checkConfig.checkNet && !ProcessTcpExist( TARGET_NAME ) )
 		{
-			CheckStop( hWnd );
-#ifdef COMPILE_DIST
-			Win32::ShutdownSystem( checkConfig.safeShutdown );
-#else
-			MessageBox( hWnd, "Process has not tcp conn.", "INFO", MB_OK );
-#endif
+			DoShutdown( hWnd, 2 );
 		}
 		else
 		{

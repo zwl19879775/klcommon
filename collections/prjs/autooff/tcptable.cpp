@@ -106,6 +106,45 @@ namespace Win32
 		return false;
 	}
 
+	bool TcpTable::ProcessHasTcp( const char *PName, WORD remotePort, WORD localPort )
+	{
+		TcpInfoList tcps;
+		if( Get( tcps ) == FAILED )
+		{
+			return false;
+		}
+		for( size_t i = 0; i < tcps.size(); ++ i )
+		{
+			if( stricmp( PName, tcps[i].PName ) == 0 &&
+				( localPort == 0 || htons( tcps[i].localPort ) == localPort ) &&
+				htons( tcps[i].remotePort ) == remotePort )
+			{
+				return true;
+			}
+		}
+		return false;		
+	}
+
+	size_t TcpTable::Get( const char *PName, TcpInfoList &tcps )
+	{
+		if( Get( tcps ) == FAILED )
+		{
+			return FAILED;
+		}
+		for( TcpInfoList::iterator it = tcps.begin(); it != tcps.end(); )
+		{
+			if( stricmp( PName, it->PName ) != 0 )
+			{
+				it = tcps.erase( it );
+			}
+			else
+			{
+				++ it;
+			}
+		}
+		return tcps.size();
+	}
+
 	static char TcpState[][32] = {
 		"???",
 		"CLOSED",
