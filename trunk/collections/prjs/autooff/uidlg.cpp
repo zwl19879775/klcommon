@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "check.h"
 
-#define VERSION_STR "0.1.0"
+#define VERSION_STR "0.2.0"
 #define IDM_ABOUTBOX (0x0010)
 
 INT_PTR uidlg_create( HINSTANCE inst );
@@ -30,6 +30,23 @@ void EnableControls( HWND hDlg, BOOL bEnable )
 #else
 #define TEST_FLAG( flag ) 
 #endif
+
+void UpdateInfoText( HWND hDlg )
+{
+	WORD port;
+	char ip[32];
+	char info[256];
+	if( !GetInitAddr( &port, ip ) )
+	{
+		sprintf( info, "获取%s网络连接信息失败！", TARGET_NAME );
+	}	
+	else
+	{
+		sprintf( info, "%s\n连接服务器信息：\n%s:%d",
+				TARGET_NAME, ip, port );
+	}
+	SetDlgItemText( hDlg, IDC_INFOTEXT, info );
+}
 
 void OnStart( HWND hDlg )
 {
@@ -55,6 +72,8 @@ void OnStart( HWND hDlg )
 	TEST_FLAG( cfg.checkProcess );
 	TEST_FLAG( cfg.checkNet );
 	TEST_FLAG( cfg.safeShutdown );
+
+	UpdateInfoText( hDlg );
 }
 
 void OnStop( HWND hDlg )
@@ -63,6 +82,8 @@ void OnStop( HWND hDlg )
 	SetDlgItemText( hDlg, IDOK, "开始" );
 	EnableControls( hDlg, TRUE );
 	CheckStop( hDlg );
+
+	SetDlgItemText( hDlg, IDC_INFOTEXT, "" );
 }
 
 BOOL OnInitDlg( HWND hDlg )

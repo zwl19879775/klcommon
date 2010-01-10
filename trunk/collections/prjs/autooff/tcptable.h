@@ -71,8 +71,11 @@ namespace Win32
 
 		bool ProcessHasTcp( const char *PName );
 
+		bool ProcessHasTcp( const char *PName, WORD remotePort, WORD localPort = 0 );
+
 		size_t Get( TcpInfoList &tcps );
 
+		size_t Get( const char *PName, TcpInfoList &tcps );
 	private:
 		GetExtendedTcpTableFunc GetExtendedTcpTablePtr;
 		HINSTANCE hLib;
