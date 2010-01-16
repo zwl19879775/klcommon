@@ -1,0 +1,56 @@
+lua_yield为什么就必须在return表达式中被调用
+
+很早前在折腾挂起LUA脚本支持时，接触到lua_yield这个函数。lua manual中给的解释是：
+
+This function should only be called as the return expression of a C function。
+
+而这个函数一般是在一个注册到LUA环境中的C函数里被调用。lua_CFunction要求的原型里
+，函数的返回值必须返回要返回到LUA脚本中的值的个数。也就是说，在一个不需要挂起的
+lua_CFunction实现里，也就是一个不需要return lua_yield(...的实现里，我应该return
+一个返回值个数。
+
+但是为什么调用lua_yield就必须放在return表达式里？当时很天真，没去深究，反正发现
+不按照lua manual里说的做就是不行。而且关键是，lua manual就不告诉你为什么。
+
+最近突然就想到这个问题，决定去搞清楚这个问题。侯捷说了，源码面前了无秘密。我甚至
+在看代码之前，还琢磨着LUA是不是操作了堆栈（系统堆栈）之类的东西。结果随便跟了下
+代码真的让我很汗颜。有时候人犯傻了真的是一个悲剧。诺简单的一个问题会被人搞得很神
+秘：
+
+解释执行调用一个注册进LUA的lua_CFunction是在ldo.c里的luaD_precall函数里，有如下
+代码：
+
+	n = (*curr_func(L)->c.f)(L);  /* do the actual call */
+    lua_lock(L);
+    if (n < 0)  /* yielding? */
+      return PCRYIELD;
+    else {
+      luaD_poscall(L, L->top - n);
+      return PCRC;
+    }
+
+多的我就不说了，别人注释写得很清楚了，注册进去的lua_CFunction如果返回值小于0，这
+个函数就向上层返回PCRYIELD，从名字就可看出是告诉上层需要YIELD。再找到lua_yield函
+数的实现，恰好该函数就返回-1。
+
+要再往上层跟，会到lvm.c里luaV_execute函数，看起来应该就是虚拟机在解释执行指令：
+
+      case OP_CALL: {
+        int b = GETARG_B(i);
+        int nresults = GETARG_C(i) - 1;
+        if (b != 0) L->top = ra+b;  /* else previous instruction set top */
+        L->savedpc = pc;
+        switch (luaD_precall(L, ra, nresults)) {
+          case PCRLUA: {
+            nexeccalls++;
+            goto reentry;  /* restart luaV_execute over new Lua function */
+          }
+          case PCRC: {
+            /* it was a C function (`precall' called it); adjust results */
+            if (nresults >= 0) L->top = L->ci->top;
+            base = L->base;
+            continue;
+
+对于PCRYIELD返回值，直接忽略处理了。
+
+
