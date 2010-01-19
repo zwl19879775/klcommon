@@ -1,0 +1,72 @@
+
+tolua++ -H point_bind.h -o point_bind.cpp point.h
+
+1、直接处理一个头文件，默认不导出任何内容；
+
+2、直接处理头文件，在头文件中加入//tolua_export、//tolua_begin、//tolua_end内容显示导出，
+会导致很多C++代码被tolua解析出错。
+
+// point1.h，出错
+class Point //tolua_export
+{
+public:
+	Point( long x, long y ) 
+	{
+		Set( x, y );
+	}
+
+};
+
+// point2.h，出错
+class Point //tolua_export
+{
+public:
+	//tolua_begin
+	void Set( long x, long y );
+
+	long GetX() const;
+
+	//tolua_end
+};
+
+3、处理pkg文件，pkg文件包含头文件：
+
+// point2.pkg，解析出错
+$cfile "point2.h"
+
+// point1.pkg，解析正确，导出正确
+$ifile "point2.h"
+
+
+// point3.pkg，解析正确，全部导出，甚至包含局部变量也导出，不识别tolua_export关
+// 键字
+$ifile "point3.h"
+
+// point3.h
+class Point //tolua_export
+{
+public:
+	//tolua_begin
+	void Set( long x, long y )
+	{
+		this->x = x;
+		this->y = y;
+	}
+
+	long GetX() const
+	{
+		return x;
+	}
+
+	//tolua_end
+
+	long GetY() const
+	{
+		return y;
+	}
+private:
+	long x, y;
+};
+
+
+
