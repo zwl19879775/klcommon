@@ -1,0 +1,44 @@
+1、 为脚本环境中增加变量不能设置为全局变量，因为所有的脚本实例全部共享一个全局变
+量表，这很容易导致名字污染冲突；
+
+2、程序中可直接GetVar、SetVar来读写脚本环境中的变量，显然，这些影响可以直接反映
+到脚本中，同理，脚本中对这些变量的改写也会及时地更新到程序方。最好两者操作的是同
+一个地方；
+
+3、脚本中读写接口尽量简单。
+
+实现方案1：
+
+class VariableList; // 保存一系列变量及值
+
+class Script
+{
+	lua_State *L; // 与一个lua_State关联
+	VariableList *LocalVars; // 拥有一个局部变量列表
+};
+
+Script *State2Script( lua_State *L ); // 根据映射由lua_State找到对应的Script
+
+这里就建立了VariableList到lua_State的映射关系。在lua脚本中，通过一系列函数来读写
+VariableList中的变量，如：
+
+localvar( "varName", VAR_NUM, [initValue] ); // 在VariableList中新加变量
+var = getvar( "varName" ); // 从VariableList中获取变量
+setvar( "varName", VAR_NUM, value ); // 设置VariableList中变量的值
+
+上面三个函数在实现时都可能包含类似的代码：
+
+int luaCFunc_xxx( lua_State *L )
+{
+	Script *script = State2Script( L );
+	VariableList *varList = script->GetVarList();
+	...
+}
+
+即，通过lua_State找到对应的VariableList。
+
+通过以上设计，其结构基本与目前脚本系统相似。即，任何模块都可以单独拥有
+VariableList，通过绑定到某个Script上，执行脚本即可改变该VariableList中变量的值。
+并且，程序方也可方便地直接从VariableList中取值。
+
+
