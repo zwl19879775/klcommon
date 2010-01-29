@@ -55,6 +55,7 @@ void VariableList::RemoveVar( const char *name )
 	}
 	Var *var = it->second;
 	DeallocValue( var->type, var->p, var->count );
+	delete var;
 	m_VarTable.erase( it );
 }
 
@@ -65,6 +66,7 @@ void VariableList::RemoveAll()
 	{
 		Var *var = it->second;
 		DeallocValue( var->type, var->p, var->count );
+		delete var;
 	}
 	m_VarTable.clear();
 }

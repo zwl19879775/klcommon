@@ -29,17 +29,12 @@ public:
 
 	typedef double Number;
 
+	/// The array index is begins at 0, and the count >= 1
 	struct Var
 	{
 		long type;
 		long count;
-		union
-		{
-			tString *strs;
-			Number *nums;
-			CGUID *guids;
-			void *p;
-		};
+		void *p;
 	};
 
 	/// <varName, var>
@@ -57,10 +52,10 @@ public:
 	/// @param name the variable name
 	/// @param initValue the initial value, if the variable is an array, it will set
 	/// all the elements to this value.
-	/// @param count the array's element count, 0 means the variable is not an array.
+	/// @param count the array's element count, 1 means the array only has one element.
 	///
 	template <typename VarT>
-	bool AddVar( const char *name, const VarT &initValue, long count = 0 );
+	bool AddVar( const char *name, const VarT &initValue, long count = 1 );
 
 	/// Remove a variable.
 	void RemoveVar( const char *name );
@@ -77,6 +72,12 @@ public:
 	///
 	template <typename VarT>
 	const VarT &GetVarValue( const char *name, long index = 0 );
+
+	///
+	/// Set a variable or an element of the array value.
+	///
+	template <typename VarT>
+	void SetVarValue( const char *name, const VarT &value, long index = 0 );
 
 	/// Check whether it has a variable with name.
 	bool HasVar( const char *name ) const;

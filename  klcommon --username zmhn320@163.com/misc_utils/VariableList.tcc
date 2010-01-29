@@ -39,13 +39,13 @@ namespace Private
 		/// Set a specified element value of var.
 		static void SetValue( VarType *var, const VarType &value, long index = 0 )
 		{
-			index == 0 ? *var = value : var[index] = value;
+			var[index] = value;
 		}
 
 		/// Get an element value.
 		static const VarType &GetValue( VarType *var, long index = 0 )
 		{
-			return index == 0 ? *var : var[index];
+			return var[index];
 		}
 	};
 
@@ -92,7 +92,7 @@ namespace Private
 template <typename VarT>
 inline bool VariableList::AddVar( const char *name, const VarT &initValue, long count )
 {
-	if( HasVar( name ) )
+	if( HasVar( name ) || count < 1 )
 	{
 		return false;
 	}
@@ -110,11 +110,27 @@ template <typename VarT>
 inline const VarT &VariableList::GetVarValue( const char *name, long index )
 {
 	Var *var = GetVar( name );
-	if( var == NULL )
+	if( var == NULL ||
+		var->type != Private::TypeTrait<VarT>::TYPE ||
+		var->count <= index )
 	{
 		return Private::TypeTrait<VarT>::ValidVal();
 	}
 	return Private::TypeTrait<VarT>::GetValue( (VarT*) var->p, index );
+}
+
+template <typename VarT>
+inline void VariableList::SetVarValue( const char *name, const VarT &value, long index )
+{
+	Var *var = GetVar( name );
+	if( var == NULL || 
+		var->type != Private::TypeTrait<VarT>::TYPE ||
+		var->count <= index )
+	{
+		// the variable does not exist or the type does not match.
+		return;
+	}
+	Private::TypeTrait<VarT>::SetValue( (VarT*) var->p, value, index );
 }
 
 template <typename VarT>
