@@ -41,4 +41,27 @@ int luaCFunc_xxx( lua_State *L )
 VariableList，通过绑定到某个Script上，执行脚本即可改变该VariableList中变量的值。
 并且，程序方也可方便地直接从VariableList中取值。
 
+至于数组，可以有如下的形式：
+
+localvar( "varName", TYPE_NUM, initVal, dimNum ); // 如果dimNum不为0，则定义的是
+数组，且所有元素被初始化为initVal。同样，在实现上希望能支持字符串数组和GUID数组。
+
+struct tString
+{
+	size_t size; // buffer size, not the string length
+	char *str;
+};
+
+struct Var
+{
+	int type;
+	long len; // array's length
+	union
+	{
+		tString *strs;
+		double *nums;
+		CGUID *guids;
+	};
+};
+
 
