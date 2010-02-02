@@ -91,6 +91,13 @@ public:
 	template <typename VarT>
 	static bool IsValueValid( const VarT &value );
 
+	///
+	/// Get the variable table.
+	///
+	const VarTableT &GetVarTable() const
+	{
+		return m_VarTable;
+	}
 private:
 	Var *GetVar( const char *name );
 
