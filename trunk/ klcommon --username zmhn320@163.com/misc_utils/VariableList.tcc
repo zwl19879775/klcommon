@@ -138,3 +138,16 @@ inline bool VariableList::IsValueValid( const VarT &value )
 {
 	return !( Private::TypeTrait<VarT>::ValidVal() == value );
 }
+
+template <typename VarT>
+inline const VarT &VariableList::GetValue( const Var *var, long index )
+{
+	if( var->type != Private::TypeTrait<VarT>::TYPE ||
+		var->count <= index )
+	{
+		return Private::TypeTrait<VarT>::ValidVal();
+	}
+	const VarT *varPtr = (const VarT*) var->p;
+	return varPtr[index];
+}
+
