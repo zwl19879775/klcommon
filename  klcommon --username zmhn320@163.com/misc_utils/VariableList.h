@@ -92,6 +92,12 @@ public:
 	static bool IsValueValid( const VarT &value );
 
 	///
+	/// A helper function to get an element value of the variable.
+	///
+	template <typename VarT>
+	static const VarT &GetValue( const Var *var, long index = 0 );
+	
+	///
 	/// Get the variable table.
 	///
 	const VarTableT &GetVarTable() const
