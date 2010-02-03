@@ -25,6 +25,8 @@ public:
 
 	bool operator == ( const tString &other ) const;
 
+	operator const char* () const;
+
 	const tString &Assign( const char *s );
 
 	bool Valid() const;
