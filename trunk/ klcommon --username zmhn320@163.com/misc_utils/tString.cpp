@@ -55,6 +55,11 @@ bool tString::operator == ( const tString &other ) const
 		( other.m_Str == NULL ? false : strcmp( m_Str, other.m_Str ) == 0 );
 }
 
+tString::operator const char* () const
+{
+	return Str();
+}
+
 const tString &tString::Assign( const char *s )
 {
 	size_t len = strlen( s );
