@@ -77,7 +77,7 @@ public:
 	/// Set a variable or an element of the array value.
 	///
 	template <typename VarT>
-	void SetVarValue( const char *name, const VarT &value, long index = 0 );
+	bool SetVarValue( const char *name, const VarT &value, long index = 0 );
 
 	/// Check whether it has a variable with name.
 	bool HasVar( const char *name ) const;

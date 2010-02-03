@@ -120,7 +120,7 @@ inline const VarT &VariableList::GetVarValue( const char *name, long index )
 }
 
 template <typename VarT>
-inline void VariableList::SetVarValue( const char *name, const VarT &value, long index )
+inline bool VariableList::SetVarValue( const char *name, const VarT &value, long index )
 {
 	Var *var = GetVar( name );
 	if( var == NULL || 
@@ -128,9 +128,10 @@ inline void VariableList::SetVarValue( const char *name, const VarT &value, long
 		var->count <= index )
 	{
 		// the variable does not exist or the type does not match.
-		return;
+		return false;
 	}
 	Private::TypeTrait<VarT>::SetValue( (VarT*) var->p, value, index );
+	return true;
 }
 
 template <typename VarT>
