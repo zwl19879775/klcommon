@@ -41,7 +41,7 @@ tString::~tString()
 
 const tString &tString::operator = ( const tString &other )
 {
-	return Assign( other.m_Str );
+	return other.Valid() ? Assign( other.m_Str ) : *this;
 }
 
 const tString &tString::operator = ( const char *s )
