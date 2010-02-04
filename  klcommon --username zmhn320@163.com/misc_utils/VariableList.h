@@ -104,6 +104,12 @@ public:
 	{
 		return m_VarTable;
 	}
+
+	/// Variable count.
+	size_t Count() const
+	{
+		return m_VarTable.size();
+	}
 private:
 	Var *GetVar( const char *name );
 
