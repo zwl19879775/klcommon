@@ -6,7 +6,7 @@
 
 #include <list>
 #include "utils/kl_cachedobj.h"
-
+ 
 struct lua_State;
 
 class Script : public kl_common::cached_obj<Script>
@@ -25,6 +25,10 @@ public:
 	int RunStr( const char *str );
 
 	int Resume();
+
+	int BeginLocalEnv( int funcIndex );
+
+	void EndLocalEnv();
 
 	long ID() const
 	{
