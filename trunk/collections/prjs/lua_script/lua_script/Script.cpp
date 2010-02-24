@@ -5,6 +5,7 @@
 #include "luainc.h"
 #include "ScriptSys.h"
 #include <assert.h>
+#include "tolua++.h"
 
 bool Script::Init( long id, lua_State *mainState )
 {
@@ -59,6 +60,8 @@ int Script::BeginLocalEnv( int funcIndex )
 	// create some local variables in the env table
 	lua_pushinteger( m_luaState, (lua_Integer)this );
 	lua_setfield( m_luaState, envT, "_ENV" );
+	tolua_pushusertype( m_luaState, this, "Script" );
+	lua_setfield( m_luaState, envT, "_Script" );
 
 	// copy the env table
 	lua_pushvalue( m_luaState, envT );

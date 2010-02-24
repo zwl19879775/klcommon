@@ -6,7 +6,9 @@
 #include "Script.h"
 #include "utils/file_loader.h"
 #include "BindFuncs.h"
- 
+#include "tolua++.h"
+#include "ScriptBind.h"
+
 #define SCRIPT_NUM (4)
 #define NOTIFY_ERR( ret, L ) if( ret == LUA_ERRRUN ) PrintError( L )
 
@@ -179,6 +181,7 @@ void ScriptSys::BuildFuncs()
 {
 	lua_register( m_MainState, "wait", wait );
 	lua_register( m_MainState, "call", call );
+	tolua_Script_open( m_MainState );
 }
 
 

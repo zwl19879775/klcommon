@@ -1,0 +1,9 @@
+
+$#include "script.h"
+
+class Script
+{
+public:
+	long ID() const;
+};
+

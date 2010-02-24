@@ -1,4 +1,5 @@
 print( "1.lua" )
+print( "ID:" .._Script:ID() )
 --_ENV = 1
 print( _ENV )
 wait( 5 );
