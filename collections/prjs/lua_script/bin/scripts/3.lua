@@ -1,4 +1,5 @@
 print( "3.lua" )
+print( "ID:".._Script:ID() )
 print( _T )
 print( _ENV )
 wait( 2 )

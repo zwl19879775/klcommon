@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lua51.lib winmm.lib"
+				AdditionalDependencies="lua51.lib winmm.lib tolua++.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -258,6 +258,22 @@
 			</File>
 			<File
 				RelativePath=".\utils\kl_timer_queue.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="bind"
+			>
+			<File
+				RelativePath=".\Script.pkg"
+				>
+			</File>
+			<File
+				RelativePath=".\ScriptBind.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ScriptBind.h"
 				>
 			</File>
 		</Filter>
