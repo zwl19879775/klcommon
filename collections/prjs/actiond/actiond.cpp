@@ -151,8 +151,8 @@ public:
 		_logger.set_output( &_output );
 		_logger.set_level( _configer._loglevel );
 		_logger.write( kl_common::LL_INFO, "Server start.\n" );
-		::RegisterHotKey( getHandle(), SHOW_HOTKEY, MOD_CONTROL | MOD_ALT, VK_LEFT ) ;
-		::RegisterHotKey( getHandle(), CHECK_HOTKEY, MOD_CONTROL | MOD_ALT, VK_RIGHT ) ;
+		::RegisterHotKey( getHandle(), SHOW_HOTKEY, MOD_WIN | MOD_CONTROL | MOD_ALT, VK_LEFT ) ;
+		::RegisterHotKey( getHandle(), CHECK_HOTKEY, MOD_WIN | MOD_CONTROL | MOD_ALT, VK_DOWN ) ;
 		_logger.write( kl_common::LL_INFO, "Load [%u] invalid process.\n",
 				LoadInvalidProcess( _invalidprocess ) );
 		StartCheck();
@@ -328,7 +328,7 @@ private:
 		else if( hBtn == _dumpprocessbtn.getHandle() )
 		{
 			DumpValidProcess();
-			::MessageBox( getHandle(), "Dump valid process finished.", "OK",
+			::MessageBoxA( getHandle(), "Dump valid process finished.", "OK",
 					MB_OK );
 		}
 	}

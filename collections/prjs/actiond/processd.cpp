@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <string>
+#include <stdlib.h>
 #include <vector>
 #include <algorithm>
 #include "kl_logger.h"
@@ -15,15 +16,27 @@ struct ProcessInfo
 };
 typedef std::vector<ProcessInfo> ProcessListType;
 
+std::string tolower( const std::string &str )
+{
+	std::string ret = str;
+	for( size_t i = 0; i < ret.size(); ++ i )
+	{
+		ret[i] = tolower( ret[i] );
+	}
+	return ret;
+}
+
 struct StringInSensCmp
 {
-	StringInSensCmp( const std::string &l ) : _l( l )
+	StringInSensCmp( const std::string &l ) : _l( tolower( l ) )
 	{
 	}
 
 	bool operator() ( const std::string &r )
 	{
-		return ::stricmp( _l.c_str(), r.c_str() ) == 0;
+		//return ::stricmp( _l.c_str(), r.c_str() ) == 0;
+		std::string s = tolower( r );
+		return s.find( _l ) != std::string::npos;
 	}
 
 	template <typename _Tp>
@@ -63,14 +76,14 @@ size_t GetProcessList( ProcessListType *pl, bool ignore_same )
 	return pl->size();
 }
 
-void TerminateProcessByID( unsigned long process_id )
+BOOL TerminateProcessByID( unsigned long process_id )
 {
 	HANDLE h = OpenProcess( PROCESS_TERMINATE, FALSE, process_id );
 	if( h == NULL )
 	{
-		return ;
+		return FALSE;
 	}
-	TerminateProcess( h, 0 );
+	return TerminateProcess( h, 0 );
 }
 
 #ifdef DUMPPROCESS
@@ -112,7 +125,7 @@ void OnProcessCheck( const std::vector<std::string> &tl,
 		if( pit != pl.end() )
 		{
 			logger->write( kl_common::LL_INFO, 
-					"Find process [%s], terminate it.\n", (*it).c_str() );
+					"Find process [%s], terminate it.\n", (*pit).name.c_str() );
 			TerminateProcessByID( pit->id );
 		}
 	}
@@ -135,7 +148,12 @@ void OnProcessCheckInvalid( const std::vector<std::string> &validp,
 		{
 			logger->write( kl_common::LL_INFO, 
 					"Find invalid process [%s], terminate it.\n", it->name.c_str() );
-			TerminateProcessByID( it->id );
+			if( !TerminateProcessByID( it->id ) )
+			{
+				logger->write( kl_common::LL_ERROR,
+						"Terminate process [%s] failed : %d.\n", it->name.c_str(),
+						GetLastError() );
+			}
 		}
 	}	
 }
