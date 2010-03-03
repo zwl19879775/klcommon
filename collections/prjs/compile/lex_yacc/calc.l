@@ -1,12 +1,13 @@
 %{
 #include "y.tab.h"
-extern double vbltable[26];
+extern int sym_lookup( const char *);
 %}
 %%
-[0-9]+ { yylval.dval = atoi( yytext ); return NUMBER; }
+[0-9]+ { yylval.dval = atof( yytext ); return NUMBER; }
 [ \t] ; /* ignore */
-\n return 0;
-[a-z] { yylval.vblno = yytext[0] - 'a'; return NAME; }
+\n { return '\n'; } 
+[a-zA-Z][a-zA-Z0-9]* { yylval.vblno = sym_lookup( yytext ); return NAME; }
+'$' { return 0; }
 . return yytext[0];
 %%
 
