@@ -25,6 +25,10 @@ echofunc:http://www.vim.org/scripts/script.php?script_id=1735
 生成tag时需加参数：--fields=+lS
 alt+-/alt+=翻页
 
+- 查找
+grep: http://www.vim.org/scripts/script.php?script_id=311
+:Grep pattern file
+
 tabnew : create a new tab page
 tabn : switcht to the specified tab by its index addressing from 0
 set tabstop=4 : tab 4 character
