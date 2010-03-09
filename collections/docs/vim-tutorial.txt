@@ -1,3 +1,30 @@
+- 产生代码tag的工具
+Exuberant CTAGS: ctags.sourceforge.net
+usage: ctags *.c *.h *.cpp
+
+- 罗列代码tag的插件
+TagList(taglist.vim):http://www.vim.org/scripts/script.php?script_id=273
+:Tlist
+
+- 结合netrw.vim和以上插件的插件
+WinManager(netrw.vim):http://www.vim.org/scripts/script.php?script_id=95
+winfileexplorer.vim/winmanager.vim/wintagexplorer.vim
+
+- 自动补全
+help new-omni-completion
+filetype plugin indent on
+set completeopt=longest,menu
+
+- 折叠代码
+set foldmethod=syntax #按照语法折叠
+set foldlevel=100 " 启动vim时不要自动折叠代码
+za #打开/关闭当前折叠
+
+- 提示函数原型
+echofunc:http://www.vim.org/scripts/script.php?script_id=1735
+生成tag时需加参数：--fields=+lS
+alt+-/alt+=翻页
+
 tabnew : create a new tab page
 tabn : switcht to the specified tab by its index addressing from 0
 set tabstop=4 : tab 4 character
