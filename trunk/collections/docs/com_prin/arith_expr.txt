@@ -1,0 +1,52 @@
+
+最直接的算术表达式文法：
+
+expr -> expr addop term | term
+term -> term mulop factor | factor
+factor -> NUM | ( expr )
+addop -> + | -
+mulop -> * | /
+
+消除左递归方法：
+
+A -> AB | C 
+
+等价于：
+
+A -> CX
+X -> BX | e
+
+其原理在于：
+
+A -> AB | C 会推导出：
+CBBBBB...类似的语言，如：
+expr -> expr addop term | term，其中：
+A -> expr, B -> addop term, C -> term，该文法会推导出：
+term addop term addop term addop term ...
+
+A -> CX
+X -> BX | e 本质上把左递归替换为了右递归
+
+消除左递归的算术表达式文法：
+
+expr -> term expr2					1
+expr2 -> addop term expr2 | e		2,3
+term -> factor term2				4
+term2 -> mulop factor term2 | e		5,6
+factor -> NUM | ( expr )			7,8
+addop -> + | -						9,10
+mulop -> * | /						11,12
+
+LL(1)分析表：
+---------------------------------------------
+M(N,T)		(	NUM		)	+	-	*	/	$
+expr		1	1
+expr2					3	2	2			3
+term		4	4
+term2					6	6	6	5	5	6
+factor		8	7
+addop						9	10
+mulop								11	12
+---------------------------------------------
+
+
