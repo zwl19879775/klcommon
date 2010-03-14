@@ -1,0 +1,304 @@
+/**
+ * a simple practice about LL(1) parse
+ *
+ * kevin lynx
+ * 3.13.2010
+ */
+#include <stdio.h>
+#include <stdlib.h>
+
+enum { NUM = 256, EPSILON };
+enum { TER, NONTER };
+
+typedef struct nonter /* nonterminal */
+{
+	struct expr *l; /* expr list */
+	int c; /* expr count */
+} Nonter;
+
+typedef struct val
+{
+	union
+	{
+		Nonter *nonter; /* nonterminal */
+		int ter; /* terminal */
+	};
+	int t; /* type */
+} Val;
+
+typedef struct expr
+{
+	Val *val; /* item list, like : '(' expr ')' */
+	int c;  /* item count */
+} Expr;
+
+Nonter *expr;
+Nonter *expr2;
+Nonter *term;
+Nonter *term2;
+Nonter *factor;
+Nonter *addop;
+Nonter *mulop;
+
+#define TER_C (8)
+#define NONTER_C (7)
+#define EXPR_EOF '$' 
+
+/* LL(1) analyse table */
+Nonter *anal_t[NONTER_C][TER_C];
+
+/* used to get expr index from a nonterminal in the analyse table */
+int expr_index[NONTER_C][TER_C];
+
+/* LL(1) analyse stack */
+#define STACK_C (128)
+Val anal_s[STACK_C];
+int s_pos = 0;
+
+/* query the array index from a nonterminal */
+int get_nonter_index( Nonter *n )
+{
+	/* map nonterminal to array index in anal_t */
+	Nonter *map_t[NONTER_C] = {
+		expr, expr2, term, term2, factor, addop, mulop
+	};
+	int i = 0;
+	for( ; i < NONTER_C; ++ i )
+	{
+		if( map_t[i] == n )
+			return i;
+	}
+	return -1;
+}
+
+int get_ter_index( int t )
+{
+	int ter[TER_C] = {
+		'(', NUM, ')', '+', '-', '*', '/', EXPR_EOF
+	};
+	int i = 0;
+	for( ; i < TER_C; ++ i )
+	{
+		if( ter[i] == t )
+			return i;
+	}
+	return -1;
+}
+
+Nonter *new_nonter( int c )
+{
+	Nonter *nonter = (Nonter*) malloc( sizeof( *nonter ) );
+	nonter->c = c;
+	nonter->l = (Expr*) malloc( sizeof( Expr ) * c );
+	return nonter;
+}
+
+void init_expr( Expr *expr, int c )
+{
+	expr->c = c;
+	expr->val = (Val*) malloc( sizeof( Val ) * c );
+}
+
+void release_expr( Expr *expr )
+{
+	free( expr->val );
+}
+
+void free_nonter( Nonter *nonter )
+{
+	int i = 0;
+	for( ; i < nonter->c; ++ i )
+	{
+		release_expr( &nonter->l[i] );
+	}
+	free( nonter->l );
+	free( nonter );
+}
+
+void set_val_ter( Val *val, int t )
+{
+	val->t = TER;
+	val->ter = t;
+}
+
+void set_val_nonter( Val *val, Nonter *nonter )
+{
+	val->t = NONTER;
+	val->nonter = nonter;
+}
+
+void build_anal_t()
+{
+	/* expr */
+	anal_t[0][0] = expr;
+	anal_t[0][1] = expr;
+
+	/* expr2 */
+	anal_t[1][2] = expr2; expr_index[1][2] = 1;
+	anal_t[1][3] = expr2; expr_index[1][3] = 0;
+	anal_t[1][4] = expr2; expr_index[1][4] = 0;
+	anal_t[1][7] = expr2; expr_index[1][7] = 1;
+
+	/* term */
+	anal_t[2][0] = term;
+	anal_t[2][1] = term;
+
+	/* term2 */
+	anal_t[3][2] = term2; expr_index[3][2] = 1; 
+	anal_t[3][3] = term2; expr_index[3][3] = 1;
+	anal_t[3][4] = term2; expr_index[3][4] = 1;
+	anal_t[3][5] = term2; expr_index[3][5] = 0;
+	anal_t[3][6] = term2; expr_index[3][6] = 0;
+	anal_t[3][7] = term2; expr_index[3][7] = 1;
+
+	/* factor */
+	anal_t[4][0] = factor; expr_index[4][0] = 1;
+	anal_t[4][1] = factor; expr_index[4][1] = 0;
+
+	/* addop */
+	anal_t[5][3] = addop; expr_index[5][3] = 0;
+	anal_t[5][4] = addop; expr_index[5][4] = 1;
+
+	/* mulop */
+	anal_t[6][5] = mulop; expr_index[6][5] = 0;
+	anal_t[6][6] = mulop; expr_index[6][6] = 1;
+}
+
+void init_stack()
+{
+	Val val;
+	set_val_ter( &val, EXPR_EOF );
+	anal_s[s_pos++] = val;
+	set_val_nonter( &val, expr ); /* start nonterminal */
+	anal_s[s_pos++] = val;
+}
+
+void init_grammer()
+{
+	mulop = new_nonter( 2 );
+	/* mulop -> '*' */
+	init_expr( &mulop->l[0], 1 );
+	set_val_ter( &mulop->l[0].val[0], '*' );
+	/* mulop -> '/' */
+	init_expr( &mulop->l[1], 1 );
+	set_val_ter( &mulop->l[1].val[0], '/' );
+
+	addop = new_nonter( 2 );
+	/* addop -> '+' */
+	init_expr( &addop->l[0], 1 );
+	set_val_ter( &addop->l[0].val[0], '+' );
+	/* addop -> '-' */
+	init_expr( &addop->l[1], 1 );
+	set_val_ter( &addop->l[1].val[0], '-' );
+
+	/* preallocated */
+	term = new_nonter( 1 );
+	expr2 = new_nonter( 2 );
+
+	expr = new_nonter( 1 );
+	/* expr -> term expr2 */
+	init_expr( &expr->l[0], 2 );
+	set_val_nonter( &expr->l[0].val[0], term );
+	set_val_nonter( &expr->l[0].val[1], expr2 );
+
+	factor = new_nonter( 2 );
+	/* factor -> NUM */
+	init_expr( &factor->l[0], 1 );
+	set_val_ter( &factor->l[0].val[0], NUM );
+	/* factor -> '(' expr ')' */
+	init_expr( &factor->l[1], 3 );
+	set_val_ter( &factor->l[1].val[0], '(' );
+	set_val_nonter( &factor->l[1].val[1], expr );
+	set_val_ter( &factor->l[1].val[2], ')' );
+	
+	term2 = new_nonter( 2 );
+	/* term2 -> mulop factor term2 */
+	init_expr( &term2->l[0], 3 );
+	set_val_nonter( &term2->l[0].val[0], mulop );
+	set_val_nonter( &term2->l[0].val[1], factor );
+	set_val_nonter( &term2->l[0].val[2], term2 );
+	/* term2 -> EPSILON */
+	init_expr( &term2->l[1], 1 );
+	set_val_ter( &term2->l[1].val[0], EPSILON );
+
+	/* term -> factor term2 */
+	init_expr( &term->l[0], 2 );
+	set_val_nonter( &term->l[0].val[0], factor );
+	set_val_nonter( &term->l[0].val[1], term2 );
+
+	/* expr2 -> addop term expr2 */
+	init_expr( &expr2->l[0], 3 );
+	set_val_nonter( &expr2->l[0].val[0], addop );
+	set_val_nonter( &expr2->l[0].val[1], term );
+	set_val_nonter( &expr2->l[0].val[2], expr2 );
+	/* expr2 -> EPSILON */
+	init_expr( &expr2->l[1], 1 );
+	set_val_ter( &expr2->l[1].val[0], EPSILON );
+
+	/* build analyse table */
+	build_anal_t();
+	/* init the stack */
+	init_stack();
+}
+
+/* default call 'yylex' function to get token */
+extern int yylex();
+int LL_analyse()
+{
+	/* top value on the analyse stack */
+	Val *top_v = &anal_s[s_pos-1]; 
+	/* get the token */
+	int token = yylex();
+
+	/* while top_v != EXPR_EOF */
+	while( top_v->t != TER && top_v->ter != EXPR_EOF )
+	{
+		if( top_v->t == TER )
+		{
+			/* terminal */
+			if( top_v->ter == token )
+			{
+				/* continue */
+				token = yylex();
+				/* pop the terminal */
+				s_pos--;
+			}
+			else
+			{
+				/* error */
+				fprintf( stderr, "error: a terminal on top the stack\n" );
+				return -1;
+			}
+		}
+		else
+		{
+			/* nonterminal */
+			int ni = get_nonter_index( top_v->nonter );
+			int ti = get_ter_index( token );
+			/* get the analyse table item */
+			Nonter *nonter = anal_t[ni][ti];
+			if( nonter == 0 )
+			{
+				/* error */
+				fprintf( stderr, "error: invalid table item\n" );
+				return -1;
+			}
+			else
+			{
+				int expr_i = expr_index[ni][ti];
+				int i;
+				Expr *e = &nonter->l[expr_i];
+				/* pop the top_v from the stack */
+				s_pos--;
+				/* push X->Y1Y2Y3.. on the stack in Y3Y2Y1 order */
+				for( i = e->c; i >= 0; -- i )
+				{
+					anal_s[s_pos++] = e->val[i];
+				}					
+			}	
+		}
+		top_v = &anal_s[s_pos-1];
+	}
+	return 0;
+}
+
