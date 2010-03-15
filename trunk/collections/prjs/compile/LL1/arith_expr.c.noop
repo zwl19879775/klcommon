@@ -6,9 +6,8 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include "val_stack.h"
 
-enum { NUM = 256, ACTION };
+enum { NUM = 256 };
 enum { TER, NONTER };
 
 typedef struct nonter /* nonterminal */
@@ -221,11 +220,10 @@ void init_grammer()
 	
 	term2 = new_nonter( 2 );
 	/* term2 -> mulop factor term2 */
-	init_expr( &term2->l[0], 4 );
+	init_expr( &term2->l[0], 3 );
 	set_val_nonter( &term2->l[0].val[0], mulop );
 	set_val_nonter( &term2->l[0].val[1], factor );
-	set_val_ter( &term2->l[0].val[2], ACTION );
-	set_val_nonter( &term2->l[0].val[3], term2 );
+	set_val_nonter( &term2->l[0].val[2], term2 );
 	/* term2 -> EPSILON */
 	init_expr( &term2->l[1], 0 );
 	/*set_val_ter( &term2->l[1].val[0], EPSILON );*/
@@ -236,11 +234,10 @@ void init_grammer()
 	set_val_nonter( &term->l[0].val[1], term2 );
 
 	/* expr2 -> addop term expr2 */
-	init_expr( &expr2->l[0], 4 );
+	init_expr( &expr2->l[0], 3 );
 	set_val_nonter( &expr2->l[0].val[0], addop );
 	set_val_nonter( &expr2->l[0].val[1], term );
-	set_val_ter( &expr2->l[0].val[2], ACTION );
-	set_val_nonter( &expr2->l[0].val[3], expr2 );
+	set_val_nonter( &expr2->l[0].val[2], expr2 );
 	/* expr2 -> EPSILON */
 	init_expr( &expr2->l[1], 0 );
 	/*set_val_ter( &expr2->l[1].val[0], EPSILON );*/
@@ -264,8 +261,6 @@ void release()
 
 /* default call 'yylex' function to get token */
 extern int yylex();
-extern char *yytext;
-
 int LL_analyse()
 {
 	/* top value on the analyse stack */
@@ -281,26 +276,8 @@ int LL_analyse()
 			/* terminal */
 			if( top_v->ter == token )
 			{
-				/* push the Number on the value stack */
-				if( token == NUM )
-				{
-					val_push( (Number) atof( yytext ) );
-				}
-				/* push the operator on the value stack */
-				if( token == '+' || token == '-' ||
-						token == '*' || token == '/' )
-				{
-					val_push( (Number) token );
-				}
-
 				/* continue */
 				token = yylex();
-				/* pop the terminal */
-				s_pos--;
-			}
-			else if( top_v->ter == ACTION )
-			{
-				val_calc();
 				/* pop the terminal */
 				s_pos--;
 			}
