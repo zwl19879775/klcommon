@@ -16,3 +16,24 @@ lparser.c, lcode.c: recursive descent parser, targetting a register-based VM. st
 lgc.c: incremental garbage collector. take your time. 
 Read all the other files as you see references to them. Don't let your stack get too deep though. 
 If you're done before X-Mas and understood all of it, you're good. The information density of the code is rather high.
+
+-------------------------------------------------------------------------------
+global_State是一个全局的state，被多个lua_State共享。
+
+index2adr函数将一个整数栈索引转换为栈元素指针，这里的栈元素都是TValue类型；
+lua_State::base对应于栈底，lua_State::top对应于栈顶。
+
+api_check宏基本就是个简单的assert。
+
+api_incr_top宏用于增加栈空间: t->top++。
+
+lua_atpanic用于设置一个异常处理回调函数，仅仅于luaD_throw中调用，调用后紧接着
+exit代码。
+
+TValue是栈元素类型，它是一个典型的value-type的结构体。
+
+lua_pushXXX系列的函数都是直接往lua_State::top写一个TValue，然后top增长。
+
+
+
+
