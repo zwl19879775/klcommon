@@ -1,0 +1,57 @@
+///////////////////////////////////////////////////////////////////////////////
+Describe variable definition in c(including struct):
+	type var1[,var2][,var3];
+	struct Type
+	{
+		type var1[,var2];
+		type var3[,var4];
+	} [var];
+	struct Type var1[,var2];
+
+///////////////////////////////////////////////////////////////////////////////
+declaration
+	: type_specifier init_declarator_list ';'
+	;
+
+type_specifier
+	: basic_type
+	| struct_specifier
+	;
+
+basic_type
+	: CHAR
+	| SHORT
+	| INT
+	| FLOAT 
+	| DOUBLE
+	;
+
+struct_specifier
+	: STRUCT identifier '{' struct_declaration_list '}'
+	| STRUCT '{' struct_declaration_list '}'
+	| STRUCT identifier
+	;
+
+struct_declaration_list
+	: struct_declaration
+	| struct_declaration_list struct_declaration
+	;
+
+struct_declaration
+	: type_specifier struct_declarator_list ';'
+	;
+
+struct_declarator_list
+	: identifier
+	| struct_declarator_list ',' identifier
+	;
+
+identifier
+	: IDENTIFIER
+	;
+
+init_declarator_list
+	: identifier
+   	| init_declarator_list ',' identifier
+	;
+
