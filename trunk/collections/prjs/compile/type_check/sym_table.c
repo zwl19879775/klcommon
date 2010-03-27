@@ -32,6 +32,22 @@ int type_register( const char *desc )
 	return type_t_pos - 1;
 }
 
+/* register a anonymous type */
+int type_register_anon()
+{
+	char desc[256];
+	sprintf( desc, "___anonymous_%d", type_t_pos );
+	return type_register( desc );
+}
+
+/* register a struct type */
+int type_register_struct( const char *desc )
+{
+	char s[256] = "struct ";
+	strcat( s, desc );
+	return type_register( s );
+}
+
 /* get the type id from its description */
 int type_get_id( const char *desc )
 {
