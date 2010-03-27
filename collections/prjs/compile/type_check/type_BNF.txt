@@ -9,6 +9,10 @@ Describe variable definition in c(including struct):
 	struct Type var1[,var2];
 
 ///////////////////////////////////////////////////////////////////////////////
+declaration_list
+	: declaration
+	| declaration_list declaration
+	;
 declaration
 	: type_specifier init_declarator_list ';'
 	;

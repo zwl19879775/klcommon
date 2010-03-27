@@ -1,4 +1,5 @@
 %{
+/* kevin lynx 3.27.2010 */
 #include "y.tab.h"
 %}
 L	[a-zA-Z_]
@@ -17,6 +18,8 @@ D	[0-9]
 
 {L}({L}|{D})*	{  return IDENTIFIER; }	
 [ \t] { /* ignore */ }
+\n { /* ignore */ }
+"$" { /* to stop */ return 0; }
 . {  /* ignore other characters */ }
 %%
 

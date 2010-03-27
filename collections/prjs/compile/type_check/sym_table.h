@@ -9,13 +9,8 @@
 #define MAX_SYM (256)
 #endif
 
-#define type_register_struct( str ) \
-	{ \
-		char desc[256] = "struct "; \
-		strcat( desc, str ); \
-		type_register( desc ); \
-	}
-
+int type_register_struct( const char *desc );
+int type_register_anon();
 int type_register( const char *desc );
 int type_get_id( const char *desc );
 const char *type_get_desc( int id );
