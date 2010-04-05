@@ -1,0 +1,744 @@
+From: <ÓÉ Windows Internet Explorer 8 ±£´æ>
+Subject: Yacc - Parser Generator - Part 2 LG #93
+Date: Sat, 3 Apr 2010 22:19:46 +0800
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="text/html";
+	boundary="----=_NextPart_000_0000_01CAD37B.C442A2E0"
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0000_01CAD37B.C442A2E0
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: http://linuxgazette.net/issue93/ramankutty.html
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!--startcut  =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D--><!-- =
+*** BEGIN HTML header *** --><HTML><HEAD><TITLE>Yacc - Parser Generator =
+- Part 2 LG #93</TITLE>
+<META content=3D"text/html; charset=3Dgb2312" http-equiv=3DContent-Type>
+<META name=3DGENERATOR content=3D"MSHTML 8.00.6001.18876"></HEAD>
+<BODY aLink=3D#ff0000 link=3D#0000ff bgColor=3D#ffffff text=3D#000000 =
+vLink=3D#0000af><!-- *** END HTML header *** --><!-- *** BEGIN navbar =
+*** --><A=20
+href=3D"http://linuxgazette.net/issue93/bhaskaran.html">&lt;&lt;&nbsp;Pre=
+v</A>&nbsp;&nbsp;|&nbsp;&nbsp;<A=20
+href=3D"http://linuxgazette.net/issue93/index.html">TOC</A>&nbsp;&nbsp;|&=
+nbsp;&nbsp;<A=20
+href=3D"http://linuxgazette.net/index.html">Front=20
+Page</A>&nbsp;&nbsp;|&nbsp;&nbsp;Talkback&nbsp;&nbsp;|&nbsp;&nbsp;<A=20
+href=3D"http://linuxgazette.net/faq/index.html">FAQ</A>&nbsp;&nbsp;|&nbsp=
+;&nbsp;<A=20
+href=3D"http://linuxgazette.net/issue93/webmaster.html">Next&nbsp;&gt;&gt=
+;</A> <!-- *** END navbar *** --><!--endcut =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D-->
+<TABLE border=3D1>
+  <TBODY>
+  <TR>
+    <TD width=3D200><A href=3D"http://www.linuxgazette.net/"><IMG =
+border=3D0=20
+      alt=3D"LINUX GAZETTE"=20
+      src=3D"http://linuxgazette.net/gx/2002/lglogo_200x41.png" =
+width=3D200=20
+      height=3D41></A> <BR clear=3Dall><SMALL>...<I>making Linux just a =
+little more=20
+      fun!</I></SMALL> </TD>
+    <TD width=3D380>
+      <CENTER><BIG><BIG><STRONG><FONT color=3Dmaroon>Yacc - Parser =
+Generator -=20
+      Part 2</FONT></STRONG></BIG></BIG> <BR><STRONG>By <A=20
+      href=3D"http://linuxgazette.net/authors/ramankutty.html">Hiran=20
+      Ramankutty</A></STRONG> </CENTER></TD></TR></TBODY></TABLE>
+<P><!-- END header -->
+<H2><B>1. Calculator - Next Version</B></H2>
+<P>The next version of the calculator to be described below is =
+substantially=20
+much more complex with major changes in the inclusion of =
+<I>if-then-else</I> and=20
+<I>while</I> constructs. In addition a syntax tree is constructed during =
+
+parsing. We can traverse or walk down the tree to get the output. =
+Designing of=20
+the tree walk routine can be done in two ways: </P>
+<P></P>
+<UL>
+  <LI>an interpreter that executes statements during the tree walk, and=20
+  <LI>a compiler that generates code for a hypothetical stack-based =
+machine.=20
+  </LI></UL>
+<P>To make things more concrete, here is a sample program. </P>
+<P></P><PRE>x =3D 0;
+while(x &lt; 3) {
+	print x;
+	x =3D x + 1;
+}
+</PRE>
+<P>The output of the interpretive version will be: </P>
+<P></P><PRE>1
+2
+3
+</PRE>
+<P>while that of the compiler version will be: </P>
+<P></P><PRE>	push 0
+	push x
+LC0:
+	push x
+	push 3
+	complt
+	jz LC1
+	push x
+	print
+	push x
+	push 1
+	add
+	pop x
+	jmp LC0
+LC1:
+	ret
+</PRE>
+<P>The <B>include file</B> contains declarations for the syntax tree and =
+symbol=20
+table. The symbol table, <B>sym</B> allows for single character variable =
+names.=20
+A node in the syntax tree may hold a constant, an identifier or an =
+internal node=20
+with an operator. All three variants are encapsulated in a union =
+<B>nodetype</B>=20
+and the structure we have can be determined by <B>nodetype.type</B>. =
+</P>
+<P>The <B>lex input file</B> contains patterns for <B>VARIABLE</B> and=20
+<B>INTEGER</B> tokens. In addition, tokens are identified for =
+two-character=20
+operators such as <B>EQ</B> and <B>NE</B>. Single character operators =
+are simply=20
+returned as themselves. </P>
+<P>The <B>yacc input file</B> defines <B>YYSTYPE</B>, the type of =
+<B>yylval</B>,=20
+as </P>
+<P></P><PRE>%union {
+	int ivalue;		/* integer value */
+	char sIndex;		/* symbol table index */
+	nodeType *nPtr;		/* node pointer */
+};
+</PRE>
+<P>This causes the following to be generated in <I>y.tab.h</I>: </P>
+<P></P><PRE>typedef union {
+	int iValue;		/* integer value;
+	char sIndex;            /* symbol table index */
+	nodeType *nPtr;         /* node pointer */
+}YYSTYPE;
+
+extern YYSTYPE yylval;
+</PRE>
+<P>Constants, variables and nodes can be represented by <B>yylval</B> in =
+the=20
+parser's value stack. Notice the type definitions </P>
+<P></P><PRE>%token &lt;iValue&gt;	INTEGER
+%token &lt;nPtr&gt;	expr
+</PRE>
+<P>This binds <B>expr</B> to <B>nPtr</B>, and <B>INTEGER</B> to =
+<B>iValue</B> in=20
+the <B>YYSTYPE</B> union. This is essential so that yacc can generate =
+the=20
+correct code. For example, the rule </P>
+<P></P><PRE>expr: INTEGER { $$ =3D con($1); }
+</PRE>
+<P>should generate the following code. </P>
+<P></P><PRE>yylval.nPtr =3D con(yyvsp[0].iValue);
+</PRE>
+<P>Note that <B>yyvsp</B> is the value stack pointer and <B>yyvsp[0]</B> =
+
+addresses the top of the value stack, or the value associated with=20
+<B>INTEGER</B>. </P>
+<P>The unary minus operator is given higher priority than binary =
+operators as=20
+follows: </P>
+<P></P><PRE>%left GE LE EQ NE '&lt;' '&gt;'
+%left '+' '-'
+%left '*' '/'
+%nonassoc UMINUS
+</PRE>
+<P>The <I>%nonassoc</I> indicates no associativity is implied. It is =
+frequently=20
+used in conjunction with <I>%prec</I> to specify precedence as a rule. =
+</P>
+<P>The bottom-up technique is used to construct the syntax tree. Leaf =
+nodes are=20
+allocated as integers and variables are reduced. When operators are =
+encountered,=20
+a node is allocated and pointers to previously allocated nodes are =
+entered as=20
+operands. As statements are reduced, <B>ex</B> is called to do a =
+depth-first=20
+walk of the syntax tree. Since the tree was constructed bottom-up, a =
+depth first=20
+walk visits nodes in the order that they were originally allocated. This =
+results=20
+in operators being applied in the order that they were encountered =
+during=20
+parsing. </P>
+<H2><B>2. Include File</B></H2><PRE>typedef enum { typeCon, typeId, =
+typeOpr } nodeEnum;=20
+=20
+/* constants */=20
+typedef struct {=20
+    nodeEnum type;              /* type of node */=20
+    int value;                  /* value of constant */=20
+} conNodeType;=20
+=20
+/* identifiers */=20
+typedef struct {=20
+    nodeEnum type;              /* type of node */=20
+    int i;                      /* subscript to ident array */=20
+} idNodeType;=20
+=20
+/* operators */=20
+typedef struct {=20
+    nodeEnum type;              /* type of node */=20
+    int oper;                   /* operator */=20
+    int nops;                   /* number of operands */=20
+    union nodeTypeTag *op[1];   /* operands (expandable) */=20
+} oprNodeType;=20
+=20
+typedef union nodeTypeTag {=20
+    nodeEnum type;              /* type of node */=20
+    conNodeType con;            /* constants */=20
+    idNodeType id;              /* identifiers */=20
+    oprNodeType opr;            /* operators */=20
+} nodeType;=20
+=20
+extern int sym[26];
+</PRE>
+<H2><B>3. Lex Input</B></H2><PRE>%{=20
+#include &lt;stdlib.h&gt;=20
+#include "calc3.h"=20
+#include "y.tab.h"=20
+void yyerror(char *);=20
+%}=20
+=20
+%%=20
+=20
+[a-z]       { =20
+                yylval.sIndex =3D *yytext - 'a';=20
+                return VARIABLE;=20
+            }=20
+=20
+[0-9]+      {=20
+                yylval.iValue =3D atoi(yytext);=20
+                return INTEGER;=20
+            }=20
+=20
+[-()&lt;&gt;=3D+*/;{}.] {=20
+                return *yytext;=20
+             }=20
+=20
+"&gt;=3D"         return GE;=20
+"&lt;=3D"         return LE;=20
+"=3D=3D"            return EQ;=20
+"!=3D"            return NE;=20
+"while"         return WHILE;=20
+"if"            return IF;=20
+"else"          return ELSE;=20
+"print"         return PRINT;=20
+=20
+[ \t\n]+        ;       /* ignore whitespace */=20
+=20
+.               yyerror("Unknown character");=20
+%%=20
+int yywrap(void) {=20
+    return 1;=20
+}
+</PRE>
+<H2><B>4. Yacc Input</B></H2><PRE>%{=20
+#include &lt;stdio.h&gt;=20
+#include &lt;stdlib.h&gt;=20
+#include &lt;stdarg.h&gt;=20
+#include "calc3.h"=20
+=20
+/* prototypes */=20
+nodeType *opr(int oper, int nops, ...);=20
+nodeType *id(int i);=20
+nodeType *con(int value);=20
+void freeNode(nodeType *p);=20
+int ex(nodeType *p);=20
+int yylex(void);=20
+void yyerror(char *s);=20
+int sym[26];                    /* symbol table */=20
+%}=20
+=20
+%union {=20
+    int iValue;                 /* integer value */=20
+    char sIndex;                /* symbol table index */=20
+    nodeType *nPtr;             /* node pointer */=20
+};=20
+=20
+%token &lt;iValue&gt; INTEGER=20
+%token &lt;sIndex&gt; VARIABLE=20
+%token WHILE IF PRINT=20
+%nonassoc IFX=20
+%nonassoc ELSE=20
+=20
+%left GE LE EQ NE '&gt;' '&lt;'=20
+%left '+' '-'=20
+%left '*' '/'=20
+%nonassoc UMINUS=20
+=20
+%type &lt;nPtr&gt; stmt expr stmt_list=20
+=20
+%%=20
+=20
+
+program:=20
+        function                { exit(0); }=20
+        ;=20
+=20
+function:=20
+          function stmt         { ex($2); freeNode($2); }=20
+        | /* NULL */=20
+        ;=20
+=20
+stmt:=20
+          ';'                   { $$ =3D opr(';', 2, NULL, NULL); }=20
+        | expr ';'              { $$ =3D $1; }=20
+        | PRINT expr ';'        { $$ =3D opr(PRINT, 1, $2); }=20
+        | VARIABLE '=3D' expr ';' { $$ =3D opr('=3D', 2, id($1), $3); }=20
+        | WHILE '(' expr ')' stmt        =20
+                { $$ =3D opr(WHILE, 2, $3, $5); }=20
+        | IF '(' expr ')' stmt %prec IFX =20
+                { $$ =3D opr(IF, 2, $3, $5); }=20
+        | IF '(' expr ')' stmt ELSE stmt =20
+                { $$ =3D opr(IF, 3, $3, $5, $7); }=20
+        | '{' stmt_list '}'     { $$ =3D $2; }=20
+        ;=20
+=20
+stmt_list:=20
+          stmt                  { $$ =3D $1; }=20
+        | stmt_list stmt        { $$ =3D opr(';', 2, $1, $2); }=20
+        ;=20
+=20
+expr:=20
+          INTEGER               { $$ =3D con($1); }=20
+        | VARIABLE              { $$ =3D id($1); }=20
+        | '-' expr %prec UMINUS { $$ =3D opr(UMINUS, 1, $2); }=20
+        | expr '+' expr         { $$ =3D opr('+', 2, $1, $3); }=20
+        | expr '-' expr         { $$ =3D opr('-', 2, $1, $3); }=20
+        | expr '*' expr         { $$ =3D opr('*', 2, $1, $3); }=20
+        | expr '/' expr         { $$ =3D opr('/', 2, $1, $3); }=20
+        | expr '&lt;' expr      { $$ =3D opr('&lt;', 2, $1, $3); }=20
+        | expr '&gt;' expr      { $$ =3D opr('&gt;', 2, $1, $3); }=20
+        | expr GE expr          { $$ =3D opr(GE, 2, $1, $3); }=20
+        | expr LE expr          { $$ =3D opr(LE, 2, $1, $3); }=20
+        | expr NE expr          { $$ =3D opr(NE, 2, $1, $3); }=20
+        | expr EQ expr          { $$ =3D opr(EQ, 2, $1, $3); }=20
+        | '(' expr ')'          { $$ =3D $2; }=20
+        ;=20
+=20
+%%=20
+=20
+
+nodeType *con(int value) {=20
+    nodeType *p;=20
+=20
+    /* allocate node */=20
+    if ((p =3D malloc(sizeof(conNodeType))) =3D=3D NULL)=20
+        yyerror("out of memory");=20
+=20
+    /* copy information */=20
+    p-&gt;type =3D typeCon;=20
+    p-&gt;con.value =3D value;=20
+=20
+    return p;=20
+}=20
+=20
+nodeType *id(int i) {=20
+    nodeType *p;=20
+=20
+    /* allocate node */=20
+    if ((p =3D malloc(sizeof(idNodeType))) =3D=3D NULL)=20
+        yyerror("out of memory");=20
+=20
+    /* copy information */=20
+    p-&gt;type =3D typeId;=20
+    p-&gt;id.i =3D i;=20
+=20
+    return p;=20
+}=20
+=20
+nodeType *opr(int oper, int nops, ...) {=20
+    va_list ap;=20
+    nodeType *p;=20
+    size_t size;=20
+    int i;=20
+=20
+    /* allocate node */=20
+    size =3D sizeof(oprNodeType) + (nops - 1) * sizeof(nodeType*);=20
+    if ((p =3D malloc(size)) =3D=3D NULL)=20
+        yyerror("out of memory");=20
+=20
+    /* copy information */=20
+    p-&gt;type =3D typeOpr;=20
+    p-&gt;opr.oper =3D oper;=20
+    p-&gt;opr.nops =3D nops;=20
+    va_start(ap, nops);=20
+    for (i =3D 0; i &lt; nops; i++)=20
+        p-&gt;opr.op[i] =3D va_arg(ap, nodeType*);=20
+    va_end(ap);=20
+    return p;=20
+}=20
+=20
+
+void freeNode(nodeType *p) {=20
+    int i;=20
+=20
+    if (!p) return;=20
+    if (p-&gt;type =3D=3D typeOpr) {=20
+        for (i =3D 0; i &lt; p-&gt;opr.nops; i++)=20
+            freeNode(p-&gt;opr.op[i]);=20
+    }=20
+    free (p);=20
+}=20
+=20
+void yyerror(char *s) {=20
+    fprintf(stdout, "%s\n", s);=20
+}=20
+=20
+int main(void) {=20
+    yyparse();=20
+    return 0;=20
+}
+</PRE>
+<H2><B>5. Interpreter</B></H2><PRE>#include &lt;stdio.h&gt;=20
+#include "calc3.h"=20
+#include "y.tab.h"=20
+=20
+int ex(nodeType *p) {=20
+    if (!p) return 0;=20
+    switch(p-&gt;type) {=20
+    case typeCon:    return p-&gt;con.value;=20
+    case typeId:     return sym[p-&gt;id.i];=20
+    case typeOpr:=20
+        switch(p-&gt;opr.oper) {=20
+        case WHILE:  while(ex(p-&gt;opr.op[0])) =20
+                         ex(p-&gt;opr.op[1]); =20
+                     return 0;=20
+        case IF:     if (ex(p-&gt;opr.op[0]))=20
+                         ex(p-&gt;opr.op[1]);=20
+                     else if (p-&gt;opr.nops &gt; 2)=20
+                         ex(p-&gt;opr.op[2]);=20
+                     return 0;=20
+        case PRINT:  printf("%d\n", ex(p-&gt;opr.op[0])); =20
+                     return 0;=20
+        case ';':    ex(p-&gt;opr.op[0]); =20
+                     return ex(p-&gt;opr.op[1]);=20
+        case '=3D':    return sym[p-&gt;opr.op[0]-&gt;id.i] =3D =20
+                         ex(p-&gt;opr.op[1]);=20
+        case UMINUS: return -ex(p-&gt;opr.op[0]);=20
+        case '+':    return ex(p-&gt;opr.op[0]) + ex(p-&gt;opr.op[1]);=20
+        case '-':    return ex(p-&gt;opr.op[0]) - ex(p-&gt;opr.op[1]);=20
+        case '*':    return ex(p-&gt;opr.op[0]) * ex(p-&gt;opr.op[1]);=20
+        case '/':    return ex(p-&gt;opr.op[0]) / ex(p-&gt;opr.op[1]);=20
+        case '&lt;':    return ex(p-&gt;opr.op[0]) &lt; =
+ex(p-&gt;opr.op[1]);=20
+        case '&gt;':    return ex(p-&gt;opr.op[0]) &gt; =
+ex(p-&gt;opr.op[1]);=20
+        case GE:     return ex(p-&gt;opr.op[0]) &gt;=3D =
+ex(p-&gt;opr.op[1]);=20
+        case LE:     return ex(p-&gt;opr.op[0]) &lt;=3D =
+ex(p-&gt;opr.op[1]);=20
+        case NE:     return ex(p-&gt;opr.op[0]) !=3D =
+ex(p-&gt;opr.op[1]);=20
+        case EQ:     return ex(p-&gt;opr.op[0]) =3D=3D =
+ex(p-&gt;opr.op[1]);=20
+        }=20
+    }=20
+}
+</PRE><H2<B>6. Compiler</B>
+<H2></H2><PRE>#include &lt;stdio.h&gt;=20
+#include "calc3.h"=20
+#include "y.tab.h"=20
+=20
+static int lbl;=20
+=20
+int ex(nodeType *p) {=20
+    int lbl1, lbl2;=20
+=20
+    if (!p) return 0;=20
+    switch(p-&gt;type) {=20
+    case typeCon:       =20
+        printf("\tpush\t%d\n", p-&gt;con.value); =20
+        break;=20
+    case typeId:        =20
+        printf("\tpush\t%c\n", p-&gt;id.i + 'a'); =20
+        break;=20
+    case typeOpr:=20
+        switch(p-&gt;opr.oper) {=20
+        case WHILE:=20
+            printf("L%03d:\n", lbl1 =3D lbl++);=20
+            ex(p-&gt;opr.op[0]);=20
+            printf("\tjz\tL%03d\n", lbl2 =3D lbl++);=20
+            ex(p-&gt;opr.op[1]);=20
+            printf("\tjmp\tL%03d\n", lbl1);=20
+            printf("L%03d:\n", lbl2);=20
+            break;=20
+        case IF:=20
+            ex(p-&gt;opr.op[0]);=20
+            if (p-&gt;opr.nops &gt; 2) {=20
+                /* if else */=20
+                printf("\tjz\tL%03d\n", lbl1 =3D lbl++);=20
+                ex(p-&gt;opr.op[1]);=20
+                printf("\tjmp\tL%03d\n", lbl2 =3D lbl++);=20
+                printf("L%03d:\n", lbl1);=20
+                ex(p-&gt;opr.op[2]);=20
+                printf("L%03d:\n", lbl2);=20
+            } else {=20
+                /* if */=20
+                printf("\tjz\tL%03d\n", lbl1 =3D lbl++);=20
+                ex(p-&gt;opr.op[1]);=20
+                printf("L%03d:\n", lbl1);=20
+            }=20
+            break;=20
+        =20
+
+        case PRINT:     =20
+            ex(p-&gt;opr.op[0]);=20
+            printf("\tprint\n");=20
+            break;=20
+        case '=3D':       =20
+            ex(p-&gt;opr.op[1]);=20
+            printf("\tpop\t%c\n", p-&gt;opr.op[0]-&gt;id.i + 'a');=20
+            break;=20
+        case UMINUS:    =20
+            ex(p-&gt;opr.op[0]);=20
+            printf("\tneg\n");=20
+            break;=20
+        default:=20
+            ex(p-&gt;opr.op[0]);=20
+            ex(p-&gt;opr.op[1]);=20
+            switch(p-&gt;opr.oper) {=20
+            case '+':   printf("\tadd\n"); break;=20
+            case '-':   printf("\tsub\n"); break; =20
+            case '*':   printf("\tmul\n"); break;=20
+            case '/':   printf("\tdiv\n"); break;=20
+            case '&lt;':   printf("\tcompLT\n"); break;=20
+            case '&gt;':   printf("\tcompGT\n"); break;=20
+            case GE:    printf("\tcompGE\n"); break;=20
+            case LE:    printf("\tcompLE\n"); break;=20
+            case NE:    printf("\tcompNE\n"); break;=20
+            case EQ:    printf("\tcompEQ\n"); break;=20
+            }=20
+        }=20
+    }=20
+}=20
+<H2><B>7. If-Else Ambiguity</B></H2>
+<P>
+The shift-reduce conflict (as explained in Part 1) that frequently =
+occurs=20
+involves the <I>if-else</I> construct. Assume we have the following =
+rules:=20
+</P>
+<P></P>
+<PRE>stmt:
+	IF expr stmt
+	|	IF expr stmt ELSE stmt
+	...
+</PRE>
+<P>
+and the following state:
+</P>
+<P></P>
+<PRE>IF expr stmt IF expr stmt . ELSE stmt
+</PRE>
+<P>
+During parsing what do we do when we come across <I>ELSE</I>.Do we shift =
+
+the <I>ELSE</I>, or reduce the <I>IF expr stmt</I> at the top of the =
+stack.=20
+If we shift, then we have
+</P>
+<P></P>
+<PRE>IF expr stmt IF expr stmt . ELSE stmt
+IF expr stmt IF expr stmt ELSE . stmt
+IF expr stmt IF expr stmt ELSE stmt .
+IF expr stmt stmt .
+</PRE>
+<P>
+where the second <I>ELSE</I> is paired with the second <I>IF</I>. If we=20
+reduce, we have
+</P>
+<P></P>
+<PRE>IF expr stmt IF expr stmt . ELSE stmt
+IF expr stmt stmt . ELSE stmt
+IF expr stmt . ELSE stmt
+IF expr stmt ELSE . stmt
+IF expr stmt ELSE stmt .
+</PRE>
+<P>
+where the <I>ELSE</I> is paired with the first <I>IF</I>. Modern=20
+programming languages pair an <I>ELSE</I> with the most recent unpaired=20
+<I>IF</I>, and so the former behaviour is expected. This works well with =
+
+yacc. The default action of shifting is taken whenever a shift-reduce=20
+conflict arises. Bur along with it, yacc issues a warning message. To=20
+remove the message, give <I>IF-ELSE</I> a higher precedence than the =
+simple=20
+<I>IF</I> statement:
+</P>
+<P></P>
+<PRE>%nonassoc IFX
+%nonassoc ELSE
+
+stmt:
+	IF expr stmt %prec IFX
+	|	IF expr stmt ELSE stmt
+</PRE>
+<H2><B>8. Conclusion</B></H2>
+<P>
+The conflicts resolved by precedence are not counted in the number of
+shift/reduce and reduce/reduce conflicts reported by Yacc. This means =
+that
+mistakes in the specification of precedences may disguise errors in the
+input grammar; it is a good idea to be sparing with precedences, and use
+them in an essentially ``cookbook'' fashion, until some experience has =
+been
+gained. The y.output file is very useful in deciding whether the parser =
+is
+actually doing what was intended.
+</P>
+<P>
+Yacc usually generates warnings. But errors may also arise. A message =
+like=20
+<B>"syntax error"</B> would leave you wandering where the error occurred =
+and=20
+what the error is. Error handling is much more difficult and I am not=20
+dealing with it right now.
+</P>
+
+
+
+
+
+
+
+
+
+
+
+<!-- *** BEGIN author bio *** -->
+<P>&nbsp;
+<P>
+<!-- *** BEGIN bio *** -->
+<P>
+<IMG alt=3D[BIO] align=3Dleft =
+src=3D"http://linuxgazette.net/gx/2002/note.png">
+<EM>
+I have just given my final year B.Tech examinations in Computer Science =
+and=20
+Engineering and a native of Kerala, India.
+</EM>
+<BR clear=3Dall>
+<!-- *** END bio *** -->
+
+<!-- *** END author bio *** -->
+
+
+<!-- *** BEGIN copyright *** -->
+<HR>
+<CENTER><SMALL><STRONG>
+Copyright &copy; 2003, Hiran Ramankutty.
+Copying license <A =
+href=3D"http://linuxgazette.net/copying.html">http://linuxgazette.net/cop=
+ying.html</A><BR>=20
+Published in Issue 93 of <I>Linux Gazette</I>, August 2003
+</STRONG></SMALL></CENTER>
+<!-- *** END copyright *** -->
+<HR>
+
+<!--startcut =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D-->
+<CENTER>
+<!-- *** BEGIN navbar *** -->
+<A =
+href=3D"http://linuxgazette.net/issue93/bhaskaran.html">&lt;&lt;&nbsp;Pre=
+v</A>&nbsp;&nbsp;|&nbsp;&nbsp;<A =
+href=3D"http://linuxgazette.net/issue93/index.html">TOC</A>&nbsp;&nbsp;|&=
+nbsp;&nbsp;<A href=3D"http://linuxgazette.net/index.html">Front =
+Page</A>&nbsp;&nbsp;|&nbsp;&nbsp;Talkback&nbsp;&nbsp;|&nbsp;&nbsp;<A =
+href=3D"http://linuxgazette.net/faq/index.html">FAQ</A>&nbsp;&nbsp;|&nbsp=
+;&nbsp;<A =
+href=3D"http://linuxgazette.net/issue93/webmaster.html">Next&nbsp;&gt;&gt=
+;</A>
+<!-- *** END navbar *** -->
+</CENTER>
+
+<!--endcut =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D-->
+</PRE></BODY></HTML>
+
+------=_NextPart_000_0000_01CAD37B.C442A2E0
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Location: http://linuxgazette.net/gx/2002/lglogo_200x41.png
+
+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
+YII=
+
+------=_NextPart_000_0000_01CAD37B.C442A2E0
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Location: http://linuxgazette.net/gx/2002/note.png
+
+iVBORw0KGgoAAAANSUhEUgAAAEEAAAAnBAMAAACidDgxAAAAMFBMVEX////Z2dm/v7+zs7OHzvr/
+/+AyzTIiiyLStIxyd4VVay8vT08AAAAAAAAAAAAAAAAAkHZnAAAAA3RSTlP//wDXyg1BAAAAAWJL
+R0QPGLoA2QAAActJREFUeNp907Fu2zAUBVBNydw/CAghgGZCg+Gt0MbR0KAtk5J2zBAC/gCBRqcK
+lSEiW5YAGmNt/Lne90hJTKSYgxcf33f5YCbi6incXXIdqI9IZLZdAxcLW1afSJoCOLGIrCvLKgZF
+QRGRsCVOFFKkhXP7SFBEWdoF/HSFu0Qiowi5jEHAqJx0YhYEDvncFRVGdZGoMQmacZBzkXRUigAi
+guAScqlajCjhGHhhOz9jqpqqESX2s7AMfISvihGK7xEEf88RBy9Sxxd1Igi/CJn7ql6MBBYxJVAE
+i8IpAh+zqNADv87LPAjFIESwMH6fXrS4CV1jigiiozHeQLw6J/cTYNEjRAYD8c/JCJDoDUROXWmM
+ta+XZUTYGImwMBTp/xhzEp9E1p/azu8cH9a4lcB/Q3QH2gaYbeq6fvoqcPgy2Gl1rh+11r+2hOS/
+mG2SWuvjsCX4rtY83FDG8W1D+JZNkvCY980eFa7d3N7URIaVwEIsNmcaABLHlciwKUPipf4mA2JH
+IWcNoTdFV+3kzpzO+oXAcS2ErSSJe81nWN8FYyxEK2r9iITheS1Eh4xTK+5/DzhRRPT2//7o6Tnx
+lOctgYfF7+2K+O7c/QdZiF7fvE4UzAAAACR0RVh0Y29tbWVudABOaWNvbGFzLlBpb2NoQGVuc3Qu
+ZnLZf7JACiSQEEhoEgAAAABJRU5ErkJggg==
+
+------=_NextPart_000_0000_01CAD37B.C442A2E0--
