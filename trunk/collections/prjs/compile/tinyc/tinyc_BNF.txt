@@ -1,0 +1,145 @@
+c语言中，>、<之类的运算符优先级高于==、!=运算符。
+一元运算符优先级高于二元运算符。
+与c语言不同的是，这里的例子赋值表达式没有返回值；if/while中的条件表达式不支持算术
+运算符，只支持比较运算符和逻辑运算符，如：
+if( xxx && xxx > xxx ) 
+
+selection_statement
+	: IF '(' logical_or_expr ')' statement 
+	| IF '(' logical_or_expr ')' statement ELSE statement
+	;
+
+以上会出现冲突警告，但是yacc生成的代码依然可以正确处理这种歧义性；
+可以使用以下方法避免该警告：
+%nonassoc IFX
+%nonassoc ELSE
+
+语义动作：
+term
+	: factor {
+		/* push left operand */
+		emitRM( "ST", ac, tmpOffset--, mp, "push left" );	
+	}
+会导致以下语句：
+write expr生成多余指令：
+  9:     ST  0,0(5) 	store value
+ 10:     LD  0,0(5) 	load id value
+ 11:     ST  0,0(6) 	push left  //多余指令
+ 12:    OUT  0,0,0 	write ac
+
+所有包含递归的文法表达式，其生成的代码都把结果放置于mp临时存储区中，使用了递归
+文法表达式的地方则需要移除该临时变量；不包含递归的文法表达式则将结果放置于ac寄
+存器中。如果递归层次有多层，则只需要压一次临时值，如：
+expr : term | expr + term
+term : factor | term * factor
+expr中的term就无需再压临时值。
+
+递归层次有多层的话，则需要通过这个临时栈来传递结果值：
+expr : expr '+' term  {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load left" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load right" );
+		emitRO( "ADD", ac, ac, ac1, "op +" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push add result" );
+	}
+
+-------------------------------------------------------------------------------
+stmt:
+	IF expr stmt %prec IFX
+	|	IF expr stmt ELSE stmt
+
+
+statement_list
+	: statement
+	| statement_list statement
+	;
+
+statement
+	: compound_statement
+	| expression_statement
+	| selection_statement
+	| iteration_statement
+	;
+
+expression_statement
+	: ';'
+	| assignment_expr ';'
+	;
+
+assignment_expr
+	: IDENTIFIER '=' expr
+	;
+
+expr
+	: expr '+' term  
+	| expr '-' term
+	;
+
+term
+	: term '*' factor
+	| term '/' factor
+	;
+
+factor
+	: '+' primary_expr
+	| '-' primary_expr
+	;
+
+primary_expr
+	: IDENTIFIER
+	| NUM
+	| '(' expr ')'
+	;
+
+compound_statement
+	: '{' '}'
+	| '{' statement_list '}'
+	;
+
+logical_or_expr
+	: logical_and_expr
+	| logical_or_expr OR_OP logical_and_expr
+	;
+
+logical_and_expr
+	: equality_expr
+	| logical_and_expr AND_OP equality_expr
+	;
+
+equality_expr
+	: relational_expr
+	| equality_expr EQ_OP relational_expr
+	| equality_expr NE_OP relational_expr
+	;
+
+relational_expr
+	: relational_factor
+	| relational_expr '>' relational_factor
+	| relational_expr '<' relational_factor
+	| relational_expr LE_OP relational_factor
+	| relational_expr GE_OP relational_factor
+	;
+
+relational_factor
+	: relational_primary
+	| '!' relational_primary
+	| '+' relational_primary
+	| '-' relational_primary
+	;
+
+relational_primary
+	: IDENTIFIER
+	| NUM
+	;
+
+selection_statement
+	: IF '(' logical_or_expr ')' statement
+	| IF '(' logical_or_expr ')' statement ELSE statement
+	;
+
+iteration_statement
+	: WHILE '(' logical_or_expr ')' statement
+	;
+
