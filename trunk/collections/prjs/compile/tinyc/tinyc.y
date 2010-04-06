@@ -21,6 +21,9 @@ int TraceCode = 0;
 static int memloc = 0;
 /* temp memory pointer */
 static int tmpOffset = 0;
+/* saved code locatation for backup */
+static int savedLoc1 = 0;
+static int savedLoc2 = 0;
 
 %}
 %union {
@@ -144,82 +147,95 @@ compound_statement
 	;
 
 logical_or_expr
-	: logical_and_expr
-	| logical_or_expr OR_OP logical_and_expr
+	: logical_and_expr {
+		/* load the result into ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load result" );
+		/* skip 1 code to backup later */
+		savedLoc1 = emitSkip( 1 );	
+	}
+	| logical_or_expr OR_OP logical_and_expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		/* jump if true */
+		emitRM( "JNE", ac, 2, pc, "jmp if true" );
+		emitRM( "JNE", ac1, 1, pc, "jmp if true" );
+		/* false case, ac and ac1 are all store '0' */
+		/* unconditinal jmp */
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		/* true case */
+		emitRM( "LDC", ac, 1, 0, "load const 0" );
+		/* the result is in ac */
+
+		/* skip 1 code to backup later */
+		savedLoc1 = emitSkip( 1 );	
+	}
 	;
 
 logical_and_expr
-	: logical_not_expr 
-	| logical_and_expr AND_OP logical_not_expr
+	: logical_not_expr
+	| logical_and_expr AND_OP logical_not_expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		/* jump if false */
+		emitRM( "JEQ", ac, 2, pc, "jmp if false" );
+		emitRM( "JEQ", ac1, 1, pc, "jmp if false" );
+		/* true case, ac and ac1 are all store '1' */
+		/* unconditinal jmp */
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		/* false case */
+		emitRM( "LDC", ac, 0, 0, "load const 0" );
+		/* push result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push result" );
+	}
 	;
 
 logical_not_expr
-	: relational_expr
-	| '!' relational_expr
+	: relational_expr { /* the result is in mp */ }
+	| '{' logical_or_expr '}'
+	| '!' relational_expr {
+		/* load the operand */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load '!' operand" );
+		/* because true is '1', false is '0' */
+		emitRM( "LDC", ac1, 1, 0, "load const 1" );
+		emitRM( "SUB", ac, ac1, ac, "op !" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push result" );
+	}
 	;
 
 relational_expr
 	: expr 
 	| relational_expr '>' expr {
-		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
-		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
-		emitRO( "SUB", ac, ac, ac1, "sub in op '>'" );
-		emitRM( "JGT", ac, 2, pc, "br if true" );
-		emitRM( "LDC", ac, 0, 0, "false case" );
-		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
-		emitRM( "LDC", ac, 1, 0, "true case" );
-		/* push the result */
-		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+		relational_code( '>' );
 	}
 	| relational_expr '<' expr {
-		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
-		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
-		emitRO( "SUB", ac, ac, ac1, "sub in op '<'" );
-		emitRM( "JLT", ac, 2, pc, "br if true" );
-		emitRM( "LDC", ac, 0, 0, "false case" );
-		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
-		emitRM( "LDC", ac, 1, 0, "true case" );
-		/* push the result */
-		emitRM( "ST", ac, tmpOffset--, mp, "push < result" );
+		relational_code( '<' );
 	}
 	| relational_expr LE_OP expr {
+		relational_code( LE_OP );
 	}
 	| relational_expr GE_OP expr {
+		relational_code( GE_OP );
 	}
 	| relational_expr EQ_OP expr {
-		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
-		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
-		emitRO( "SUB", ac, ac, ac1, "sub in op '=='" );
-		emitRM( "JEQ", ac, 2, pc, "br if true" );
-		emitRM( "LDC", ac, 0, 0, "false case" );
-		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
-		emitRM( "LDC", ac, 1, 0, "true case" );
-		/* push the result */
-		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+		relational_code( EQ_OP );
 	}
 	| relational_expr NE_OP expr {
-		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
-		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
-		emitRO( "SUB", ac, ac, ac1, "sub in op '!='" );
-		emitRM( "JNE", ac, 2, pc, "br if true" );
-		emitRM( "LDC", ac, 0, 0, "false case" );
-		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
-		emitRM( "LDC", ac, 1, 0, "true case" );
-		/* push the result */
-		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+		relational_code( NE_OP );
 	}
 	;
 
 selection_statement
-	: IF '(' logical_or_expr ')' statement %prec IFX
+	: IF '(' logical_or_expr ')' statement %prec IFX {
+		int curLoc = emitSkip( 0 );
+		emitBackup( savedLoc1 );	
+		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to else" );
+		emitRestore();
+	}
 	| IF '(' logical_or_expr ')' statement ELSE statement
 	;
 
@@ -247,10 +263,52 @@ void yyerror( const char *s )
 	fprintf( stderr, "%s\n", s );
 }
 
-void prelude()
+void prelude_code()
 {
 	emitRM( "LD", mp, 0, ac, "" );
 	emitRM( "ST", ac, 0, ac, "" );
+}
+
+void relational_code( int type )
+{
+	char *op;
+	switch( type )
+	{
+	case '<':
+		op = "JLT";
+		break;
+	case '>':
+		op = "JGT";
+		break;
+	case EQ_OP:
+		op = "JEQ";
+		break;
+	case NE_OP:
+		op = "JNE";
+		break;
+	case LE_OP:
+		op = "JLE";
+		break;
+	case GE_OP:
+		op = "JGE";
+	default:
+		op = 0;
+	}
+	if( op == 0 )
+	{
+		return;
+	}	
+	/* load right operand to ac1 */
+	emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+	/* load left operand to ac */
+	emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+	emitRO( "SUB", ac, ac, ac1, "op -" );
+	emitRM( op, ac, 2, pc, "br if true" );
+	emitRM( "LDC", ac, 0, 0, "false case" );
+	emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+	emitRM( "LDC", ac, 1, 0, "true case" );
+	/* push the result */
+	emitRM( "ST", ac, tmpOffset--, mp, "push result" );
 }
 
 int main( int argc, char **argv )
@@ -282,7 +340,7 @@ int main( int argc, char **argv )
 	{
 		TraceCode = atoi( argv[2] );
 	}
-	prelude();
+	prelude_code();
 	yyparse();
 	sym_dump();
 	sym_clear();	

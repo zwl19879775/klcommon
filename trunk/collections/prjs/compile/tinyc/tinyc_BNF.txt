@@ -57,6 +57,18 @@ a > b > c
 
 同样，例子中==、!=和>、<优先级相同。
 
+对于如下语义动作会产生rule never reduced和shift/reduce conflicts警告：
+selection_statement
+	: IF '(' logical_or_expr ')' {
+		savedLoc1 = emitSkip( 1 );	
+	} statement %prec IFX {
+		int curLoc = emitSkip( 0 );
+		emitBackup( savedLoc1 );	
+		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to else" );
+		emitRestore();
+	}
+去掉 savedLoc1语义动作则无此警告。
+
 -------------------------------------------------------------------------------
 stmt:
 	IF expr stmt %prec IFX
@@ -127,6 +139,7 @@ logical_not_expr
 
 relational_expr
 	: expr 
+	| '(' logical_or_expr ')'
 	| relational_expr '>' expr
 	| relational_expr '<' expr
 	| relational_expr LE_OP expr
