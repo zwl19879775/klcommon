@@ -66,18 +66,18 @@ expr
 	}
 	| expr '+' term  {
 		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load left" );
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
 		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load right" );
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
 		emitRO( "ADD", ac, ac, ac1, "op +" );
 		/* push the result */
 		emitRM( "ST", ac, tmpOffset--, mp, "push add result" );
 	}
 	| expr '-' term {
 		/* load right operand to ac1 */
-		emitRM( "LD", ac1, ++tmpOffset, mp, "load left" );
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
 		/* load left operand to ac */
-		emitRM( "LD", ac, ++tmpOffset, mp, "load right" );
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
 		emitRO( "SUB", ac, ac, ac1, "op -" );
 		/* push the result */
 		emitRM( "ST", ac, tmpOffset--, mp, "push sub result" );
@@ -149,34 +149,73 @@ logical_or_expr
 	;
 
 logical_and_expr
-	: equality_expr
-	| logical_and_expr AND_OP equality_expr
+	: logical_not_expr 
+	| logical_and_expr AND_OP logical_not_expr
 	;
 
-equality_expr
+logical_not_expr
 	: relational_expr
-	| equality_expr EQ_OP relational_expr
-	| equality_expr NE_OP relational_expr
+	| '!' relational_expr
 	;
 
 relational_expr
-	: relational_factor
-	| relational_expr '>' relational_factor
-	| relational_expr '<' relational_factor
-	| relational_expr LE_OP relational_factor
-	| relational_expr GE_OP relational_factor
-	;
-
-relational_factor
-	: relational_primary
-	| '!' relational_primary
-	| '+' relational_primary
-	| '-' relational_primary
-	;
-
-relational_primary
-	: identifier 
-	| NUM
+	: expr 
+	| relational_expr '>' expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		emitRO( "SUB", ac, ac, ac1, "sub in op '>'" );
+		emitRM( "JGT", ac, 2, pc, "br if true" );
+		emitRM( "LDC", ac, 0, 0, "false case" );
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		emitRM( "LDC", ac, 1, 0, "true case" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+	}
+	| relational_expr '<' expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		emitRO( "SUB", ac, ac, ac1, "sub in op '<'" );
+		emitRM( "JLT", ac, 2, pc, "br if true" );
+		emitRM( "LDC", ac, 0, 0, "false case" );
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		emitRM( "LDC", ac, 1, 0, "true case" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push < result" );
+	}
+	| relational_expr LE_OP expr {
+	}
+	| relational_expr GE_OP expr {
+	}
+	| relational_expr EQ_OP expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		emitRO( "SUB", ac, ac, ac1, "sub in op '=='" );
+		emitRM( "JEQ", ac, 2, pc, "br if true" );
+		emitRM( "LDC", ac, 0, 0, "false case" );
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		emitRM( "LDC", ac, 1, 0, "true case" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+	}
+	| relational_expr NE_OP expr {
+		/* load right operand to ac1 */
+		emitRM( "LD", ac1, ++tmpOffset, mp, "load right" );
+		/* load left operand to ac */
+		emitRM( "LD", ac, ++tmpOffset, mp, "load left" );
+		emitRO( "SUB", ac, ac, ac1, "sub in op '!='" );
+		emitRM( "JNE", ac, 2, pc, "br if true" );
+		emitRM( "LDC", ac, 0, 0, "false case" );
+		emitRM( "LDA", pc, 1, pc, "unconditional jmp" );
+		emitRM( "LDC", ac, 1, 0, "true case" );
+		/* push the result */
+		emitRM( "ST", ac, tmpOffset--, mp, "push > result" );
+	}
 	;
 
 selection_statement

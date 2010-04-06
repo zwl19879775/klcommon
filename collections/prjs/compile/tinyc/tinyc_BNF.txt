@@ -45,6 +45,18 @@ expr : expr '+' term  {
 		emitRM( "ST", ac, tmpOffset--, mp, "push add result" );
 	}
 
+对于关系运算符而言，以下表达式也合法：
+a > b > c
+文法中也显示了这种左递归特性，但是a>b>c中与c真正做比较的是a和b比较的结果布尔值。
+
+这里对布尔表达式的翻译，0表示false，非0表示true。因此正数和负数效果一样。
+
+为了简单起见，例子中限制了逻辑运算符与算术表达式的运算关系。在c语言中合法的式子：
+0 >= !1 在这里不合法，"!'运算符只能作用于布尔表达式，如：
+!0 >= 1，这里的"!"作用于表达式 0 >= 1的结果值，而不是0。
+
+同样，例子中==、!=和>、<优先级相同。
+
 -------------------------------------------------------------------------------
 stmt:
 	IF expr stmt %prec IFX
@@ -104,34 +116,23 @@ logical_or_expr
 	;
 
 logical_and_expr
-	: equality_expr
-	| logical_and_expr AND_OP equality_expr
+	: logical_not_expr 
+	| logical_and_expr AND_OP logical_not_expr
 	;
 
-equality_expr
+logical_not_expr
 	: relational_expr
-	| equality_expr EQ_OP relational_expr
-	| equality_expr NE_OP relational_expr
+	| '!' relational_expr
 	;
 
 relational_expr
-	: relational_factor
-	| relational_expr '>' relational_factor
-	| relational_expr '<' relational_factor
-	| relational_expr LE_OP relational_factor
-	| relational_expr GE_OP relational_factor
-	;
-
-relational_factor
-	: relational_primary
-	| '!' relational_primary
-	| '+' relational_primary
-	| '-' relational_primary
-	;
-
-relational_primary
-	: IDENTIFIER
-	| NUM
+	: expr 
+	| relational_expr '>' expr
+	| relational_expr '<' expr
+	| relational_expr LE_OP expr
+	| relational_expr GE_OP expr
+	| relational_expr EQ_OP expr
+	| relational_expr NE_OP expr
 	;
 
 selection_statement
