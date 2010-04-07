@@ -195,7 +195,6 @@ logical_and_expr
 
 logical_not_expr
 	: relational_expr { /* the result is in mp */ }
-	| '{' logical_or_expr '}'
 	| '!' relational_expr {
 		/* load the operand */
 		emitRM( "LD", ac, ++tmpOffset, mp, "load '!' operand" );
