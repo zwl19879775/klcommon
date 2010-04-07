@@ -82,6 +82,8 @@ ElseToken : ELSE { ... }
 
 while中同样可以运用以上方法：为WHILE添加动作。对于break同样需要回填。
 
+逻辑表达式中暂不支持括号。
+
 -------------------------------------------------------------------------------
 stmt:
 	IF expr stmt %prec IFX
@@ -152,7 +154,6 @@ logical_not_expr
 
 relational_expr
 	: expr 
-	| '(' logical_or_expr ')'
 	| relational_expr '>' expr
 	| relational_expr '<' expr
 	| relational_expr LE_OP expr
