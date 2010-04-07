@@ -1,0 +1,6 @@
+while( 1 )
+{
+	break;
+	write 2;
+}
+

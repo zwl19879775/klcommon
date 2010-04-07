@@ -67,7 +67,20 @@ selection_statement
 		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to else" );
 		emitRestore();
 	}
-去掉 savedLoc1语义动作则无此警告。
+去掉 savedLoc1语义动作则无此警告。在if...else中依然存在此警告，并且最终结果错误
+，无法正确识别语法。通过添加空的非终结符效果一样：
+IF '(' logical_or_expr ')' statement IfStmt ELSE statement
+IfStmt : { ... }
+
+不过，可以通过如下修改得到正确结果：
+selection_stmt : IF '(' logical_or_expr ')' statement ElseToken statement { ... }
+ElseToken : ELSE { ... }
+
+至此，解决if中回填的方式：在logical_or_expr中预留位置，用于条件为假时的跳转指令
+，对于有else的if，则通过对ELSE添加动作记录在else前预留位置，用于then-part结束后
+的跳转。
+
+while中同样可以运用以上方法：为WHILE添加动作。对于break同样需要回填。
 
 -------------------------------------------------------------------------------
 stmt:

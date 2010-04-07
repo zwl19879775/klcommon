@@ -24,7 +24,7 @@ static int tmpOffset = 0;
 /* saved code locatation for backup */
 static int savedLoc1 = 0;
 static int savedLoc2 = 0;
-
+static int savedLoc3 = 0;
 %}
 %union {
 	int loc;
@@ -233,18 +233,58 @@ selection_statement
 	: IF '(' logical_or_expr ')' statement %prec IFX {
 		int curLoc = emitSkip( 0 );
 		emitBackup( savedLoc1 );	
+		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to if end" );
+		emitRestore();
+	}
+	| IF '(' logical_or_expr ')' statement ElseToken statement {
+		int curLoc = emitSkip( 0 );
+		emitBackup( savedLoc2 );
+		emitRM_Abs( "LDA", pc, curLoc, "jmp to if end" );
+		emitRestore();
+	}
+	;
+
+ElseToken
+	: ELSE {
+		savedLoc2 = emitSkip( 1 );
+		int curLoc = emitSkip( 0 );
+		emitBackup( savedLoc1 );
 		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to else" );
 		emitRestore();
 	}
-	| IF '(' logical_or_expr ')' statement ELSE statement
 	;
 
 iteration_statement
-	: WHILE '(' logical_or_expr ')' statement
+	: WhileToken '(' logical_or_expr ')' statement {
+		int curLoc = emitSkip( 0 );
+		/* backup to test logical expr */
+		emitBackup( savedLoc1 );
+		emitRM_Abs( "JEQ", ac, curLoc + 1, "while:jmp to end" );
+		emitRestore();
+		/* unconditional jmp to while begin */
+		emitRM_Abs( "LDA", pc, savedLoc2, "while:jmp to begin" );	
+		/* break unconditional jmp */
+		if( savedLoc3 > 0 )
+		{
+			emitBackup( savedLoc3 );
+			emitRM_Abs( "LDA", pc, curLoc + 1, "while:break to end" );
+			emitRestore();	
+			savedLoc3 = 0;
+		}
+	}
+	;
+
+WhileToken
+	: WHILE {
+		/* while...end whill jmp here */
+		savedLoc2 = emitSkip( 0 );
+	}
 	;
 
 jump_statement
-	: BREAK ';'
+	: BREAK ';' {
+		savedLoc3 = emitSkip( 1 );
+	}
 	;
 
 io_statement
