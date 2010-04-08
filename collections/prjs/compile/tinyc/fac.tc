@@ -1,0 +1,17 @@
+read x;
+if( x > 0 )
+{
+	fac = 1;
+	while( x > 0 )
+	{
+		fac = fac * x;
+		x = x - 1;
+	}
+	write fac;
+}
+else
+{
+	write 0;
+}
+
+
