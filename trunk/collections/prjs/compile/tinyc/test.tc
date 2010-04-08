@@ -1,5 +1,8 @@
-if( 1 && 1  )
+read x;
+while( x > 0 )
 {
-	write 1;
+	break;
+	break;
+	write x;
+	x = x -1;
 }
-	

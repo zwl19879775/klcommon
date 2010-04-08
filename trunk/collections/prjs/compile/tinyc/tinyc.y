@@ -21,10 +21,16 @@ int TraceCode = 0;
 static int memloc = 0;
 /* temp memory pointer */
 static int tmpOffset = 0;
-/* saved code locatation for backup */
-static int savedLoc1 = 0;
-static int savedLoc2 = 0;
-static int savedLoc3 = 0;
+/* saved code locatation for backpatch */
+#define SAVED_LOC_SIZE (128)
+typedef struct locTag
+{
+	int loc;
+	int flag;
+} locTag;
+enum { WhileStart = 1 };
+static locTag savedLoc[SAVED_LOC_SIZE];
+static int saved_pos = 0;
 %}
 %union {
 	int loc;
@@ -150,8 +156,6 @@ logical_or_expr
 	: logical_and_expr {
 		/* load the result into ac */
 		emitRM( "LD", ac, ++tmpOffset, mp, "load result" );
-		/* skip 1 code to backup later */
-		savedLoc1 = emitSkip( 1 );	
 	}
 	| logical_or_expr OR_OP logical_and_expr {
 		/* load right operand to ac1 */
@@ -167,9 +171,6 @@ logical_or_expr
 		/* true case */
 		emitRM( "LDC", ac, 1, 0, "load const 0" );
 		/* the result is in ac */
-
-		/* skip 1 code to backup later */
-		savedLoc1 = emitSkip( 1 );	
 	}
 	;
 
@@ -229,66 +230,80 @@ relational_expr
 	;
 
 selection_statement
-	: IF '(' logical_or_expr ')' statement %prec IFX {
+	: IF '(' logical_or_expr IfBracket statement %prec IFX {
 		int curLoc = emitSkip( 0 );
-		emitBackup( savedLoc1 );	
+		emitBackup( pop_saved_loc().loc );	
 		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to if end" );
 		emitRestore();
 	}
-	| IF '(' logical_or_expr ')' statement ElseToken statement {
+	| IF '(' logical_or_expr IfBracket statement ElseToken statement {
 		int curLoc = emitSkip( 0 );
-		emitBackup( savedLoc2 );
+		emitBackup( pop_saved_loc().loc );
 		emitRM_Abs( "LDA", pc, curLoc, "jmp to if end" );
 		emitRestore();
 	}
 	;
 
+IfBracket
+	: ')' {
+		/* save loc to backpatch later */
+		int loc = emitSkip( 1 );
+		push_saved_loc( loc, 0 );	
+	}
+	;
+
 ElseToken
 	: ELSE {
-		savedLoc2 = emitSkip( 1 );
+		int loc = emitSkip( 1 );
 		int curLoc = emitSkip( 0 );
-		emitBackup( savedLoc1 );
+		emitBackup( pop_saved_loc().loc );
 		emitRM_Abs( "JEQ", ac, curLoc, "if:jmp to else" );
 		emitRestore();
+		push_saved_loc( loc, 0 );
 	}
 	;
 
 iteration_statement
-	: WhileToken '(' logical_or_expr ')' statement {
+	: WhileToken '(' logical_or_expr WhileBracket statement {
 		int curLoc = emitSkip( 0 );
-		/* backup to test logical expr */
-		emitBackup( savedLoc1 );
+		/* backpatch break statement */
+		break_code( curLoc + 1 );
+		/* backpatch the test logical expr */
+		emitBackup( pop_saved_loc().loc );
 		emitRM_Abs( "JEQ", ac, curLoc + 1, "while:jmp to end" );
 		emitRestore();
 		/* unconditional jmp to while begin */
-		emitRM_Abs( "LDA", pc, savedLoc2, "while:jmp to begin" );	
-		/* break unconditional jmp */
-		if( savedLoc3 > 0 )
-		{
-			emitBackup( savedLoc3 );
-			emitRM_Abs( "LDA", pc, curLoc + 1, "while:break to end" );
-			emitRestore();	
-			savedLoc3 = 0;
-		}
+		emitRM_Abs( "LDA", pc, pop_saved_loc().loc, "while:jmp to begin" );	
+	}
+	;
+
+WhileBracket
+	: ')' {
+		/* save loc to backpatch later */
+		int loc = emitSkip( 1 );
+		push_saved_loc( loc, WhileStart );
 	}
 	;
 
 WhileToken
 	: WHILE {
 		/* while...end whill jmp here */
-		savedLoc2 = emitSkip( 0 );
+		int loc = emitSkip( 0 );
+		push_saved_loc( loc, 0 );
 	}
 	;
 
 jump_statement
 	: BREAK ';' {
-		savedLoc3 = emitSkip( 1 );
+		int loc = emitSkip( 1 );
+		push_saved_loc( loc, 0 );
 	}
 	;
 
 io_statement
-	: READ expr ';' {
+	: READ  identifier ';' {
 		emitRO( "IN", ac, 0, 0, "input to ac" );
+		emitRM( "ST", ac, $2, gp, "store value" );
 	}
 	| WRITE expr ';' {
 		/* load the expr result from mp */
@@ -302,10 +317,33 @@ void yyerror( const char *s )
 	fprintf( stderr, "%s\n", s );
 }
 
+void push_saved_loc( int loc, int flag )
+{
+	locTag l = { loc, flag };
+	savedLoc[saved_pos++] = l;
+}
+
+locTag pop_saved_loc()
+{
+	return savedLoc[--saved_pos];
+}
+
+#define saved_loc_top savedLoc[saved_pos-1]
+
 void prelude_code()
 {
 	emitRM( "LD", mp, 0, ac, "" );
 	emitRM( "ST", ac, 0, ac, "" );
+}
+
+void break_code( int eloc )
+{
+	while( saved_loc_top.flag != WhileStart )
+	{
+		emitBackup( pop_saved_loc().loc );
+		emitRM_Abs( "LDA", pc, eloc, "while:break to end" );
+		emitRestore();	
+	}
 }
 
 void relational_code( int type )
