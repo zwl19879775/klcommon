@@ -1,5 +1,10 @@
 history
 
+4.11.2010
+
+- 修正嵌套while中内层while break会导致外层while也break的BUG，感谢loy(lo@vi-li.com)
+  的反馈
+
 4.9.2009
 
 - 为libloader加入linux支持
