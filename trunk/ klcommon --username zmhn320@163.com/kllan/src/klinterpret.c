@@ -521,8 +521,14 @@ static struct FuncRet inter_while_stmt( struct interEnv *env, struct treeNode *t
 	while( (int)exp.dval )
 	{
 		ret = inter_statements( env, tree->child[1] );
-		if( ret.type == ER_RETURN || ret.type == ER_BREAK )
+		if( ret.type == ER_RETURN ) /*ret.type == ER_BREAK ) */
 		{
+			break;
+		}
+		if( ret.type == ER_BREAK )
+		{
+			/* donot return ret to the outer scope */
+			ret.type = ER_NORMAL;
 			break;
 		}
 		exp = inter_expression( env, tree->child[0] );
@@ -546,8 +552,14 @@ static struct FuncRet inter_for_stmt( struct interEnv *env, struct treeNode *nod
 	while( (int)exp.dval )
 	{
 		ret = inter_statements( env, node->child[3] );
-		if( ret.type == ER_RETURN || ret.type == ER_BREAK )
+		if( ret.type == ER_RETURN )/*|| ret.type == ER_BREAK )*/
 		{
+			break;
+		}
+		if( ret.type == ER_BREAK )
+		{
+			/* donot return ret to the outer scope */
+			ret.type = ER_NORMAL;
 			break;
 		}
 		/* the third expression of 'for' */
