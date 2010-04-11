@@ -1,0 +1,44 @@
+
+op code:
+
+IN : 从标准读入整形值并压栈
+OUT : 弹出值；输出
+ADD : 弹出a；弹出b；压入b+a (b被先压入所以为左操作数)
+SUB : 弹出a；弹出b；压入b-a
+MUL : 弹出a；弹出b；压入b*a
+DIV : 弹出a；弹出b；压入b/a
+
+DUP : 压入栈顶值的拷贝
+LD : 弹出地址；压入该地址里的整数值
+ST : 弹出值；弹出地址；将该值存储到该地址
+LDC <value> : 压入<value>
+JLT <loc>: 弹出值<value>；if(value<0) pc=loc
+JLE <loc>: 弹出值<value>；if(value<=0) pc=loc
+JGT <loc>: 弹出值<value>；if(value>0) pc=loc
+JGE <loc>: 弹出值<value>；if(value>=0) pc=loc
+JEQ <loc>: 弹出值<value>；if(value==0) pc=loc
+JNE <loc>: 弹出值<value>；if(value!=0) pc=loc
+JMP <loc>: pc = loc
+
+该机器(SM)中只有一个pc寄存器，它保存了当前执行的指令索引。除此之外，SM没有其他的
+寄存器。SM也没有临时存储区，所有临时值都保存在栈中。
+
+SM的内存用于保存全局变量，其内存地址本质上是数组索引。
+
+SM上的执行文件保存的是指令地应的数字序列。大部分指令都没有操作数，为了减少字节浪
+费，并不采用每条指令相同长度的做法，而是在加载指令时根据具体指令的长度相应地读取
+操作数。指令本身最简单的做法是将其实现为一个结构体，例如：
+
+struct Instruction
+{
+	int op;
+	int arg;
+};
+
+代码文件中，arg是可选的，并且在指令内容之前会放置一个行号信息：loc, op[, operand],
+loc, op, ...
+
+
+汇编器将指令汇编成上面所述的二进制代码文件。编译程序本身直接输出二进制代码文件，
+这里的汇编器只是方便调试虚拟机用。
+
