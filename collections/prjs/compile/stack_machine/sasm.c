@@ -18,6 +18,8 @@ const char *op_desc[] = {
 FILE *fp_in;
 FILE *fp_out;
 
+Instruction i_mem[CODE_SIZE];
+
 /* get op from its string desc */
 int get_op( const char *s )
 {
@@ -54,7 +56,7 @@ int get_operand_count( int op )
 	return ret;
 }
 
-void do_asm()
+void read_asm()
 {
 	char line[256];
 	char op_str[32];
@@ -68,16 +70,35 @@ void do_asm()
 		sscanf( line, "%d%s", (int*)&loc, op_str );
 		op = (unsigned short) get_op( op_str );
 		arg_c = get_operand_count( op );
-		/* output */
-		fwrite( &loc, sizeof( loc ), 1, fp_out );
-		fwrite( &op, sizeof( op ), 1, fp_out );
 		if( arg_c > 0 )
 		{
 			char *s = strstr( line, op_str );
 			s = &s[strcspn( s, " \t" )+1];
 			arg = atoi( s );
-			fwrite( &arg, sizeof( arg ), 1, fp_out );			
 		}
+		else
+		{
+			arg = 0;
+		}
+		i_mem[loc].op = op;
+		i_mem[loc].arg = arg;
+	}
+}
+
+void output()
+{
+	int loc = 0;
+	int arg_c;
+	for( ; i_mem[loc].op != opHalt; ++ loc )
+	{
+		char op = (char) i_mem[loc].op;
+		fwrite( &op, sizeof( char ), 1, fp_out ); /* op */
+		arg_c = get_operand_count( op );
+		if( arg_c > 0 )
+		{
+			int arg = i_mem[loc].arg;
+			fwrite( &arg, sizeof( arg ), 1, fp_out ); /* arg */
+		}	
 	}
 }
 
@@ -107,7 +128,8 @@ int main( int argc, char **argv )
 		}
 	}
 
-	do_asm();
+	read_asm();
+	output();
 
 	fclose( fp_in );
 	fclose( fp_out );
