@@ -7,16 +7,6 @@
 #include <stdlib.h>
 #include "sm.h"
 
-typedef unsigned short ushort;
-
-typedef struct Instruction
-{
-	int op;
-	int arg;
-} Instruction;
-
-#define CODE_SIZE (1024)
-#define DATA_SIZE (1024)
 #define STACK_SIZE (256)
 #define POP_ERR (0x7fffffff)
 
@@ -97,36 +87,24 @@ int top_op_stack()
 /* read codes into the i_mem */
 int read_instruction( const char *codes, int size )
 {
-	ushort *uptr;
-	int *optr;
-	int op_count, loc;
+	int op_count, loc = 0;
 	Instruction inst;
-	while( size > 0 )
+	while( size > 0 && loc < CODE_SIZE )
 	{
-		uptr = (ushort*) codes;
-		loc = *uptr++;	
-		inst.op = *uptr;
-		INC_P( ushort ); 
-		INC_P( ushort );
+		/* op is 1 byte in the code file */
+		inst.op = *codes;	
+		INC_P( char );
 		op_count = get_operand_count( inst.op );
 		if( op_count > 0 ) /* has arg */
 		{
-			optr = (int*) codes;
-			inst.arg = *optr;
+			inst.arg = *(int*) codes;
 			INC_P( int );
 		}
 		else
 		{
 			inst.arg = 0;
 		}
-		if( loc > CODE_SIZE )
-		{
-			error( "invalid loc" );
-		}
-		else
-		{
-			i_mem[loc] = inst;
-		}
+		i_mem[loc++] = inst;
 	}
 	return 1;
 }

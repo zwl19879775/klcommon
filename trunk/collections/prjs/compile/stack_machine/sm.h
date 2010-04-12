@@ -12,5 +12,14 @@ enum op_type
 	opInvalid
 };
 
+typedef struct Instruction
+{
+	int op;
+	int arg;
+} Instruction;
+
+#define CODE_SIZE (1024)
+#define DATA_SIZE (1024)
+
 #endif
 
