@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "symtab.h"
+#include "../sm.h"
 #include "code.h"
 
 extern int yylex();
@@ -61,35 +62,63 @@ expression_statement
 	;
 
 assignment_expr
-	: identifier '=' expr
+	: identifier {
+		emitCodeArg( opLdc, $1 );
+	} '=' expr {
+		emitCode( opSt );
+	}
 	;
 
 expr
 	: term 
-	| expr '+' term 
-	| expr '-' term 
+	| expr '+' term {
+		emitCode( opAdd );
+	}
+	| expr '-' term {
+		emitCode( opSub );
+	}
 	;
 
 term
 	: factor 
-	| term '*' factor
-	| term '/' factor
+	| term '*' factor {
+		emitCode( opMul );
+	}
+	| term '/' factor {
+		emitCode( opDiv );
+	}
 	;
 
 factor
 	: primary_expr
 	| '+' primary_expr 
-	| '-' primary_expr
+	| '-' primary_expr {
+		emitCodeArg( opLdc, 0 );
+		emitCode( opSub );
+	}
 	;
 
 primary_expr
-	: identifier 
-	| NUM 
+	: identifier {
+		emitCodeArg( opLdc, $1 );
+		emitCode( opLd );	
+	}
+	| NUM {
+		emitCodeArg( opLdc, atof( yytext ) );
+	}
 	| '(' expr ')'
 	;
 
 identifier
-	: IDENTIFIER { $$ = 1; }
+	: IDENTIFIER { 
+		int loc = sym_lookup( yytext );
+		if( loc < 0 )
+		{
+			loc = memloc;
+			sym_insert( yytext, memloc++ );
+		}
+		$$ = loc;
+	}
 	;
 
 compound_statement
@@ -122,7 +151,9 @@ jump_statement
 
 io_statement
 	: READ  identifier ';'
-	| WRITE expr ';'
+	| WRITE expr ';' {
+		emitCode( opOut );		
+	}
 	;
 %%
 void yyerror( const char *s )
@@ -198,9 +229,10 @@ int main( int argc, char **argv )
 	{
 		int l = strcspn( argv[1], "." );
 		strncpy( output, argv[1], l );
-		strcat( output, ".tm" );
+		strcat( output, ".sm" );
 	}
 	yyparse();
+	emitDone( output );
 	sym_dump();
 	sym_clear();	
 	fclose( yyin );
