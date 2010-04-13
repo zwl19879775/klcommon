@@ -1,0 +1,84 @@
+statement_list
+	: statement
+	| statement_list statement
+	;
+
+statement
+	: expression_statement
+	| compound_statement
+	| selection_statement
+	| iteration_statement
+	| jump_statement
+	| io_statement
+	;
+
+expression_statement
+	: ';'
+	| assignment_expr ';'
+	;
+
+assignment_expr
+	: identifier '=' expr
+	;
+
+expr
+	: term 
+	| expr '+' term 
+	| expr '-' term 
+	;
+
+term
+	: factor 
+	| term '*' factor
+	| term '/' factor
+	;
+
+factor
+	: primary_expr
+	| '+' primary_expr 
+	| '-' primary_expr
+	;
+
+primary_expr
+	: identifier 
+	| NUM 
+	| '(' expr ')'
+	;
+
+identifier
+	: IDENTIFIER 
+	;
+
+compound_statement
+	: '{' '}'
+	| '{' statement_list '}'
+	;
+
+relational_expr
+	: expr 
+	| relational_expr '>' expr
+	| relational_expr '<' expr 
+	| relational_expr LE_OP expr 
+	| relational_expr GE_OP expr 
+	| relational_expr EQ_OP expr 
+	| relational_expr NE_OP expr 
+	;
+
+selection_statement
+	: IF '(' relational_expr ')' statement %prec IFX 
+	| IF '(' relational_expr ')' statement ELSE statement
+	;
+
+iteration_statement
+	: WHILE '(' relational_expr ')' statement
+	;
+
+jump_statement
+	: BREAK ';'
+	;
+
+io_statement
+	: READ  identifier ';'
+	| WRITE expr ';'
+	;
+
