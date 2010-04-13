@@ -40,6 +40,7 @@ static int saved_pos = 0;
 %nonassoc IFX
 %nonassoc ELSE
 %%
+
 statement_list
 	: statement
 	| statement_list statement
@@ -60,53 +61,35 @@ expression_statement
 	;
 
 assignment_expr
-	: identifier '=' expr { 
-	}
+	: identifier '=' expr
 	;
 
 expr
-	: term {
-	}
-	| expr '+' term  {
-	}
-	| expr '-' term {
-	}
+	: term 
+	| expr '+' term 
+	| expr '-' term 
 	;
 
 term
-	: factor {
-	}
-	| term '*' factor {
-	}
-	| term '/' factor {
-	}
+	: factor 
+	| term '*' factor
+	| term '/' factor
 	;
 
 factor
-	: primary_expr { /* do nothing */ }
-	| '+' primary_expr { /* do nothing */ }
-	| '-' primary_expr { 
-	}
+	: primary_expr
+	| '+' primary_expr 
+	| '-' primary_expr
 	;
 
 primary_expr
-	: identifier {
-	}
-	| NUM {
-	}
+	: identifier 
+	| NUM 
 	| '(' expr ')'
 	;
 
 identifier
-	: IDENTIFIER {
-		int loc = sym_lookup( yytext );
-		if( loc < 0 )
-		{
-			loc = memloc;
-			sym_insert( yytext, memloc++ );
-		}
-		$$ = loc;
-	}
+	: IDENTIFIER { $$ = 1; }
 	;
 
 compound_statement
@@ -114,89 +97,32 @@ compound_statement
 	| '{' statement_list '}'
 	;
 
-logical_or_expr
-	: logical_and_expr {
-	}
-	| logical_or_expr OR_OP logical_and_expr {
-	}
-	;
-
-logical_and_expr
-	: logical_not_expr
-	| logical_and_expr AND_OP logical_not_expr {
-	}
-	;
-
-logical_not_expr
-	: relational_expr { /* the result is in mp */ }
-	| '!' relational_expr {
-	}
-	;
-
 relational_expr
 	: expr 
-	| relational_expr '>' expr {
-		relational_code( '>' );
-	}
-	| relational_expr '<' expr {
-		relational_code( '<' );
-	}
-	| relational_expr LE_OP expr {
-		relational_code( LE_OP );
-	}
-	| relational_expr GE_OP expr {
-		relational_code( GE_OP );
-	}
-	| relational_expr EQ_OP expr {
-		relational_code( EQ_OP );
-	}
-	| relational_expr NE_OP expr {
-		relational_code( NE_OP );
-	}
+	| relational_expr '>' expr
+	| relational_expr '<' expr 
+	| relational_expr LE_OP expr 
+	| relational_expr GE_OP expr 
+	| relational_expr EQ_OP expr 
+	| relational_expr NE_OP expr 
 	;
 
 selection_statement
-	: IF '(' logical_or_expr IfBracket statement %prec IFX {
-	}
-	| IF '(' logical_or_expr IfBracket statement ElseToken statement {
-	}
-	;
-
-IfBracket
-	: ')' {
-	}
-	;
-
-ElseToken
-	: ELSE {
-	}
+	: IF '(' relational_expr ')' statement %prec IFX 
+	| IF '(' relational_expr ')' statement ELSE statement
 	;
 
 iteration_statement
-	: WhileToken '(' logical_or_expr WhileBracket statement {
-	}
-	;
-
-WhileBracket
-	: ')' {
-	}
-	;
-
-WhileToken
-	: WHILE {
-	}
+	: WHILE '(' relational_expr ')' statement
 	;
 
 jump_statement
-	: BREAK ';' {
-	}
+	: BREAK ';'
 	;
 
 io_statement
-	: READ  identifier ';' {
-	}
-	| WRITE expr ';' {
-	}
+	: READ  identifier ';'
+	| WRITE expr ';'
 	;
 %%
 void yyerror( const char *s )
