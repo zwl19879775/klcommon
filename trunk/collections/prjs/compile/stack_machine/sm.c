@@ -123,7 +123,8 @@ int step_run()
 	case opIn:
 		{
 			int i;
-			scanf( "input:%d", &i );
+			printf( "input:" );
+			scanf( "%d", &i );
 			push_op_stack( i );
 		}
 		break;
@@ -288,6 +289,8 @@ int file_size( FILE *fp )
 	return size;
 }
 
+extern void dasm_output( const char *file, const Instruction *insts, int size );
+
 int main( int argc, char **argv )
 {
 	FILE *fp;
@@ -309,8 +312,15 @@ int main( int argc, char **argv )
 	fread( buf, size, 1, fp );
 
 	read_instruction( buf, size );
+	if( argc > 2 )
+	{
+		int dflag = atoi( argv[2] );
+		if( dflag )
+		{
+			dasm_output( argv[1], i_mem, CODE_SIZE );
+		}
+	}
 	run();
-
 	free( buf );
 	fclose( fp );
 	return 0;
