@@ -128,29 +128,89 @@ compound_statement
 
 relational_expr
 	: expr 
-	| relational_expr '>' expr
-	| relational_expr '<' expr 
-	| relational_expr LE_OP expr 
-	| relational_expr GE_OP expr 
-	| relational_expr EQ_OP expr 
-	| relational_expr NE_OP expr 
+	| relational_expr '>' expr {
+		relational_code( '>' );
+	}
+	| relational_expr '<' expr {
+		relational_code( '<' );
+	}
+	| relational_expr LE_OP expr {
+		relational_code( LE_OP );
+	}
+	| relational_expr GE_OP expr {
+		relational_code( GE_OP );
+	}
+	| relational_expr EQ_OP expr {
+		relational_code( EQ_OP );
+	}
+	| relational_expr NE_OP expr {
+		relational_code( NE_OP );
+	}
 	;
 
 selection_statement
-	: IF '(' relational_expr ')' statement %prec IFX 
-	| IF '(' relational_expr ')' statement ELSE statement
+	: IF '(' relational_expr ')' IFACTION statement %prec IFX {
+		int curLoc = emitSkip( 0 );
+		emitBackup( pop_saved_loc().loc );
+		emitCodeArg( opJeq, curLoc );
+		emitRestore();
+	}
+	| IF '(' relational_expr ')' IFACTION statement ELSE {
+		int loc = emitSkip( 1 );
+		int curLoc = emitSkip( 0 );
+		emitBackup( pop_saved_loc().loc );
+		emitCodeArg( opJeq, curLoc );
+		emitRestore();
+		push_saved_loc( loc, 0 );
+	} statement {
+		int curLoc = emitSkip( 0 );
+		emitBackup( pop_saved_loc().loc );
+		emitCodeArg( opJmp, curLoc );
+		emitRestore();	
+	}
+	;
+
+IFACTION
+	: { 
+		int loc = emitSkip( 1 );
+		push_saved_loc( loc, 0 );
+	}
 	;
 
 iteration_statement
-	: WHILE '(' relational_expr ')' statement
+	: WHILE {
+		int loc = emitSkip( 0 );
+		push_saved_loc( loc, 0 );	
+	} '(' relational_expr ')' WHILEACTION statement {
+		int curLoc = emitSkip( 0 ); /* + jmp to while begin */
+		break_code( curLoc + 1 ); /* backpatch break statement */
+		emitBackup( pop_saved_loc().loc ); /* backpatch while expr */
+		emitCodeArg( opJeq, curLoc + 1 ); /* jmp to while end */
+		emitRestore();
+		emitCodeArg( opJmp, pop_saved_loc().loc ); /* jmp to while begin */
+	}
+	;
+
+WHILEACTION
+	: {
+		int loc = emitSkip( 1 );
+		push_saved_loc( loc, WhileStart );
+	}
 	;
 
 jump_statement
-	: BREAK ';'
+	: BREAK ';' {
+		int loc = emitSkip( 0 );
+		push_saved_loc( loc, 0 );
+	}
 	;
 
 io_statement
-	: READ  identifier ';'
+	: READ  identifier ';' {
+		emitCodeArg( opLdc, $2 );
+		emitCode( opIn );
+		emitCode( opSt );
+	}
 	| WRITE expr ';' {
 		emitCode( opOut );		
 	}
@@ -178,38 +238,46 @@ void break_code( int eloc )
 {
 	while( saved_loc_top.flag != WhileStart )
 	{
+		emitBackup( pop_saved_loc().loc );
+		emitCodeArg( opJmp, eloc );
+		emitRestore();
 	}
 }
 
 void relational_code( int type )
 {
-	char *op;
+	int op;
 	switch( type )
 	{
 	case '<':
-		op = "JLT";
+		op = opJlt;
 		break;
 	case '>':
-		op = "JGT";
+		op = opJgt;
 		break;
 	case EQ_OP:
-		op = "JEQ";
+		op = opJeq;
 		break;
 	case NE_OP:
-		op = "JNE";
+		op = opJne;
 		break;
 	case LE_OP:
-		op = "JLE";
+		op = opJle;
 		break;
 	case GE_OP:
-		op = "JGE";
+		op = opJge;
 	default:
-		op = 0;
+		op = opInvalid;
 	}
-	if( op == 0 )
+	if( op == opInvalid )
 	{
 		return;
 	}	
+	emitCode( opSub );
+	emitCodeRel( op, 2 );
+	emitCodeArg( opLdc, 0 ); /* false */
+	emitCodeRel( opJmp, 1 );
+	emitCodeArg( opLdc, 1 ); /* true */
 }
 
 int main( int argc, char **argv )

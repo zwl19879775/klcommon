@@ -48,6 +48,11 @@ void emitCodeArg( int op, int arg )
 	INC_HIGH_LOC;
 }
 
+void emitCodeRel( int op, int relLoc )
+{
+	emitCodeArg( op, loc + relLoc + 1 );
+}
+
 int emitSkip( int how_many )
 {
 	int i = loc;
