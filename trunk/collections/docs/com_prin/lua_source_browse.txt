@@ -35,5 +35,27 @@ TValue是栈元素类型，它是一个典型的value-type的结构体。
 lua_pushXXX系列的函数都是直接往lua_State::top写一个TValue，然后top增长。
 
 
+4.16.2010
+lopcodes.h中定义了虚拟机中的指令类型。一条指令默认只用一个32字节的数表示，其中6
+字节是操作码，剩下的字节数是操作数。
 
+MASK1( n, p ) 将一条指令的第p个位后的n个位置为1，MASK0(n,p)与此相反：全部置0。
+
+通过luaP_opmodes数组将每个指令的属性（如操作码类型、操作数类型等）事先记录，然后
+通过getOpMode、getBMode之类的宏取得这些属性。
+
+OpMode用于描述操作码类型；OpArgMask描述操作数类型。
+
+lcode.c中 luaK_code用于生成一条指令，指令保存于FuncState::Proto::code数组。
+
+  luaM_growvector(fs->L, f->code, fs->pc, f->sizecode, Instruction,
+                  MAX_INT, "code size overflow");
+  f->code[fs->pc] = i;
+  /* save corresponding line information */
+  luaM_growvector(fs->L, f->lineinfo, fs->pc, f->sizelineinfo, int,
+                  MAX_INT, "code size overflow");
+  f->lineinfo[fs->pc] = line;
+
+luaM_growvector用于扩充f->code容量，可以看出f->pc表示当前大小，f->sizecode表示最
+大的大小。
 
