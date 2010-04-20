@@ -1,3 +1,19 @@
+TODO:
+* lexer
+* parser
+* vm
+* code generator
+* object structure
+* api
+# run-time info
+# table
+
+concept:
+first-class function
+closure
+reflection
+lambda
+
 Recommended reading order:
 
 lmathlib.c, lstrlib.c: get familiar with the external C API. Don't bother with the pattern matcher though. Just the easy functions. 
@@ -58,4 +74,24 @@ lcode.c中 luaK_code用于生成一条指令，指令保存于FuncState::Proto::code数组。
 
 luaM_growvector用于扩充f->code容量，可以看出f->pc表示当前大小，f->sizecode表示最
 大的大小。
+
+
+4.19.2010
+ltable.c中实现了lua中的table结构，从lua_newtable函数跟进去，luaH_new分配了一个表
+，然后在lua_newtable中将其强转为GCObject放置于栈顶。
+
+lua中的表针对数组和非数组做了2组不同的实现。如果表是以数字作为索引，那么lua就实
+现为一个数组，否则就使用hash来实现。
+
+Table结构表示一个表。
+
+4.20.2010
+LUA的各个寄存器都直接位于lua_State:base指向的栈里，出现在指令中的是寄存器索引，
+索引于该栈内部。
+
+lvm.c中RA、RB之类的宏用于直接从指令中取出寄存器索引。
+
+Proto:k是一个存储常量的数组，其元素类型依然为TValue。k指向第一个元素。
+
+全局变量保存于全局表中，全局表保存于LClosure:env中。
 
