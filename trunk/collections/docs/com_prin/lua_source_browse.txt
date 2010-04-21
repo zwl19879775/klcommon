@@ -95,3 +95,27 @@ Proto:k是一个存储常量的数组，其元素类型依然为TValue。k指向第一个元素。
 
 全局变量保存于全局表中，全局表保存于LClosure:env中。
 
+4.21.2010
+global_State是一个全局状态，被一个主lua_State和其下的所有thread共享。注册表位于
+其中：global_State:l_registry。
+
+lua_State:l_gt是全局表(G表)，每一次lua_newthead时，将此指针复制给新的thead。
+
+lua_newstate用于创建一个独立的lua_State，这个独立的state其实是一个struct LG：
+typedef struct LG {
+	lua_State l;
+	global_State g;
+} LG:
+
+global_State在此被创建。
+
+lstring.c实现了LUA中对字符串的管理：基于HASH表和链表的结构。LUA中字符串都由
+TString描述，TString结构本身只描述字符串信息，字符串内容保存于该结构体后的内存位
+置：
+
+  ts = cast(TString *, luaM_malloc(L, (l+1)*sizeof(char)+sizeof(TString)));
+
+global_State:strt保存了虚拟机环境中所有的字符串，相同的字符串只有一份拷贝。
+
+
+
