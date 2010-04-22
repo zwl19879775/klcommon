@@ -408,14 +408,15 @@ static struct treeNode *syn_return_stmt( struct lexState *ls )
 	syn_match( ls, TK_RETURN );
 	if( lex_current( ls ) == '(' )
 	{
-		rnode->child[0] = syn_exp_stmt( ls );
+		syn_match( ls, '(' );
+		rnode->child[0] = syn_expression( ls );
 		syn_match( ls, ')' );
 	}
 	else
 	{
-		rnode->child[0] = syn_exp_stmt( ls );
+		rnode->child[0] = syn_expression( ls );
 	}
-
+	syn_match( ls, ";" );
 	return rnode;
 }
 

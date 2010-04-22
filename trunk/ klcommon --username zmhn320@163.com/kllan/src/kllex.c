@@ -226,6 +226,7 @@ int lex_token( struct lexState *ls )
 	int done = 0;
 	if( c == TK_EOF )
 	{
+		lex_settoken( ls, TK_EOF, 0 );
 		return TK_EOF;
 	}
 	for( ; c != TK_EOF && !done; )

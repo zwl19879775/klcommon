@@ -1,5 +1,14 @@
 history
 
+4.22.2010
+
+以下bugs由loy(lo@vi-li.com)反馈
+
+- 修正代码文件不以回车换行作结束符时，词法分析器没有正确设置lexState导致解析出错
+BUG(kllex.c)
+- 修正return语句中表达式BUG，对于return '(' exp ')'其一没有消耗掉'('符号，导致
+exp读取'('，其二exp中需要带';'
+
 4.11.2010
 
 - 修正嵌套while中内层while break会导致外层while也break的BUG，感谢loy(lo@vi-li.com)
