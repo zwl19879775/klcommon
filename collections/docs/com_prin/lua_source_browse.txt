@@ -117,5 +117,12 @@ TString描述，TString结构本身只描述字符串信息，字符串内容保存于该结构体后的内存位
 
 global_State:strt保存了虚拟机环境中所有的字符串，相同的字符串只有一份拷贝。
 
+4.22.2010
+LUA中变量标识符在词法分析阶段就转换为TString（缓存于全局字符串表里），在语法分析
+阶段调用registerlocalvar将变量信息存储于Proto:locvars数组里。FuncState:actvar数
+组保存locvars数组索引。
+
+localstat处理定义局部变量语句，该函数中会调用adjust_assign来生成对应的指令。
+FuncState:freereg标识当前可用的寄存器索引。
 
 
