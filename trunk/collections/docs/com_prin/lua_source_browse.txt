@@ -125,4 +125,14 @@ LUA中变量标识符在词法分析阶段就转换为TString（缓存于全局字符串表里），在语法分析
 localstat处理定义局部变量语句，该函数中会调用adjust_assign来生成对应的指令。
 FuncState:freereg标识当前可用的寄存器索引。
 
+4.29.2010
+JMP回填：
+FuncState:jpc保存了一个悬挂的JMP指令列表，索引于code数组。至于如何保存这个列表暂
+时不清楚。每一次调用luaK_code生成一条指令时，都会调用dischargejpc函数，该函数检
+测jpc是否有内容，有内容的话就对jpc指向的JMP指令进行回填。
 
+回填内容为当前PC值。例如，在ifstat函数中，对于最简单的if exp then block end语句
+，在生成exp指令时，插入JMP指令，并返回JMP指令所在位置。当对block处理完后，调用
+luaK_patchtohere函数标记jpc变量。在处理if块之后的指令时，就回填jpc指向的指令。
+
+函数fixjump用于填充指定位的JMP指令的目标地址。
