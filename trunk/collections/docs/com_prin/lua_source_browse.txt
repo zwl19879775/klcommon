@@ -1,3 +1,6 @@
+http://simohayha.javaeye.com/blog/540546
+http://blog.csdn.net/INmouse/archive/2007/03/28/1544610.aspx
+
 TODO:
 * lexer
 * parser
@@ -198,6 +201,122 @@ end
 breaklist连接到jpc中。所以在whilestat函数快结束时，leavebloc得到的breaklist就保
 存了上面那个while例子的悬挂JMP列表。
 
+5.4.2010
+每一个代码块都通过BlockCnt表示，每进入一个代码块就连接到父代码块中。每一个
+BlockCnt都有一个isbreakable标志，用于表示是否可break。whilestate或者其他可break
+的语句块在调用enterblock时传入标志1，表示可以break。breakstat函数中通过取得最近
+的一个可以break的BlockCnt来确认该break是否合法。
 
+  while (bl && !bl->isbreakable) {
+    upval |= bl->upval;
+    bl = bl->previous;
+  }
+  if (!bl)
+    luaX_syntaxerror(ls, "no loop to break");
 
+全局变量：
+全局变量其实都存储于全局表中，也就是CColosure:env。LUA中的struct Table一方面可以
+用于支持语言中的表机制，同时也是作为内部内部实现的数据结构。在处理全局变量时，变
+量名作为一个常量字符串被存储于k表中（也就是全局常量表）。生成的字节代码中将包含
+此表索引，如：a = 1，将导致k表中保存：a, 1，即变量名同数字常量1都存储于k表。对应
+的字节代码大致为：SETGLOBAL 0 1。
+
+虚拟机在解释执行时，取出索引，然后操作全局表：
+
+      case OP_SETGLOBAL: {
+        TValue g;
+        sethvalue(L, &g, cl->env);
+        lua_assert(ttisstring(KBx(i)));
+        Protect(luaV_settable(L, &g, KBx(i), ra));
+        continue;
+      }
+
+其中，KBx宏取出指令i中的索引然后得到k表中对应的项。
+
+局部变量：
+局部变量都被放置于寄存器中。LUA中的寄存器都被放置于一个可增长的栈中，即栈元素就
+是一个寄存器。这个栈是lua_State:base。
+
+函数singlevaraux用于定位一个变量的位置，该函数首先搜寻当前范围内的局部变量：
+
+    int v = searchvar(fs, n);  /* look up at current level */
+    if (v >= 0) {
+      init_exp(var, VLOCAL, v);
+      if (!base)
+        markupval(fs, v);  /* local will be used as an upval */
+      return VLOCAL;
+    }
+
+如果找到(v>=0)，就返回VLOCAL标识该变量为局部变量，否则就在fs->prev中继续查找，如
+果一直没有找到，那么就表示是一个全局变量：
+
+  if (fs == NULL) {  /* no more levels? */
+    init_exp(var, VGLOBAL, NO_REG);  /* default is global variable */
+    return VGLOBAL;
+  }
+
+对于全局变量，调用singlevaraux函数的函数singlevar就会在常量表k表中插入变量名常量
+：
+
+  if (singlevaraux(fs, varname, var, 1) == VGLOBAL)
+    var->u.s.info = luaK_stringK(fs, varname);  /* info points to global name */
+
+5.5.2010
+LUA中对块内局部变量的实现：
+一个FuncState代表一个函数状态，函数singlevaraux中查找一个变量时，会涉及到遍历
+FuncState列表：
+      if (singlevaraux(fs->prev, n, var, 0) == VGLOBAL)
+这里的这种遍历，其实主要是用于嵌套函数的支持。对于一般的代码块而言，如下代码：
+
+do
+	local a
+	a = 12
+	do 
+		local a
+		a = 11
+	end
+end
+
+第二个do中的局部变量a，在查找时，并不是singlevaraux中的机制来支持的。这里，LUA通
+过一个简单的方式实现。所有这些块信息都保存于BlockCnt中，FuncState会保存该函数内
+所有的局部变量，包括嵌套代码块，也就是说，对如上代码，FuncState:actvar会保存两个
+名为a的变量（实际上actvar只是保存一个数组索引，真正的位置保存于
+FuncState:Proto:locvars数组里）。
+
+每次进入一个代码块，调用enterblock时，会做如下记录：
+
+  bl->nactvar = fs->nactvar;
+
+fs->nactvar指向活动变量栈顶。在函数searchvar查找变量时，从nactvar-1开始查找，那
+么就会找到最近的变量a，也就是当前代码块中的变量。
+
+相应地，在leaveblock中，会移除该代码块内的所有变量：
+
+  removevars(fs->ls, bl->nactvar);
+
+static void removevars (LexState *ls, int tolevel) {
+  FuncState *fs = ls->fs;
+  while (fs->nactvar > tolevel)
+    getlocvar(fs, --fs->nactvar).endpc = fs->pc;
+}
+
+调用removevars之后，fs->nactvar改变。
+
+LUA中对于比较运算符都会生成对应的JMP指令，如：
+LT xxxx
+JMP
+其中，LT指令本身也会改变pc值。
+
+5.7.2010
+Lua中的词法分析：
+词法分析中在读取代码文件时，如果是普通的文本代码文件，LUA以"r"方式读取。这里LUA
+并不是一次将整个文件读进内存，它借助于lzio中的抽象读取接口。ZIO内部回调
+lauxlib.c中的默认Reader: getF函数从文件读取内容。每一次调用luaZ_file函数时，它调
+用getF从文件里读取LUAI_BUFFERSIZE(默认512字节)字节内容。
+
+在llex函数中，读取到'\n''\r'时，调用inclinenumber函数增加行数。该函数处理了有些
+文件内容以'\r\n'或者'\n\r'作为换行符的情况。
+
+对于标识符，LUA将其作为普通字符串放入全局字符串表(g->strt，该字符串表保证相同字符
+串只存在一份拷贝。关键字被事先放进此表中。
 
