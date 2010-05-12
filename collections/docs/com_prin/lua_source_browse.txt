@@ -17,6 +17,54 @@ closure
 reflection
 lambda
 
+******* First-class object:
+
+In computing, a first-class object (also -value, -entity, -citizen), in the 
+context of a particular programming language, is an entity which can be used 
+in programs without restriction (when compared to other kinds of objects in 
+the same language). Depending on the language, this can imply:
+
+- being expressible as an anonymous literal value
+- being storable in variables
+- being storable in data structures
+- having an intrinsic identity (independent of any given name)
+- being comparable for equality with other entities
+- being passable as a parameter to a procedure/function
+- being returnable as the result of a procedure/function
+- being constructable at runtime
+
+****** First-class function:
+
+In computer science, a programming language is said to support first-class 
+functions if it treats functions as first-class objects. Specifically, this 
+means that functions can be created during the execution of a program, stored 
+in data structures, passed as arguments to other functions, and returned as 
+the values of other functions.
+
+****** 高阶函数：
+
+高阶函数是指那些可以接受其它函数为参数，或者把函数作为返回值的函数。
+
+****** Closure:
+
+In computer science, a closure is a first-class function with free variables 
+that are bound in the lexical environment. Such a function is said to be 
+"closed over" its free variables. A closure is defined within the scope of its 
+free variables, and the extent of those variables is at least as long as the 
+lifetime of the closure itself. 
+
+At runtime, when the outer function executes, a closure is formed, consisting 
+of the inner function’s code and references to any variables of the outer 
+function required by the closure; such variables are called the upvalues of 
+the closure.
+
+******* lexical scoping:
+
+With lexical scope, a name always refers to its (more or less) local lexical 
+environment. 
+JavaScript中的函数是基于词法作用域的，而不是动态作用域。这句话的意思是
+JavaScript中的函数运行在它们被定义的作用域里，而不是它们被执行的作用域里。
+
 Recommended reading order:
 
 lmathlib.c, lstrlib.c: get familiar with the external C API. Don't bother with the pattern matcher though. Just the easy functions. 
@@ -319,4 +367,18 @@ lauxlib.c中的默认Reader: getF函数从文件读取内容。每一次调用luaZ_file函数时，它调
 
 对于标识符，LUA将其作为普通字符串放入全局字符串表(g->strt，该字符串表保证相同字符
 串只存在一份拷贝。关键字被事先放进此表中。
+
+5.10.2010
+如果访问到某个变量（或其他符号）时，该变量位于上层的FuncState，那么可以确定该变
+量为一个upvalue。在函数singlevaraux中，在遍历到前一个FuncState时，就会调用函数
+markupval将此变量标记为一个upvalue。
+
+然后singlevaraux会调用indexupvalue取得该变量在upvalue表中的索引。indexupvalue函
+数如果在upval表中找不到，会新创建upvalue：
+FuncState:upvalues中记录所有upvalue的信息；Proto:upvalues记录这些upvalue的名字。
+Proto:nups表示upval的数量；Proto:sizeupvalues表示Proto:upvalues数组大小。
+
+在处理到upval的变量时，如assignment中，调用的luaK_storevar会针对upval生成对应的
+处理指令：OP_SETUPVAL。
+
 
