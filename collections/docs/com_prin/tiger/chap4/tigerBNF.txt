@@ -1,5 +1,29 @@
 Written by Kevin Lynx 5.26.2010
 
+对于左值中的数组访问和数组创建存在二义性：
+Var: Var '[' Exp ']' 
+ArrayExp: ID '[' Exp ']' OF Exp
+
+如下的产生式yacc会任务有冲突：
+Exp: Exp Op Exp
+Op: PLUS
+但是改为以下则没冲突：
+Exp: Exp PLUS Exp
+
+对于产生式也会存在冲突，情况同else二义性：
+FunctionDecl: FuncDeclList
+FuncDeclList: FuncDeclList FuncDecl 
+	| FuncDecl
+FuncDecl: FUNCTION ID LPAREN FieldList RPAREN EQ Exp 
+在遇到FUNCTION时，yacc可能会reduce到新的FunctionDecl，或者shift进入FuncDecl，
+解决方法就是通过建立优先级：
+%nonassoc FuncPrec
+%nonassoc FUNCTION
+FunctionDecl: FuncDeclList %prec FuncPrec
+
+在OR/AND中同样存在类似问题。
+
+
 
 Program: Exp
 	;
