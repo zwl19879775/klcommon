@@ -1,0 +1,54 @@
+1、命名方式
+
+对于提供给外部模块的接口，采用：模块标识_接口名的方式，如：
+luaY_parser、luaK_getlabel。每个单词之间并不添加下划线，也没有单词首字母大写。
+
+对于内部接口(static)，则直接是多个单词的组合，首字母不大写：singlevar，但是也存
+在下划线的例子：adjust_assign。
+
+对于结构体，命名方式采用单词组合且首字母大写的形式，也存在单词之间加下划线的形式
+：LexState、luaL_Buffer。
+
+枚举类型基本同结构体，其成员命名不全是大写，如：OP_MOVE, OpArgN。
+
+变量命名无论是局部变量，还是结构体成员，均采用小写形式，无下划线，无首字母大写。
+
+2、代码块
+
+所有代码块采用如下方式：
+xxx {
+}
+
+3、小括号
+
+funcname (type arg, type arg) {
+}
+
+if (exp op exp) {
+	exps
+}
+
+for (i=0; lst[i]; i++) {
+}
+
+对于if、while、for、switch块，并不一定需要放置到大括号中。
+
+switch中的case也可以：case LUA_TTABLE: return hvalue(o);
+
+函数调用：func(arg, arg)、func(arg)。
+
+4、缩进
+
+全部采用2空格缩进：
+switch (exp) {
+  case LUA_GCSTOP: {
+	break;
+  }
+
+5、空格
+
+var = exp;
+exp - exp
+exp--
+exp -= exp
+
