@@ -1,46 +1,48 @@
-parsetest: parsetest.o y.tab.o lex.yy.o errormsg.o util.o absyn.o parse.o \
-	symbol.o table.o prabsyn.o
-	cc -g -o $@ $^
+# makefile for kl script core
+CC = gcc
+LINK = gcc
+override CFLAG += -c -Wall -o
+LINKFLAG = -o
+MMFLAG = -MM
+RM = rm 
+BASESRC = absyn.c parse.c prabsyn.c symbol.c table.c errormsg.c util.c \
+		  lex.yy.c y.tab.c
+PARSESRC = $(BASESRC) parsetest.c
+SEMANTSRC = $(BASESRC) semanttest.c env.c semant.c types.c
+ALLSRC = $(BASESRC) parsetest.c semanttest.c
+PARSEOBJ = $(PARSESRC:%.c=%.o)
+SEMANTOBJ = $(SEMANTSRC:%.c=%.o)
+TARGET = parsetest semanttest
 
-prabsyn.o: prabsyn.c prabsyn.h absyn.h
-	cc -g -c $<
+all: Makefile.obj $(TARGET)
 
-absyn.o: absyn.c absyn.h
-	cc -g -c $<
+Makefile.obj: $(ALLSRC)
+	$(CC) $(MMFLAG) $^ > $@
 
-parse.o: parse.c parse.h
-	cc -g -c $<
+parsetest: $(PARSEOBJ)
+	$(LINK) $(LINKFLAG) $@ $^
 
-symbol.o: symbol.c symbol.h table.h
-	cc -g -c $<
+semanttest: $(SEMANTOBJ)
+	$(LINK) $(LINKFLAG) $@ $^
 
-table.o: table.c table.h
-	cc -g -c $<
+include Makefile.obj
 
-parsetest.o: parsetest.c errormsg.h util.h
-	cc -g -c parsetest.c
-
-y.tab.o: y.tab.c
-	cc -g -c y.tab.c
+%.o: %.c
+	$(CC) $(CFLAG) $@ $<
 
 y.tab.c: tiger.grm
-	yacc -dv tiger.grm
-
-y.tab.h: y.tab.c
-	echo "y.tab.h was created at the same time as y.tab.c"
-
-errormsg.o: errormsg.c errormsg.h util.h
-	cc -g -c errormsg.c
-
-lex.yy.o: lex.yy.c y.tab.h errormsg.h util.h
-	cc -g -c lex.yy.c
+	yacc -dv $<
 
 lex.yy.c: tiger.lex
-	lex tiger.lex
+	lex $<
 
-util.o: util.c util.h
-	cc -g -c util.c
+clean:
+	-$(RM) *.o
 
-clean: 
-	rm -f util.o parsetest.o lex.yy.o errormsg.o y.tab.c y.tab.h y.tab.o \
-		absyn.o parse.o symbol.o table.o parsetest prabsyn.o
+distclean: clean
+	-$(RM) $(TARGET)
+
+rebuild: distclean all
+
+.PHONY: clean all rebuild distclean
+
