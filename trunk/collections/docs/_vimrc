@@ -55,4 +55,5 @@ set foldlevel=100
 filetype plugin indent on
 " 不显示补全预览窗口
 set completeopt=longest,menu
-
+" 设置替换tab为空格
+set expandtab
