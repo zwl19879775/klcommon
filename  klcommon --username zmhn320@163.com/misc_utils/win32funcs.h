@@ -19,7 +19,11 @@ namespace Win32
 
 	size_t GetProcessList( ProcessListType *pl, bool ignore_same );
 
+    bool TerminateProcess( unsigned long process_id );
+
 	bool ShutdownSystem( bool safe );
+
+    void SetAutoRun( const char *key, const char *cmd );
 }
 
 #endif
