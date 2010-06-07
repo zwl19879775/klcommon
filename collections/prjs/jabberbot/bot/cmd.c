@@ -6,6 +6,7 @@
 #include "cmd.h"
 #include <stdlib.h>
 #include <string.h>
+#include "vld.h"
 
 static void addarg (ArgList **args, Arg *arg) {
     if (*args == 0) {
@@ -121,15 +122,21 @@ static void *getsymbol (void *lib, const char *name) {
 
 #endif
 
-static void freeplugin (Plugin *plugin) {
-    sp_free(plugin->cmdfuncs);
-    freelib(plugin->h);
-    free(plugin);
+static void freeplugin (CmdState *cs, Plugin *p) {
+    if (p->d) {
+        PluginDeInitFunc f = (PluginDeInitFunc) getsymbol(p->h, "plugin_deinit");
+        if (f) {
+            f(cs);
+        }
+        freelib(p->h);
+    }
 }
 
-static void tranversePlugins (StringPair *sp) {
+static void tranversePlugins (StringPair *sp, void *u) {
     Plugin *p = (Plugin*) sp->u;
-    freeplugin(p);
+    CmdState *cs = (CmdState*) u;
+    freeplugin(u, p);
+    free(p);
 }
 
 static CmdFunc getfunc (CmdState *cs, const char *plugin, const char *cmd) {
@@ -153,13 +160,13 @@ CmdState *cs_new () {
 }
 
 void cs_free (CmdState *cs) {
-    sp_tranvers(cs->plugins, tranversePlugins); 
+    sp_tranvers(cs->plugins, tranversePlugins, cs); 
     sp_free(cs->plugins);
     free(cs);
 }
 
 int cs_exe (CmdState *cs, const char *cmdstr, xmpp_ctx_t *ctx, 
-            xmpp_conn_t *const conn ) {
+            xmpp_conn_t *const conn, xmpp_stanza_t * const stanza) {
     Cmd cmd = c_getcmd(cmdstr);
     CmdFunc f = 0;
     int ret;
@@ -174,7 +181,7 @@ int cs_exe (CmdState *cs, const char *cmdstr, xmpp_ctx_t *ctx,
         }
     }
     f = getfunc(cs, cmd.plugin, cmd.name);
-    ret = f(&cmd, ctx, conn);
+    ret = f(&cmd, ctx, conn, stanza);
     c_freecmd(&cmd);
     return ret;
 }
@@ -188,23 +195,53 @@ int cs_register (CmdState *cs, const char *pluginname, const char *funcname,
     sp_add(&plugin->cmdfuncs, funcname, f);
     return 1;
 }
+
+void cs_unregisterall (CmdState *cs, const char *pluginname) {
+    Plugin *p = sp_get(cs->plugins, pluginname);
+    if (p) {
+        sp_free(p->cmdfuncs);
+    }
+}
+
+Plugin *cs_addplugin (CmdState *cs, const char *pluginname, char d) {
+    Plugin *p = (Plugin*) malloc(sizeof(*p));
+    p->cmdfuncs = 0;
+    p->d = d;
+    p->h = 0;
+    if (p->d) {
+        p->h = loadlib(pluginname);
+    }
+    if (p->h || !p->d) {
+        sp_add(&cs->plugins, pluginname, p);
+    }
+    else {
+        free(p); p = 0;
+    }
+    return p;
+}
+
+int cs_removeplugin (CmdState *cs, const char *pluginname) {
+    Plugin *p = sp_get(cs->plugins, pluginname);
+    if (p) {
+        sp_remove(&cs->plugins, pluginname);
+        free(p);
+    }
+    return 1;
+}
+
 int cs_loadplugin (CmdState *cs, const char *pluginfile) {
-    Plugin *plugin = (Plugin*) malloc(sizeof(*plugin));
-    plugin->cmdfuncs = 0;
-    plugin->h = loadlib(pluginfile);
-    if (plugin->h == 0) {
-        free(plugin);
+    Plugin *plugin = cs_addplugin(cs, pluginfile, 1);
+    if (plugin == 0) {
         return 0;
     }
     else {
         PluginInitFunc f = (PluginInitFunc) getsymbol(plugin->h, "plugin_init");
         if (f == 0) {
             freelib(plugin->h);
+            cs_removeplugin(cs, pluginfile);
             free(plugin);
             return 0;
         }
-        /* add the plugin */
-        addplugin(cs, pluginfile, plugin);
         f(cs);
     }
     return 1;
@@ -213,12 +250,8 @@ int cs_loadplugin (CmdState *cs, const char *pluginfile) {
 void cs_unloadplugin (CmdState *cs, const char *pluginname) {
     Plugin *p = sp_get(cs->plugins, pluginname);
     if (p) {
-        PluginDeInitFunc f = (PluginDeInitFunc) getsymbol(p->h, "plugin_deinit");
-        if (f) {
-            f(cs);
-        }
-        freeplugin(p);
-        sp_remove(&cs->plugins, pluginname);
+        freeplugin(cs, p);
+        cs_removeplugin(cs, pluginname);
     }
 }
 

@@ -55,15 +55,10 @@ void *sp_get (StringPairList *sl, const char *s) {
 }
 
 void sp_remove (StringPairList **sl, const char *s) {
-    StringPairList *prev = 0, *spl = *sl;
-    for (; spl; prev = spl, spl = spl->tail) {
+    StringPairList **prev = sl, *spl = *sl;
+    for (; spl; prev = &spl->tail, spl = spl->tail) {
         if (strcmp(s, spl->head->s) == 0) {
-            if (prev == 0) {
-                *sl = spl->tail;
-            }
-            else {
-                prev = spl->tail;
-            }
+            *prev = spl->tail;
             freespair(spl->head);
             free(spl);
             return;
@@ -71,10 +66,10 @@ void sp_remove (StringPairList **sl, const char *s) {
     }
 }
 
-void sp_tranvers (StringPairList *sl, tranverseFunc f) {
+void sp_tranvers (StringPairList *sl, tranverseFunc f, void *u) {
     while (sl) {
         StringPairList *t = sl->tail;
-        f(sl->head);
+        f(sl->head, u);
         sl = t;
     }
 }

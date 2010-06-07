@@ -61,6 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Ws2_32.lib winmm.lib"
 				OutputFile="../bin/win_d.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -136,6 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Ws2_32.lib winmm.lib"
 				OutputFile="../bin/win.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -174,7 +176,19 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="..\winplugin\win.c"
+			RelativePath="..\winplugin\utils.h"
+			>
+		</File>
+		<File
+			RelativePath="..\winplugin\win.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\winplugin\win32funcs.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\winplugin\win32funcs.h"
 			>
 		</File>
 	</Files>
