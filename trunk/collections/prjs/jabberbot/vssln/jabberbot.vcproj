@@ -160,6 +160,10 @@
 				RelativePath="..\bot\stringpair.c"
 				>
 			</File>
+			<File
+				RelativePath="..\bot\xmpputil.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="header"
@@ -176,6 +180,10 @@
 			</File>
 			<File
 				RelativePath="..\bot\stringpair.h"
+				>
+			</File>
+			<File
+				RelativePath="..\bot\xmpputil.h"
 				>
 			</File>
 		</Filter>

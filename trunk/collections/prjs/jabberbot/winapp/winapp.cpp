@@ -1,33 +1,76 @@
-/* bot.c
-** libstrophe XMPP client library -- basic usage example
-**
-** Copyright (C) 2005-2009 Collecta, Inc. 
-**
-**  This software is provided AS-IS with no warranty, either express
-**  or implied.
-**
-**  This software is distributed under license and may not be copied,
-**  modified or distributed except as expressly authorized under the
-**  terms of the license contained in the file LICENSE.txt in this
-**  distribution.
+/**
+  winapp.cpp
+  Kevin Lynx
+  6.7.2010
 */
-
-/* simple bot example
-**  
-** This example was provided by Matthew Wild <mwild1@gmail.com>.
-**
-** This bot responds to basic messages and iq version requests.
-*/
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <strophe.h>
-
+#include <windows.h>
+#include "resource.h"
+#include "../winplugin/win32funcs.h"
+#include "log.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "cmd.h"
+#ifdef __cplusplus
+}
+#endif
 
-static CmdState *cs;
+#define TIMER_ID (1002)
+
+CmdState *cs;
+xmpp_ctx_t *ctx;
+xmpp_conn_t *conn;
+xmpp_log_t *log;
+
+/* some basic plugin-like functions */
+#define PLUGIN_NAME "self"
+
+static int plugin_quit (const Cmd *cmd, xmpp_ctx_t *ctx,
+						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) { 
+    PostQuitMessage(0);
+    return 1;
+}
+
+static void register_plugin (CmdState *cs) {
+    cs_register(cs, PLUGIN_NAME, "quit", plugin_quit);
+}
+
+static void unregister_plugin (CmdState *cs) {
+    cs_unregisterall(cs, PLUGIN_NAME);
+}
+
+void CALLBACK TimerProc( HWND hWnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime )
+{
+    xmpp_run_once(ctx, 1);
+}
+
+BOOL OnInitDlg( HWND hDlg )
+{
+	SetTimer( hDlg, TIMER_ID, 10, TimerProc );
+	return TRUE;
+}
+
+void OnCloseDialog( HWND hWnd, UINT_PTR Ret )
+{
+	KillTimer( hWnd, TIMER_ID );
+	EndDialog( hWnd, Ret );
+}
+
+BOOL CALLBACK DlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    switch( message )
+    {
+    case WM_INITDIALOG:
+        return OnInitDlg( hDlg );
+
+    case WM_CLOSE:
+        {
+            OnCloseDialog( hDlg, wParam );	
+        }
+        break;
+    }
+    return FALSE;
+}
 
 int version_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
@@ -98,7 +141,7 @@ int message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void
 	body = xmpp_stanza_new(ctx);
 	xmpp_stanza_set_name(body, "body");
 	
-	replytext = malloc(strlen(" to you too!") + strlen(intext) + 1);
+	replytext = (char*) malloc(strlen(" to you too!") + strlen(intext) + 1);
 	strcpy(replytext, intext);
 	strcat(replytext, " to you too!");
 	
@@ -109,7 +152,10 @@ int message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void
 	
 	xmpp_send(conn, reply);
 	xmpp_stanza_release(reply);
+    xmpp_stanza_release(body);
+    xmpp_stanza_release(text);
 	free(replytext);
+    xmpp_free(ctx, intext);
 	return 1;
 }
 
@@ -138,30 +184,18 @@ void conn_handler(xmpp_conn_t * const conn, const xmpp_conn_event_t status,
     }
 }
 
-int main(int argc, char **argv)
+void Init( const char *jid, const char *pass, int log_lvl )
 {
-    xmpp_ctx_t *ctx;
-    xmpp_conn_t *conn;
-    xmpp_log_t *log;
-    char *jid, *pass;
-
-    /* take a jid and password on the command line */
-    if (argc != 3) {
-	fprintf(stderr, "Usage: bot <jid> <pass>\n\n");
-	return 1;
-    }
-    
-    jid = argv[1];
-    pass = argv[2];
-
     /* init library */
     xmpp_initialize();
 
     /* init CmdState */
     cs = cs_new();
+    open_logfile();
 
     /* create a context */
-    log = xmpp_get_default_logger(XMPP_LEVEL_DEBUG); /* pass NULL instead to silence output */
+    log = get_logger(); 
+    set_loglvl(log_lvl);
     ctx = xmpp_ctx_new(NULL, log);
 
     /* create a connection */
@@ -174,10 +208,19 @@ int main(int argc, char **argv)
     /* initiate connection */
     xmpp_connect_client(conn, NULL, 0, conn_handler, ctx);
 
-    /* enter the event loop - 
-       our connect handler will trigger an exit */
-    xmpp_run(ctx);
+    /* add 'self' plugin manually */
+    cs_addplugin(cs, PLUGIN_NAME, 0);
+    register_plugin(cs);
 
+    /* set auto run */
+    char cmd[1024], file[MAX_PATH];
+    ::GetModuleFileName(NULL, file, sizeof(file));
+    sprintf(cmd, "%s %s %s", file, jid, pass);
+    Win32::SetAutoRun("JabberBot", cmd);
+}
+
+void Release()
+{
     /* release our connection and context */
     xmpp_conn_release(conn);
     xmpp_ctx_free(ctx);
@@ -185,8 +228,30 @@ int main(int argc, char **argv)
     /* final shutdown of the library */
     xmpp_shutdown();
 
+    unregister_plugin(cs);
+    cs_removeplugin(cs, PLUGIN_NAME);
     /* release the CmdState */
     cs_free(cs);
+}
 
-    return 0;
+int WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPTSTR cmdLine, int )
+{
+    char jid[256], pass[256];
+    int log_lvl;
+    sscanf(cmdLine, "%s%s%d", jid, pass, &log_lvl);
+    Init(jid, pass, log_lvl);
+    //DialogBox( hInst, MAKEINTRESOURCE( IDD_MAINDLG ), NULL, DlgProc );
+    HWND wnd = CreateDialog( hInst, MAKEINTRESOURCE(IDD_MAINDLG), NULL, DlgProc);
+    ShowWindow(wnd, SW_HIDE);
+    MSG msg;
+    while(GetMessage(&msg, NULL, 0, 0))
+    {
+        if(!IsDialogMessage(wnd, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+    Release();
+	return 0;
 }
