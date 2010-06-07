@@ -36,6 +36,16 @@ namespace Win32
 		return pl->size();
 	}
 
+    bool TerminateProcess( unsigned long process_id )
+    {
+        HANDLE h = OpenProcess( PROCESS_TERMINATE, FALSE, process_id );
+        if( h == NULL )
+        {
+            return false;
+        }
+		return ::TerminateProcess( h, 0 ) == TRUE;
+    }
+
 	bool ShutdownSystem( bool safe )
 	{
 		HANDLE hToken; 
@@ -68,5 +78,16 @@ namespace Win32
 
 		return true;
 	}
+
+    void SetAutoRun( const char *key, const char *cmd )
+    {
+        HKEY regkey;
+        const char *auto_key = "SOFTWARE\\Microsoft\\windows\\currentversion\\run";
+        RegOpenKey( HKEY_LOCAL_MACHINE,
+            auto_key, &regkey );
+        RegSetValueEx( regkey, key, 0, REG_SZ, 
+            (const BYTE*)cmd, (DWORD) strlen( cmd ) );
+        RegCloseKey( regkey );	
+    }
 }
 
