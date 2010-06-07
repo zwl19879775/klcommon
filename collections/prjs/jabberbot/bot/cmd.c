@@ -6,7 +6,6 @@
 #include "cmd.h"
 #include <stdlib.h>
 #include <string.h>
-#include "vld.h"
 
 static void addarg (ArgList **args, Arg *arg) {
     if (*args == 0) {
