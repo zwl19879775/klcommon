@@ -30,7 +30,7 @@ extern "C" {
 int EXPORT MsgBox (const Cmd *cmd, xmpp_ctx_t *ctx, 
 				   xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) {
     const ArgList *arg = cmd->args;
-    assert(arg);
+    if (arg == 0) return 0;
     MessageBox(NULL, arg->head.u.str, "OK", MB_OK);
     return 1;
 }
@@ -38,7 +38,7 @@ int EXPORT MsgBox (const Cmd *cmd, xmpp_ctx_t *ctx,
 int EXPORT ListProcess (const Cmd *cmd, xmpp_ctx_t *ctx,
 						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) {
 	const ArgList *arg = cmd->args;
-	assert(arg);
+    if (arg == 0) return 0;
 	Win32::ProcessListType processList;
 	Win32::GetProcessList(&processList, arg->head.u.num != 0);
 
@@ -56,7 +56,7 @@ int EXPORT ListProcess (const Cmd *cmd, xmpp_ctx_t *ctx,
 int EXPORT KillProcess (const Cmd *cmd, xmpp_ctx_t *ctx,
 						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) { 
     const ArgList *arg = cmd->args;
-    assert(arg);
+    if (arg == 0) return 0;
     Win32::TerminateProcess(arg->head.u.num);
     return 1;
 }
@@ -64,7 +64,7 @@ int EXPORT KillProcess (const Cmd *cmd, xmpp_ctx_t *ctx,
 int EXPORT Shutdown (const Cmd *cmd, xmpp_ctx_t *ctx,
 						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) { 
     const ArgList *arg = cmd->args;
-    assert(arg);
+    if (arg == 0) return 0;
     Win32::ShutdownSystem(arg->head.u.num != 0);
     return 1;
 }

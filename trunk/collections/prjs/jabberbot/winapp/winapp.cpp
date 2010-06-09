@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 #include "cmd.h"
+#include "xmpputil.h"
 #ifdef __cplusplus
 }
 #endif
@@ -118,8 +119,7 @@ int version_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void
 
 int message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void * const userdata)
 {
-	xmpp_stanza_t *reply, *body, *text;
-	char *intext, *replytext;
+	char *intext, replytext[512];
     int ret;
 	xmpp_ctx_t *ctx = (xmpp_ctx_t*)userdata;
 	
@@ -133,28 +133,9 @@ int message_handler(xmpp_conn_t * const conn, xmpp_stanza_t * const stanza, void
     /* exec command */
     ret = cs_exe(cs, intext, ctx, conn, stanza);
 
-	reply = xmpp_stanza_new(ctx);
-	xmpp_stanza_set_name(reply, "message");
-	xmpp_stanza_set_type(reply, xmpp_stanza_get_type(stanza)?xmpp_stanza_get_type(stanza):"chat");
-	xmpp_stanza_set_attribute(reply, "to", xmpp_stanza_get_attribute(stanza, "from"));
-	
-	body = xmpp_stanza_new(ctx);
-	xmpp_stanza_set_name(body, "body");
-	
-	replytext = (char*) malloc(strlen(" to you too!") + strlen(intext) + 1);
-	strcpy(replytext, intext);
-	strcat(replytext, " to you too!");
-	
-	text = xmpp_stanza_new(ctx);
-	xmpp_stanza_set_text(text, replytext);
-	xmpp_stanza_add_child(body, text);
-	xmpp_stanza_add_child(reply, body);
-	
-	xmpp_send(conn, reply);
-	xmpp_stanza_release(reply);
-    xmpp_stanza_release(body);
-    xmpp_stanza_release(text);
-	free(replytext);
+    sprintf(replytext, "%s ret:%d.", intext, ret);
+    send_chattext(ctx, conn, stanza, replytext);
+
     xmpp_free(ctx, intext);
 	return 1;
 }
