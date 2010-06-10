@@ -1,0 +1,33 @@
+
+6.10.2010
+
+客户端每走一步都会向服务器验证，服务器验证结果如果失败，客户端则停止移动。服务器
+的坐标遵从客户端，服务器仅仅做验证。当客户端停止移动后，客户端的数据才会使用服务
+器端的数据。整个过程中，服务器一直在使用客户端的合法数据，直到移动结束才使用服务
+器端数据同步一次。
+
+Client:
+C2S: cur pos, dest pos
+save dest pos, not change cur pos
+
+Server:
+check the request, make sure the cur pos between client and server is not too
+different
+change cur pos by cur pos from client
+S2C: dest pos
+
+Client:
+decrease the request msg count
+
+--
+Client:
+move to the dest pos finished
+C2S: cur pos
+
+Server:
+change cur pos by cur pos from client
+S2C: cur pos
+
+Client:
+if dest pos != cur pos from server, set cur pos by cur pos from server
+
