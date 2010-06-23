@@ -92,3 +92,7 @@ dw: to delete the character until the end of this word ( think about 'd' and 'w'
 r+any character : will replace the character which the cursor is on 
 set tw=80 fo+=Mm : automatically change to the next line
 
+"+p: paste text from system clipboard
+"+y: copy text to system clipboard
+viw: select the word where the cursor is on
+
