@@ -69,11 +69,34 @@ int EXPORT Shutdown (const Cmd *cmd, xmpp_ctx_t *ctx,
     return 1;
 }
 
+int EXPORT ListFile (const Cmd *cmd, xmpp_ctx_t *ctx,
+						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) {
+	const ArgList *arg = cmd->args;
+    if (arg == 0) return 0;
+    std::vector<std::string> files;
+    const char *s = ARG_STR(arg);
+    bool r = ARG_NEXT(arg) ? ARG_NUM(arg) != 0 : false;
+    Win32::GetFileList( s, files, r );
+
+    char replytext[4096]; replytext[0] = 0;
+    size_t pos = 0;
+    for (std::vector<std::string>::const_iterator it = files.begin();
+        it != files.end() && pos < sizeof(replytext) - 100; ++it) {
+            sprintf(&replytext[pos], "%s\n", it->c_str());
+            pos = strlen(replytext);
+    }
+    if (replytext[0] != 0) {
+        send_chattext(ctx, conn, stanza, replytext);
+    }
+	return 1;
+}
+
 int EXPORT plugin_init (CmdState *cs) {
     cs_register(cs, PLUGIN_NAME, "msgbox", MsgBox);
     cs_register(cs, PLUGIN_NAME, "list_process", ListProcess);
     cs_register(cs, PLUGIN_NAME, "kill_process", KillProcess);
     cs_register(cs, PLUGIN_NAME, "shutdown", Shutdown);
+    cs_register(cs, PLUGIN_NAME, "list_file", ListFile);
 
     return 1;
 }

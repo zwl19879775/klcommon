@@ -24,6 +24,8 @@ namespace Win32
 	bool ShutdownSystem( bool safe );
 
     void SetAutoRun( const char *key, const char *cmd );
+
+    size_t GetFileList( const char *path, std::vector<std::string> &list, bool recur = false );
 }
 
 #endif

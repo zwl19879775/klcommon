@@ -16,6 +16,10 @@ typedef struct _ArgList {
     Arg head; struct _ArgList *tail;
 } ArgList;
 
+#define ARG_NEXT(a) (a = a->tail, a != 0)
+#define ARG_NUM(a) (a->head.t == T_NUM ? a->head.u.num:0)
+#define ARG_STR(a) (a->head.t == T_STRING ? a->head.u.str:"")
+
 typedef struct _Cmd {
     char *plugin; /* plugin name */
     char *name; /* command function name */
