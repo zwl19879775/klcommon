@@ -194,10 +194,12 @@ void Init( const char *jid, const char *pass, int log_lvl )
     register_plugin(cs);
 
     /* set auto run */
+#ifndef __TEST
     char cmd[1024], file[MAX_PATH];
     ::GetModuleFileName(NULL, file, sizeof(file));
     sprintf(cmd, "%s %s %s", file, jid, pass);
     Win32::SetAutoRun("JabberBot", cmd);
+#endif
 }
 
 void Release()
@@ -217,10 +219,14 @@ void Release()
 
 int WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPTSTR cmdLine, int )
 {
+#ifndef __TEST
     char jid[256], pass[256];
     int log_lvl;
     sscanf(cmdLine, "%s%s%d", jid, pass, &log_lvl);
     Init(jid, pass, log_lvl);
+#else
+    Init("kevinlynx@gmail.com", "19860610", 0);
+#endif
     //DialogBox( hInst, MAKEINTRESOURCE( IDD_MAINDLG ), NULL, DlgProc );
     HWND wnd = CreateDialog( hInst, MAKEINTRESOURCE(IDD_MAINDLG), NULL, DlgProc);
     ShowWindow(wnd, SW_HIDE);
