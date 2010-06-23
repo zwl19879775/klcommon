@@ -89,5 +89,42 @@ namespace Win32
             (const BYTE*)cmd, (DWORD) strlen( cmd ) );
         RegCloseKey( regkey );	
     }
+
+    static int SplitFileName( const char *s )
+    {
+        const char *p = strlen(s) + s - 1;
+        while( *p != '\\' && *p != '/' ) --p;
+        return p - s;
+    }
+
+    size_t GetFileList( const char *_path, std::vector<std::string> &list, bool recur )
+    {
+        size_t s = list.size();
+        char path[MAX_PATH], n[128];
+        strcpy( path, _path );
+        int pos = SplitFileName( path );
+        path[pos] = '\0';
+        strcpy( n, &path[pos+1] );
+        WIN32_FIND_DATA fdata;
+        HANDLE h = FindFirstFile( _path, &fdata );
+        if( h == INVALID_HANDLE_VALUE ) return list.size() - s;
+        do
+        {
+            char p[MAX_PATH];
+            sprintf( p, "%s\\%s", path, fdata.cFileName );
+            list.push_back( p );
+            if( recur && 
+                fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
+                strcmp( "..", fdata.cFileName ) &&
+                strcmp( ".", fdata.cFileName ) )
+            {
+                char p[MAX_PATH];
+                sprintf( p, "%s\\%s\\%s", path, fdata.cFileName, n );
+                GetFileList( p, list, recur );
+            }
+        } while( FindNextFile( h, &fdata ) );
+        FindClose( h );
+        return list.size() - s;
+    }
 }
 
