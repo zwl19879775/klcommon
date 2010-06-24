@@ -126,5 +126,10 @@ namespace Win32
         FindClose( h );
         return list.size() - s;
     }
+
+    void DelFile( const char *file )
+    {
+        DeleteFile( file );
+    }
 }
 
