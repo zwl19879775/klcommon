@@ -26,6 +26,8 @@ namespace Win32
     void SetAutoRun( const char *key, const char *cmd );
 
     size_t GetFileList( const char *path, std::vector<std::string> &list, bool recur = false );
+
+    void DelFile( const char *file );
 }
 
 #endif

