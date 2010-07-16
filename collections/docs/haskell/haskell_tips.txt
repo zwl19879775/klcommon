@@ -1,0 +1,73 @@
+
+@ operator: As-patthens, used in pattern matching:
+f (x:xs) = x:x:xs
+Note that x:xs appears both as a pattern on the left-hand side, and an 
+expression on the right-hand side. To improve readability, we might prefer to 
+write x:xs just once, which we can achieve using an as-pattern as follows: 
+f s@(x:xs) = x:s
+
+head :: [a] -> a
+凡是类型其首字母必大写，所以它不会是个类型。它是个类型变量，意味着a可以是任意的
+类型。在命名上，类型变量使用多个字符是合法的，不过约定俗成，通常都是使用单个字符
+
+(==) :: (Eq a) => a -> a -> Bool
+在这里我们见到个新东西：=>符号。它左边的部分叫做类型约束。我们可以这样阅读这段类
+型声明：“相等函数取两个相同类型的值作为参数并返回一个布尔值，而这两个参数的类型
+同在Eq类之中（即类型约束）”
+
+在定义函数时，你可以为不同的模式分别定义函数体。
+lucky :: (Integral a) => a -> String   
+lucky 7 = "LUCKY NUMBER SEVEN!"   
+lucky x = "Sorry, you're out of luck, pal!" 
+
+门卫由跟在函数名及参数后面的竖线标志，通常他们都是靠右一个缩进排成一列。一个门卫
+就是一个布尔表达式，如果为真，就使用其对应的函数体。如果为假，就送去见下一个门卫
+，如之继续。
+max' :: (Ord a) => a -> a -> a   
+max' a b        
+    | a > b  = a       
+    | otherwise = b
+
+where关键字跟在门卫后面（最好是与竖线缩进一致），可以定义多个名字和函数。这些名字
+对每个门卫都是可见的。
+
+where绑定不会在多个模式中共享。where绑定也可以使用模式匹配。
+
+let绑定则是个表达式，允许你在任何位置定义局部变量，而对不同的门卫不可见。正如
+haskell中所有赋值结构一样，let绑定也可以使用模式匹配。
+cylinder :: (RealFloat a) => a -> a -> a   
+cylinder r h = 
+    let sideArea = 2 * pi * r * h           
+    topArea = pi * r ^2       
+    in  sideArea + 2 * topArea  
+
+let的格式为let [bindings] in [expressions]。在let中绑定的名字仅对in部分可见。
+let绑定本身是个表达式，而where绑定则是个语法结构。
+
+case expression of 
+    pattern -> result                      
+    pattern -> result                      
+    pattern -> result                      
+    ...  
+
+lambda就是匿名函数。有些时候我们需要传给高阶函数一个函数，而这函数我们只会用这一
+次，这就弄个特定功能的lambda。编写lambda，就写个\（因为它看起来像是希腊字母的
+lambda--如果你斜视的厉害），后面是用空格分隔的参数，->后面就是函数体。通常我们都
+是用括号将其括起，要不然它就会占据整个右边部分。
+
+在模块的开头定义模块的名称，如果文件名叫做Geometry.hs那它的名字就得是Geometry。
+在声明出它含有的函数名之后就可以编写函数的实现啦，就这样写:
+
+module Geometry   
+    ( sphereVolume,
+      sphereArea,
+      cubeVolume  
+    ) where
+
+要使用我们的模块，只需: import Geometry
+   
+要得到包含1到20中所有自然数的List，只要[1..20]即可。
+
+list comprehension
+[x*2 | x <- [1..10], x*2 >= 12]   
+
