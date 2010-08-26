@@ -96,3 +96,20 @@ set tw=80 fo+=Mm : automatically change to the next line
 "+y: copy text to system clipboard
 viw: select the word where the cursor is on
 
+Y: paste the whole line
+vim /pattern/ files: search text in the files, the result is in the quick-fix
+vim /pattern/ **/files: recursive
+cl: open the quick-fix list
+cope [width]: open a window to show the list
+cc [n]: check out the n-th item in the list
+ccl: close the quick-fix 
+
+%s/aa/bbb/g: replace all text 'aa' by 'bbb' in the file
+s/aa/bbb/ : replace the first 'aa' by 'bbb' in the current list
+s/aa/bbb/c : show conform message
+
+ls: show all buffers
+[N]b: switch to N buffer to display
+bn [N]: Go to [N]th next buffer
+
+

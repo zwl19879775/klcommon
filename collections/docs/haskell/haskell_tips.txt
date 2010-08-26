@@ -1,4 +1,5 @@
 
+
 @ operator: As-patthens, used in pattern matching:
 f (x:xs) = x:x:xs
 Note that x:xs appears both as a pattern on the left-hand side, and an 
@@ -70,4 +71,50 @@ module Geometry
 
 list comprehension
 [x*2 | x <- [1..10], x*2 >= 12]   
+
+<Real World Haskell>
+Chapter 2
+
+We can now see why a type name must start with an uppercase letter: it makes it
+distinct from a type variable, which must start with a lowercase letter.
+
+A tuple is a fixed-size collection of values, where each value can have a 
+different type.  This distinguishes them from a list, which can have any length,
+but whose elements must all have the same type.
+
+If a function has side effects, we can tell by reading its type signature¡ªthe 
+type of the function's result will begin with IO:
+readFile :: FilePath -> IO String
+
+In Haskell, indentation is important: it continues an existing definition, 
+   instead of starting a new one. Don't omit the indentation!
+
+In a language that uses strict evaluation, the arguments to a function are 
+evaluated before the function is applied. Haskell chooses another path: 
+nonstrict evaluation.
+
+Nonstrict evaluation is often referred to as lazy evaluation.
+
+Chapter 3
+
+We define a new data type using the data keyword:
+data BookInfo = BookInfo Int String [String] deriving (Show)
+
+The type keyword introduce a type synonym:
+type CustomerID = Int
+type BookRecord = (BookInfo, BookReview)
+
+An algebraic data type can have more than one value constructor:
+data Bool = False | True
+
+Because pattern matching acts as the inverse of construction, it's sometimes
+referred to as deconstruction.
+
+section 3.5
+Record syntax allows us to define BookRecord in this form:
+type BookRecord = { name :: String, id :: Int }
+For each of the fields that we name in our type definion, Haskell creates an
+accessor function of that name:
+book = BookRecord { name="haskell", id=121 }
+name book -> haskell
 
