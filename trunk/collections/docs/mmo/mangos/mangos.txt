@@ -1,0 +1,54 @@
+MaNGOS source reading based on version 0.12
+Kevin Lynx
+Started on 9.1.2010
+
+9.1.2010
+
+服务器分为WorldServer和RealmServer，这2个服务器并没有连接，逻辑上两者的联系仅限
+于角色登录。在实现时，角色登录中的数据交互（例如登录凭证）均通过数据库完成。
+
+客户端最开始与RS连接，进行帐号验证、版本验证，代码位于：
+realmd: AuthSocket.cpp: _HandleLogonChallenge, _HandleLogonProff，其中
+_HandleProof会生成登录凭证，然后保存于数据库中：
+dbRealmServer.PExecute("UPDATE account SET sessionkey = '%s'...
+
+_HandleRealmList实际上返回WS列表，包含帐号在各个WS上的角色数量（参见WOW登录流程
+）。
+
+客户端在进入WS时，会验证登录凭证：
+WorldSocket.cpp: HandleAuthSession:
+    QueryResult *result =
+          loginDatabase.PQuery ("SELECT "
+                                "id, " //0
+                                "gmlevel, " //1
+                                "sessionkey, " //2
+                                ...
+
+WS列表（也即REALMLIST）也是通过数据库表取得的。WS在启动时，会将自己加入数据库中
+, mangosd: Master.cpp:
+    loginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
+
+RS在发送WS列表给客户端时，则会从该表里取数据：
+realmd: RealList.cpp: UpdateRealms:
+dbRealmServer.Query( "SELECT id, name, address, ... FROM realmlist
+
+WorldSocket代表与客户端的一个网络连接，WorldSession代表合法进入游戏后客户端和服
+务器端的游戏会话。创建流程：
+ACE->WorldSocket::open->WorldSocketMgr::OnSocketOpen->ReactorRunnable::AddSocket
+
+网络连接在刚建立时，服务器会给客户端发送SMSG_AUTH_CHALLENGE消息。客户端返回时调用
+WorldSocket::HandleAuthSession:
+ACE_NEW_RETURN (m_Session, WorldSession (id, this, security, expansion, mutetime, locale), -1);
+->sWorld.AddSession(this->m_Session)
+
+建立了session后，WorldSocket会调用WorldSession::QueuePacket压入消息（封包）。
+然后在WorldSession::Update函数中处理队列中的封包。
+
+游戏逻辑主循环放置于单独的线程里：
+Master.cpp: ZThread::Thread t(new WorldRunnable); -> sWorld.Update -> UpdateSessions
+
+
+
+
+
+
