@@ -202,7 +202,7 @@ public:
 
     void Remove( Object *obj );
 
-    Object Get( size_t pos );
+    Object *Get( size_t pos );
 
 private:
     // amount/volume/type etc.
