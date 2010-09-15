@@ -24,12 +24,38 @@ public:
 };
 
 // config.h
+// sample key
 class Key : public SerialData
 {
+public:
+    // for std::map
+    bool operator< () const;
+
+    operator long () const;
+private:
+    long key;
 };
 
+// sample value
 class Value : public SerialData
 {
+public:
+    typedef long Index;
+    typedef GUID IDType;
+public:
+    template <typename T>
+    T to() 
+    {
+        return *(T*)value.pv;
+    }
+private:
+    union
+    {
+        long lv;
+        double dv;
+        std::string *sv;
+        void *pv;
+    } value; 
 };
 
 // must be defined.
@@ -39,7 +65,19 @@ struct TypeSet
     typedef Value ValueType;
     typedef Value::Index IndexType;
     typedef Value::Identify IDType;
+    typedef Value::Stack StackType;
 };
+
+// this base module still need some object properties, but it does not
+// know the property id, so list some necessary id here.
+// must be defined too.
+struct KeySet
+{
+    static const TypeSet::KeyType IDKey;
+    static const TypeSet::KeyType IndexKey;
+    static const TypeSet::KeyType StackCntKey;
+};
+
 // config.h end.
 
 // item property.
@@ -49,7 +87,10 @@ struct Property
     TypeSet::ValueType value;
     // can query in ProperTypes, but for speed reason, keep it here.
     int type;
+    Property( TypeSet::KeyType k, TypeSet::ValueType v, int t ) :
+        key( k ), value( v ), type( t ) { }
 };
+
 
 // manage <key, value> properties table.
 template <typename Key, typename Value,
@@ -157,6 +198,9 @@ public:
     // factory.
     bool Load( void *u );
 
+    // get object prototype by index.
+    const ObjProto &GetProto( TypeSet::IndexType index ) const;
+
 private:
     ProtoLoader *m_loader;
 };
@@ -173,6 +217,10 @@ public:
     // unserialize a new object, will not insert it.
     Object *Create( ByteBuffer &buf );
 
+    // create a seris objects. 
+    // this function will use PropertyVisitor::StackCnt function.
+    std::vector<Object*> Create( TypeSet::IndexType index, int count );
+
     // destroy an object, and remove it automatically.
     void Destroy( Object *obj );
 
@@ -180,23 +228,20 @@ private:
     ObjProtoFactory *m_protoFac;
 };
 
+/*
+initial:  initialize PropertyTypeSet, insert all property types; -> ObjProtoFactory, load all object config.
+create: ObjectFactory::Create -> find the object prototype by index -> tranverse all the properties in prototype
+-> check the property in PropertyTypeSet, if the property is dynamic, use the ValueGenFunc to create the value,
+otherwise use the value in prototype -> InsertProperty in object instance, set prototype in object instance
+-> save the object in ObjectFactory by its ID property.
+unserialize: object count -> ObjectFactory::Create -> unserialize index -> tranverse all the static properties
+-> unserialize dynamic properties.
+*/
+
 /* container related stuff below */
 
 // the position an object in a container.
 typedef int PosType;
-
-// add policy is a policy class used to determinte whether an object can be put
-// in the container and where to put it.
-class AddPolicy
-{
-public:
-    // the 'add' operation is valid?
-    virtual bool Valid( Object *obj ) = 0;
-    // where to add.
-    virtual PosType Where( Object *obj ) = 0;
-    // add it.
-    virtual void Add( PosType pos, Object *obj ) = 0;
-};
 
 // listen on special container operations.
 class OperListener
@@ -206,24 +251,108 @@ public:
     virtual void OnRemove( Object *obj, PosType pos ) = 0;
 };
 
+class ContainerOperator
+{
+public:
+    struct AddRet 
+    {
+        enum { FAILED, NEW, CHG_AMOUNT } type;
+        PosType pos;
+    };
+    struct DelRet
+    {
+        enum { FAILED, WHOLE, CHG_AMOUNT } type;
+        PosType pos;
+        int cnt;
+    };
+    // delete object by its index property.
+    struct DelOper
+    {
+        TypeSet::IndexType index;
+        int cnt;
+    };
+public:
+    ContainerOperator( Container *c );
+
+    // can add object into the container anymore?
+    virtual bool Valid( Object *obj ) const;
+
+    // check add operation
+    virtual AddRet CheckAdd( Object *obj );
+    
+    // rets[i] <-> objs[i]
+    virtual std::vector<AddRet> CheckAdd( const std::vector<Object*> &objs );
+
+    // change obj's amount.
+    virtual DelRet CheckDel( Object *obj, int cnt );
+
+    virtual std::vector<DelRet> CheckDel( const std::vector<DelOper> &dels );
+
+protected:
+    Container *m_container;
+};
+
+// all these operations below will use ContainerOperator to check first,
+// then if check success operate it.
 class Container : public PropertySet<TypeSet::Key, TypeSet::Value>
 {
 public:
     typedef std::vector<Object*> CellList;
+  
 public:
-    Container( AddPolicy *policy, OperListener *listener );
+    Container( ContainerOperator *op, OperListener *listener );
 
     // add a new object into the container, the object already exists in
-    // ObjFactory.
-    bool Add( Object *obj );
+    // ObjFactory. return ContainerOperator::AddRet::type
+    int Add( Object *obj );
 
-    void Remove( Object *obj );
+    // use ContainerOperator::CheckAdd to determine where to add these objects,
+    // then add them all.
+    int Add( const std::vector<Object*> &objs );
+
+    // add a new object.
+    bool Add( Object *obj, PosType pos );
+
+    // only change amount. no valid checking.
+    bool SetAmount( PosType pos, TypeSet::StackType c );
+
+    // change specified object's amount.
+    // if the amount <= 0, delete the object.
+    int Remove( Object *obj, int cnt );
+
+    int Remove( const std::vector<ContainerOperator::DelOper> &dels );
 
     Object *Get( PosType pos );
 
+    // copy self to a RefContainer.
+    void CopyRefContainer( RefContainer &refc );
+
 private:
     CellList m_objects;
-    AddPolicy *m_addPolicy;
+    ContainerOperator *m_operator;
     OperListener *m_operListener;
+};
+
+// RefContainer is a container reference, it's used for batch operation.
+// ContainerOperator will create a temp RefContainer and use it to test.
+// only has member data, the operation is in ContainerOperator.
+class RefContainer
+{
+public:
+    typedef Container::TableType PropertiesTable;
+
+    // cell info.
+    struct Cell
+    {
+        TypeSet::IndexType index; //object index property.
+        int maxAmount;
+        int amount;
+    };
+
+    typedef std::vector<Cell> CellList;
+
+public:
+    PropertiesTable m_properties;
+    CellList m_objects;
 };
 
