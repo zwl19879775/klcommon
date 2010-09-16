@@ -177,7 +177,6 @@ private:
 // but the dynamic properties are null.
 class ObjProto : public PropertySet<TypeSet::Key, TypeSet::Value>
 {
-    // no more
 };
 
 // interface class, to load object prototypes in customer config file.
