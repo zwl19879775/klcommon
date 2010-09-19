@@ -2,6 +2,105 @@ MaNGOS source reading based on version 0.12
 Kevin Lynx
 Started on 9.1.2010
 
+9.17.2010
+
+ObjectRegistry维护了一个KEY-VALUE的表。FactoryHolder抽象了一个只负责创建对象的工
+厂。由这2者组合，可以构成一个抽象工厂组件。以AI对象的管理为例，有派生体系：
+FactoryHolder<CreatureAI>
+    |
+SelectableAI
+    |
+CreatureAIFactory<AggressorAI>
+        |
+    CreatureAIFactory<ReactorAI>
+AggressorAI和ReactorAI都是派生于CreatureAI的具体AI实现类，这里通过模板自动生成了
+各个具体AI类的工厂类。各个具体的工厂类分别在
+ObjectRegistry<FactoryHolder<CreatureAI>>中注册，每次从ObjectRegistry中根据注册
+的ID取得具体工厂时，得到的就是FactoryHolder<CreatureAI>对象。
+
+FactoryHolder::Create是一个虚函数，由具体的工厂负责实现，如CreatureAIFactory。
+CreatureAIFactory根据自己的模板参数（AggressorAI/ReactorAI)创建具体的对象。
+
+9.3.2010
+
+TypeMapContainer多类型链式容器的实现原理：
+TypeMapContainer是一个类型数量固定的链式容器，该容器首先保存有指定数量（编译期确
+定）类型，每一个类型又是一个链表。要弄清该容器的实现，包含2个方面：
+1、根据操作元素的类型确定到对应类型的链表；2、在此链表上操作。以insert为例：
+
+相关类：TypeMapContainer, ContainerMapList, GridRefManager, GridReference, 
+    RefManager, Reference, LinkedListElement, LinkedListHead
+
+ContainerMapList是一个具有递归特性的模板类：
+
+template<class OBJECT> struct ContainerMapList
+{
+    GridRefManager<OBJECT> _element;
+};
+template<> struct ContainerMapList<TypeNull>                
+{
+};
+template<class H, class T> struct ContainerMapList<TypeList<H, T> >
+{
+    ContainerMapList<H> _elements;
+    ContainerMapList<T> _TailElements;
+};
+
+insert函数相应地具有多个重载版本，分别针对单个类型、无类型、多个类型，同
+ContainerMapList的递归定义对应。其递归过程如例子：
+    Insert( long ) ->
+ContainerMapList<char, <float, long>> -> Insert(ContainerMapList<char>)
+    -> 如果结果返回null，表示类型不匹配，继续匹配剩余的类型
+    -> Insert(ContainerMapList<float, long>)
+    -> Insert(ContainerMapList<float>)
+    -> 如果结果返回null，表示类型不匹配，继续匹配
+    -> Insert(ContainerMapList<long>)
+
+GridReference派生于Reference，Reference内部保存refTo/refFrom元素，以上的insert操
+作找到链表后：obj->link(element, obj)也就是把自己链接到链表上，link的实现只保存
+指针，真正的链接操作交给派生类在做，也就是GridReference::targetObjectBuildLink:
+
+        void targetObjectBuildLink()
+        {
+            // 将当前新加元素置于表头
+            this->getTarget()->insertFirst(this);
+            // 增加链表长度
+            this->getTarget()->incSize();
+        }
+
+上层Grid类是一个应用TypeMapContainer的类：
+        TypeMapContainer<GRID_OBJECT_TYPES> i_container;
+而GRID_OBJECT_TYPES则是一个类型列表：
+typedef TYPELIST_4(GameObject, Creature, DynamicObject, Corpse) AllGridObjectTypes;
+
+---------------------------------------------------------------------------------
+Object是一个包含了类型、GUID以及一个属性表的类。属性表里可以保存整数（浮点数）属
+性。
+
+Item用于表示游戏道具，派生于Object。ItemPrototype相当于物品的静态配置属性集合。
+
+9.2.2010
+
+framework工程中包含了很多模板组件。例如：LinkedList.h中实现了一个链表，
+LinkedListElement代表链表的一个节点、LinkedListHead代表链表头，通常也代表整个链
+表本身。
+
+LinkedReference下的Reference派生于LinkedListElement，基本上也是对链表元素的一种
+包装，所不同的是链表的前后元素类型可以不一样；RefManager派生于LinkedListHead，属
+于对Reference的管理器之类。
+
+GridRefManager派生于RefManager，看起来像是把Grid连接起来，提供对这个Grid链表的管
+理。
+
+ContainerMapList内聚了GridRefManager，大概是一个多类型的容器。
+
+TypeMapContainer包装了ContainerMapList，提供了一些针对多类型容器的操作接口。
+
+Grid代表了地图上的一个格子，其内部使用TypeMapContainer分别保存了格子上的一些对象
+。
+
+NGrid代表了若干个格子，是一个区域，由参数决定其大小：N*N。
+
 9.1.2010
 
 服务器分为WorldServer和RealmServer，这2个服务器并没有连接，逻辑上两者的联系仅限
