@@ -92,6 +92,15 @@ struct Property
 };
 
 
+template <typename Key, typename Value>
+class PropertyListener
+{
+public:
+    virtual void OnAdd( Key key, Value val ) { }
+    virtual void OnRemove( Key key ) { }
+    virtual void OnSet( Key key, Value oldVal, Value newVal ) { }
+};
+
 // manage <key, value> properties table.
 template <typename Key, typename Value,
          typename Table = std::map<Key, Value> >
@@ -101,6 +110,8 @@ public:
     typedef Key KeyType;
     typedef Value ValueType;
     typedef Table TableType;
+    typedef PropertyListener<KeyType, ValueType> PropertyListenerType;
+    typedef PropertySet<KeyType, ValueType> SelfType;
 public:
     bool AddProperty( Key key, Value val );
     void RemoveProperty( Key key );
@@ -110,6 +121,7 @@ public:
 
 protected:
     Table m_properties;
+    PropertyListenerType *m_propertyListener;
 };
 
 class Object : public PropertySet<TypeSet::KeyType, Property*>, 
@@ -316,7 +328,6 @@ public:
     bool SetAmount( PosType pos, TypeSet::StackType c );
 
     // change specified object's amount.
-    // if the amount <= 0, delete the object.
     int Remove( Object *obj, int cnt );
 
     int Remove( const std::vector<ContainerOperator::DelOper> &dels );
