@@ -28,6 +28,16 @@ namespace GI
         int m_type;
     };
 
+    struct Cloner
+    {
+        Cloner( Object *dest ) : m_dest( dest ) { }
+        void operator() ( Object::KeyType key, Object::ValueType value ) 
+        {
+            m_dest->AddProperty( key, value );
+        }
+        Object *m_dest;
+    };
+
     Object::Object( PListenerType *listener ) : SelfType( listener ),
         m_proto( NULL )
     {
@@ -38,6 +48,15 @@ namespace GI
     Object::~Object()
     {
         Clear();
+    }
+
+    Object *Object::Clone( Object *dest ) const
+    {
+        dest->m_listener = m_listener;
+        dest->m_proto = m_proto;
+        dest->Clear();
+        Traverse( Cloner( dest ) );
+        return dest;
     }
 
     bool Object::AddProperty( KeyType key, ValueType val )

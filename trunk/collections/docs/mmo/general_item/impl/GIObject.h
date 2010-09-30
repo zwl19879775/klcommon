@@ -1,6 +1,7 @@
 ///
 /// @file GIObject.h
 /// @author Kevin Lynx
+/// @date 9.28.2010
 ///
 #ifndef ___GI_OBJECT_H_
 #define ___GI_OBJECT_H_
@@ -23,6 +24,9 @@ namespace GI
         Object( PListenerType *listener );
 
         virtual ~Object();
+
+        /// Clone this to the object.
+        Object *Clone( Object *dest ) const;
         
         /// Add a new property in the table.
         virtual bool AddProperty( KeyType key, ValueType val );
