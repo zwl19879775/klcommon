@@ -7,7 +7,8 @@
 #define ___GI_CONFIG_H_
 
 #ifndef GI_DEPTYPES
-#error "GI dependent config file does NOT exist."
+//#error "GI dependent config file does NOT exist."
+#include "GITypesSample.h"
 #else
 // include depentent file which must defines some types.
 #include GI_DEPTYPES

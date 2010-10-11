@@ -51,3 +51,4 @@ namespace kl_common
 }
 
 #endif // ___KL_SINGLETON_H_
+

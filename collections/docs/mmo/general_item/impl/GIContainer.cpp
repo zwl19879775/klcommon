@@ -32,7 +32,8 @@ namespace GI
         Object *obj = Get( objID );
         if( !obj ) return false;
         if( !destCon->Add( obj ) ) return false;
-        Remove( objID );
+        Remove( obj );
+        return true;
     }
 
     bool BaseContainer::MoveAll( BaseContainer *destCon )
@@ -46,7 +47,9 @@ namespace GI
             {
                 // TODO: make more beautiful here.
                 NOTIFY( OnRemove( it->second ) );
-                it = m_objs.erase( it );
+                // TODO: fix the compile error in gcc
+                //it = m_objs.erase( it );
+                m_objs.erase( it++ );
             }
             else ++ it;
             ret = lret && ret;
@@ -58,7 +61,7 @@ namespace GI
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
-        Remove( objID );
+        Remove( obj );
         NOTIFY( OnDestroy( obj ) );
         delete obj;
         return true;
@@ -159,7 +162,7 @@ namespace GI
     {
     }
 
-    bool ModifyContainer::Modify( TypeSet::IDType objID, TypeSet::KeyType key, TypeSet::KeyType value )
+    bool ModifyContainer::Modify( TypeSet::IDType objID, TypeSet::KeyType key, TypeSet::ValueType value )
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
@@ -195,7 +198,7 @@ namespace GI
         obj1->SetValue( KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) );
         // destroy object2
         NOTIFY( OnDestroy( obj2 ) );
-        Destroy( obj2 );
+        Destroy( objID2 );
 
         return true;
     }
