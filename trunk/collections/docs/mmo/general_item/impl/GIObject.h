@@ -17,7 +17,7 @@ namespace GI
     /// Implement an object instance. Only store dynamic properties, the static 
     /// properties can be queried by ObjectProto.
     ///
-    class Object : public PropertySet<TypeSet::KeyType, TypeSet::Value>, 
+    class Object : public PropertySet<TypeSet::KeyType, TypeSet::ValueType>, 
         public SerialData
     {
     public:
@@ -49,7 +49,7 @@ namespace GI
         bool UnSerializeBasic( ByteBuffer &buf );
 
         /// (Un)Serialize dynamic properties.
-        virtual void Serialize( ByteBuffer &buf );
+        virtual void Serialize( ByteBuffer &buf ) const;
         virtual bool UnSerialize( ByteBuffer &buf );
 
         /// (Un)Serialize detail properties.
@@ -65,7 +65,7 @@ namespace GI
         bool UnSerializeProperties( ByteBuffer &buf );
 
     protected:
-        const ObjProto *m_proto;
+        const ObjectProto *m_proto;
         /// Detail properties count.
         int m_detailCnt;
         /// General properties count.

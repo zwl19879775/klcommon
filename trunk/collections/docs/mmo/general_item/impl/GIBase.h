@@ -6,6 +6,8 @@
 #ifndef ___GI_BASE_H_
 #define ___GI_BASE_H_
 
+#include <stddef.h>
+
 namespace GI
 {
     class ByteBuffer
@@ -18,7 +20,7 @@ namespace GI
     class SerialData
     {
     public:
-        virtual void Serialize( ByteBuffer &buf ) = 0;
+        virtual void Serialize( ByteBuffer &buf ) const = 0;
         virtual bool UnSerialize( ByteBuffer &buf ) = 0;
     };
 }

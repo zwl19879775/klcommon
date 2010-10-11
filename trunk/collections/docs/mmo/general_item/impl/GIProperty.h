@@ -8,12 +8,13 @@
 
 #include "GIConfig.h"
 #include "kl_singleton.h"
+#include <map>
 
 namespace GI
 {
     enum 
     {
-        PT_NONE     = 0x0000,
+        PT_NULL     = 0x0000,
         PT_STATIC   = 0x0001,
         PT_DYNAMIC  = 0x0002,
         PT_DETAIL   = 0x0004,
@@ -58,6 +59,8 @@ namespace GI
     public:
         PropertySet( PListenerType *listener = NULL );
 
+        virtual ~PropertySet() { }
+
         /// Add a new property in the table.
         virtual bool AddProperty( Key key, Value val );
 
@@ -92,7 +95,7 @@ namespace GI
     {
         int type;
         /// Callback function to generate dynamic properties.
-        typedef TypeSet::Value (*GenValFunc)( void *u );
+        typedef TypeSet::ValueType (*GenValFunc)( void *u );
         GenValFunc func;
         PropertyType( int t = PT_NULL, GenValFunc f = NULL ) : type( t ), func( f )
         {
@@ -103,7 +106,7 @@ namespace GI
     /// Singleton class, to manage all the property types.
     /// The property types can be put in a single config file.
     ///
-    class PropertyTypeSet : public PropertySet<TypeSet::Key, PropertyType>, 
+    class PropertyTypeSet : public PropertySet<TypeSet::KeyType, PropertyType>, 
         public kl_common::singleton<PropertyTypeSet>
     {
     public:
@@ -117,7 +120,7 @@ namespace GI
 
         /// Generate a property value, the property must be a dynamic 
         /// property.
-        TypeSet::Value GenValue( KeyType key, void *u );
+        TypeSet::ValueType GenValue( KeyType key, void *u );
     };
 
 #include "GIPropertySetImpl.h"

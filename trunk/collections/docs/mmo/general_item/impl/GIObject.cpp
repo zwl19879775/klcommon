@@ -52,7 +52,7 @@ namespace GI
 
     Object *Object::Clone( Object *dest ) const
     {
-        dest->m_listener = m_listener;
+        dest->m_proListener = m_proListener;
         dest->m_proto = m_proto;
         dest->Clear();
         Traverse( Cloner( dest ) );
@@ -89,7 +89,7 @@ namespace GI
     Object::ValueType Object::GetValue( KeyType key ) const
     {
         ValueType val = SelfType::GetValue( key );
-        if( val == ValueType() )
+        if( !val.Valid() )
         {
             val = m_proto->GetValue( key );
         }
@@ -118,7 +118,7 @@ namespace GI
         return UnSerializeProperties( buf );
     }
 
-    void Object::Serialize( ByteBuffer &buf )
+    void Object::Serialize( ByteBuffer &buf ) const
     {
         Traverse( Serializer( buf, PT_DYNAMIC ) );
     }

@@ -7,12 +7,12 @@
 #define ___GI_CONTAINER_H_
 
 #include "GIConfig.h"
+#include "GIObject.h"
+#include "GIContainerListener.h"
 #include <map>
 
 namespace GI
 {
-    class Object;
-    class ContainerListener;
 
     /// BaseContainer provide object manage and Move/Destroy operation.
     class BaseContainer
@@ -112,7 +112,7 @@ namespace GI
 
         /// Modify the specified property value of the object.
         /// The object must be in this container.
-        virtual bool Modify( TypeSet::IDType objID, TypeSet::KeyType key, TypeSet::KeyType value );
+        virtual bool Modify( TypeSet::IDType objID, TypeSet::KeyType key, TypeSet::ValueType value );
     };
 
     /// MergeContainer can merge/split an object.
