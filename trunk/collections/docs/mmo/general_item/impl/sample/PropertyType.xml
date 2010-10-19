@@ -1,0 +1,34 @@
+<!--Property prototype config file-->
+<PropertyType>
+    <Basic>
+        <property key="PINDEX" type="PT_STATIC | PT_INDEX" />
+        <property key="PID" type="PT_DYNAMIC | PT_IDENTIFY" />
+        <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" />
+        <property key="PRGNY" type="PT_DYNAMIC | PT_GENERAL" />
+        <property key="PORIGNAME" type="PT_STATIC" />
+        <property key="PNAME" type="PT_STATIC" />
+        <property key="PGOLD_PRICE" type="PT_STATIC" />
+        <property key="PSILVER_PRICE" type="PT_STATIC" />
+        <property key="PTYPE" type="PT_STATIC" />
+        <!--client specific properties-->
+        <property key="PUI_PICID" type="PT_STATIC" />
+        <property key="PRGN_PICID" type="PT_STATIC" />
+        <property key="PEQUIP_PICID" type="PT_STATIC" />
+        <property key="PGET_SNDID" type="PT_STATIC" />
+        <!--deprecated properties-->
+        <property key="PNORMAL_SNDID" type="PT_STATIC" />
+        <property key="PSPECIAL_SNDID" type="PT_STATIC" />
+        <property key="PATTACK_FLAG" type="PT_STATIC" />
+        <property key="PEQUIP_ACTION" type="PT_STATIC" />
+        <!--deprecated end-->
+        <property key="PDESC" type="PT_STATIC" />
+        <property key="PMAX_STACKCNT" type="PT_STATIC" />
+        <property key="PSTACKCNT" type="PT_DYNAMIC" />
+    </Basic>
+    <Extend>
+        <property key="PINC_HP" type="PT_STATIC" />
+        <property key="PCOOLDOWN" type="PT_STATIC" />
+        <!--TODO: add more-->
+    </Extend>
+</PropertyType>
+

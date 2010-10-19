@@ -91,11 +91,13 @@ namespace GI
         PListenerType *m_proListener;
     };
 
+    // Bad pre-declaration.
+    class Object;
     struct PropertyType
     {
         int type;
         /// Callback function to generate dynamic properties.
-        typedef TypeSet::ValueType (*GenValFunc)( void *u );
+        typedef TypeSet::ValueType (*GenValFunc)( Object *obj );
         GenValFunc func;
         PropertyType( int t = PT_NULL, GenValFunc f = NULL ) : type( t ), func( f )
         {
@@ -120,7 +122,7 @@ namespace GI
 
         /// Generate a property value, the property must be a dynamic 
         /// property.
-        TypeSet::ValueType GenValue( KeyType key, void *u );
+        TypeSet::ValueType GenValue( KeyType key, Object *obj );
     };
 
 #include "GIPropertySetImpl.h"
