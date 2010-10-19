@@ -22,12 +22,12 @@ namespace GI
         return val.type;
     }
 
-    TypeSet::ValueType PropertyTypeSet::GenValue( KeyType key, void *u )
+    TypeSet::ValueType PropertyTypeSet::GenValue( KeyType key, Object *obj )
     {
         PropertyType val = GetValue( key );
         if( val.func && IS_DYNAMIC( val.type ) )
         {
-            return val.func( u );
+            return val.func( obj );
         }
         return TypeSet::ValueType();
     }

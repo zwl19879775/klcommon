@@ -26,11 +26,11 @@ namespace GI
 
         void SetListener( ContainerListener *lis );
 
-        /// Move the object specified by objID to the dest-Container.
-        virtual bool Move( BaseContainer *destCon, TypeSet::IDType objID );
+        /// Move the object specified by objID in srcCon to this.
+        virtual bool Move( BaseContainer *srcCon, TypeSet::IDType objID );
 
-        /// Move all the objects to the dest-Container.
-        virtual bool MoveAll( BaseContainer *destCon );
+        /// Move all the objects in srcCon to this.
+        virtual bool MoveAll( BaseContainer *srcCon );
 
         /// Destroy an object in this container.
         virtual bool Destroy( TypeSet::IDType objID );
@@ -55,6 +55,15 @@ namespace GI
 
         /// Get a writeable object.
         Object *Get( TypeSet::IDType objID );
+
+        /// These Agent-Functions can help classes inherited from BaseContainer
+        /// to visit 'con' protected functions. I hope 'future me' can
+        /// understand this.
+        static bool AgentAdd( BaseContainer *con, Object *obj );
+
+        static bool AgentRemove( BaseContainer *con, Object *obj );
+
+        static Object *AgentGet( BaseContainer *con, TypeSet::IDType objID );
 
     protected:
         ObjectMap m_objs;
@@ -89,12 +98,15 @@ namespace GI
     protected:
         /// Create object, but donot add it.
         Object *DoCreate( TypeSet::IndexType index, Object::PListenerType *listener );
+
+        /// Fill properties in the object.
+        bool FillProperty( TypeSet::IndexType index, Object *obj );
     };
 
     template <typename T>
     bool FactoryContainer::Create( TypeSet::IndexType index, Object::PListenerType *listener, T fn )
     {
-        Object *obj = Create( index, listener );
+        Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
         fn( obj );
         if( m_listener ) m_listener->OnCreate( obj );
@@ -130,14 +142,14 @@ namespace GI
         /// Split the object into two objects. Call 'Add' to add the new 
         /// object into this container.
         /// This function will clone the object,except the stack count is different.
-        virtual bool Split( TypeSet::IDType obj, int splitCnt );
+        virtual bool Split( TypeSet::IDType obj, TypeSet::StackCntType splitCnt );
 
         /// Decrease the stack count of the object. The decCnt must < curCnt.
-        virtual bool DecStack( TypeSet::IDType obj, int decCnt );
+        virtual bool DecStack( TypeSet::IDType obj, TypeSet::StackCntType decCnt );
 
     protected:
         /// Get object stack count.
-        int GetStackCnt( Object *obj );
+        TypeSet::StackCntType GetStackCnt( Object *obj );
     };
 }
 

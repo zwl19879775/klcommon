@@ -27,32 +27,29 @@ namespace GI
         m_listener = lis;
     }
 
-    bool BaseContainer::Move( BaseContainer *destCon, TypeSet::IDType objID )
+    bool BaseContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID )
     {
-        Object *obj = Get( objID );
+        Object *obj = srcCon->Get( objID );
         if( !obj ) return false;
-        if( !destCon->Add( obj ) ) return false;
-        Remove( obj );
+        if( !Add( obj ) ) return false;
+        srcCon->Remove( obj );
         return true;
     }
 
-    bool BaseContainer::MoveAll( BaseContainer *destCon )
+    bool BaseContainer::MoveAll( BaseContainer *srcCon )
     {
         bool ret = true;
-        for( ObjectMap::iterator it = m_objs.begin();
-                it != m_objs.end(); )
+        for( ObjectMap::iterator it = srcCon->m_objs.begin();
+                it != srcCon->m_objs.end(); )
         {
-            bool lret = destCon->Add( it->second );
-            if( lret )
+            bool addRet = Add( it->second );
+            if( addRet && srcCon->m_listener )
             {
-                // TODO: make more beautiful here.
-                NOTIFY( OnRemove( it->second ) );
-                // TODO: fix the compile error in gcc
-                //it = m_objs.erase( it );
-                m_objs.erase( it++ );
+                srcCon->m_listener->OnRemove( it->second );
+                srcCon->m_objs.erase( it++ );
             }
             else ++ it;
-            ret = lret && ret;
+            ret = addRet && ret;
         }
         return ret;
     }
@@ -110,6 +107,20 @@ namespace GI
         return true;
     }
 
+    bool BaseContainer::AgentAdd( BaseContainer *con, Object *obj )
+    {
+        return con->Add( obj );
+    }
+
+    bool BaseContainer::AgentRemove( BaseContainer *con, Object *obj )
+    {
+        return con->Remove( obj );
+    }
+
+    Object *BaseContainer::AgentGet( BaseContainer *con, TypeSet::IDType id )
+    {
+        return con->Get( id );
+    }
     ///////////////////////////////////////////////////////////////////////////
     struct Creator
     {
@@ -121,7 +132,7 @@ namespace GI
             int t = pts.GetType( key );
             if( IS_DYNAMIC( t ) )
             {
-                val = pts.GenValue( key, NULL );
+                val = pts.GenValue( key, m_obj );
                 m_obj->AddProperty( key, val );
             }
         }
@@ -146,12 +157,22 @@ namespace GI
 
     Object *FactoryContainer::DoCreate( TypeSet::IndexType index, Object::PListenerType *listener )
     {
-        const ObjectProto *proto = ObjProtoFactory::getSingleton().GetProto( index );
-        if( !proto ) return NULL;
         Object *obj = new Object( listener );
-        obj->SetProto( proto );
-        proto->Traverse( Creator( obj ) ); 
+        if( !FillProperty( index, obj ) )
+        {
+            delete obj;
+            obj = NULL;
+        }
         return obj;
+    }
+
+    bool FactoryContainer::FillProperty( TypeSet::IndexType index, Object *obj )
+    {
+        const ObjectProto *proto = ObjProtoFactory::getSingleton().GetProto( index );
+        if( !proto ) return false;
+        obj->SetProto( proto );
+        proto->Traverse( Creator( obj ) );
+        return true;
     }
     ///////////////////////////////////////////////////////////////////////////
     ModifyContainer::ModifyContainer()
@@ -188,10 +209,10 @@ namespace GI
             obj2->GetValue( KeySet::IndexKey ) ) return false;
 
         TypeSet::ValueType maxStack = obj1->GetValue( KeySet::MaxStackCntKey );
-        int maxSCnt = (int) TypeSet::ValueType::ToStackCnt( maxStack );
+        TypeSet::StackCntType maxSCnt = TypeSet::ValueType::ToStackCnt( maxStack );
 
-        int sCnt1 = GetStackCnt( obj1 );
-        int sCnt2 = GetStackCnt( obj2 );
+        TypeSet::StackCntType sCnt1 = GetStackCnt( obj1 );
+        TypeSet::StackCntType sCnt2 = GetStackCnt( obj2 );
 
         if( sCnt1 + sCnt2 > maxSCnt ) return false;
         NOTIFY( OnModify( obj1, KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) ) );
@@ -203,14 +224,14 @@ namespace GI
         return true;
     }
 
-    bool MergeContainer::Split( TypeSet::IDType objID, int splitCnt )
+    bool MergeContainer::Split( TypeSet::IDType objID, TypeSet::StackCntType splitCnt )
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
-        int curCnt = GetStackCnt( obj );
+        TypeSet::StackCntType curCnt = GetStackCnt( obj );
         if( splitCnt >= curCnt ) return false;
 
-        int retCnt = curCnt - splitCnt;
+        TypeSet::StackCntType retCnt = curCnt - splitCnt;
         NOTIFY( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         // clone a new object.
@@ -222,24 +243,23 @@ namespace GI
         return true;
     }
 
-    bool MergeContainer::DecStack( TypeSet::IDType objID, int decCnt )
+    bool MergeContainer::DecStack( TypeSet::IDType objID, TypeSet::StackCntType decCnt )
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
-        int curCnt = GetStackCnt( obj );
+        TypeSet::StackCntType curCnt = GetStackCnt( obj );
         if( curCnt <= decCnt ) return false;
         
-        int retCnt = curCnt - decCnt;
+        TypeSet::StackCntType retCnt = curCnt - decCnt;
         NOTIFY( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         return true;
     }
 
-    int MergeContainer::GetStackCnt( Object *obj )
+    TypeSet::StackCntType MergeContainer::GetStackCnt( Object *obj )
     {
         TypeSet::ValueType sVal = obj->GetValue( KeySet::StackCntKey );
-        int sCnt = (int) TypeSet::ValueType::ToStackCnt( sVal );
-        return sCnt;
+        return TypeSet::ValueType::ToStackCnt( sVal );
     }
 }
 
