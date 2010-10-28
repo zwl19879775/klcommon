@@ -35,6 +35,7 @@ enum
     PEXTEND_BEGIN = 255,
     PINC_HP,
     PCOOLDOWN,
+    PCON_SIZE,
 
     PALL_END
 };

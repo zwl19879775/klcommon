@@ -13,9 +13,28 @@ namespace GI
     class ByteBuffer
     {
     public:
+        virtual ~ByteBuffer() { }
         virtual void Push( const void *d, size_t size ) = 0;
         virtual bool Pop( void *d, size_t size ) = 0;
+
+        template <typename T>
+        void Push( const T &d );
+
+        template <typename T>
+        bool Pop( T *d );
     };
+
+    template <typename T>
+    void ByteBuffer::Push( const T &d )
+    {
+        Push( &d, sizeof(T) );
+    }
+
+    template <typename T>
+    bool ByteBuffer::Pop( T *d )
+    {
+        return Pop( d, sizeof(T) );
+    }
 
     class SerialData
     {

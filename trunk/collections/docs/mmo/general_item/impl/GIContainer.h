@@ -11,6 +11,8 @@
 #include "GIContainerListener.h"
 #include <map>
 
+#define NOTIFY_LISTENER( op ) if( m_listener ) m_listener->op
+
 namespace GI
 {
 
@@ -39,7 +41,10 @@ namespace GI
         virtual void DestroyAll();
 
         /// Get the object by its id.
-        const Object *Get( TypeSet::IDType objID ) const;
+        const Object *GetObject( TypeSet::IDType objID ) const;
+
+        /// Get the object count in this container.
+        int ObjCount() const;
 
         /// Traverse all the objects (const reference)
         /// void fn( TypeSet::IDType id, const Object *obj )

@@ -10,7 +10,6 @@
 namespace GI
 {
 
-#define NOTIFY( op ) if( m_listener ) m_listener->op
 
     BaseContainer::BaseContainer()
     {
@@ -25,6 +24,11 @@ namespace GI
     void BaseContainer::SetListener( ContainerListener *lis )
     {
         m_listener = lis;
+    }
+
+    int BaseContainer::ObjCount() const
+    {
+        return (int) m_objs.size();
     }
 
     bool BaseContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID )
@@ -59,7 +63,7 @@ namespace GI
         Object *obj = Get( objID );
         if( !obj ) return false;
         Remove( obj );
-        NOTIFY( OnDestroy( obj ) );
+        NOTIFY_LISTENER( OnDestroy( obj ) );
         delete obj;
         return true;
     }
@@ -70,14 +74,14 @@ namespace GI
                 it != m_objs.end(); )
         {
             // TODO: 
-            NOTIFY( OnRemove( it->second ) );
-            NOTIFY( OnDestroy( it->second ) );
+            NOTIFY_LISTENER( OnRemove( it->second ) );
+            NOTIFY_LISTENER( OnDestroy( it->second ) );
             delete it->second;
         }
         m_objs.clear();
     }
 
-    const Object *BaseContainer::Get( TypeSet::IDType objID ) const
+    const Object *BaseContainer::GetObject( TypeSet::IDType objID ) const
     {
         ObjectMap::const_iterator it = m_objs.find( objID );
         return it == m_objs.end() ? NULL : it->second;
@@ -91,7 +95,7 @@ namespace GI
 
     bool BaseContainer::Add( Object *obj )
     {
-        NOTIFY( OnAdd( obj ) );
+        NOTIFY_LISTENER( OnAdd( obj ) );
         TypeSet::ValueType idVal = obj->GetValue( KeySet::IDKey );
         TypeSet::IDType id = TypeSet::ValueType::ToID( idVal );
         m_objs[id] = obj; 
@@ -100,7 +104,7 @@ namespace GI
 
     bool BaseContainer::Remove( Object *obj )
     {
-        NOTIFY( OnRemove( obj ) );
+        NOTIFY_LISTENER( OnRemove( obj ) );
         TypeSet::ValueType idVal = obj->GetValue( KeySet::IDKey );
         TypeSet::IDType id = TypeSet::ValueType::ToID( idVal );
         m_objs.erase( id );
@@ -150,7 +154,7 @@ namespace GI
     {
         Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
-        NOTIFY( OnCreate( obj ) );
+        NOTIFY_LISTENER( OnCreate( obj ) );
         Add( obj );
         return true;
     }
@@ -187,7 +191,7 @@ namespace GI
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
-        NOTIFY( OnModify( obj, key, value ) );
+        NOTIFY_LISTENER( OnModify( obj, key, value ) );
         obj->SetValue( key, value );
         return true;
     }
@@ -215,10 +219,10 @@ namespace GI
         TypeSet::StackCntType sCnt2 = GetStackCnt( obj2 );
 
         if( sCnt1 + sCnt2 > maxSCnt ) return false;
-        NOTIFY( OnModify( obj1, KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) ) );
+        NOTIFY_LISTENER( OnModify( obj1, KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) ) );
         obj1->SetValue( KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) );
         // destroy object2
-        NOTIFY( OnDestroy( obj2 ) );
+        NOTIFY_LISTENER( OnDestroy( obj2 ) );
         Destroy( objID2 );
 
         return true;
@@ -232,12 +236,12 @@ namespace GI
         if( splitCnt >= curCnt ) return false;
 
         TypeSet::StackCntType retCnt = curCnt - splitCnt;
-        NOTIFY( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
+        NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         // clone a new object.
         Object *newObj = new Object( NULL );
         obj->Clone( newObj );
-        NOTIFY( OnCreate( newObj ) );
+        NOTIFY_LISTENER( OnCreate( newObj ) );
         newObj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( splitCnt ) );
         Add( newObj );
         return true;
@@ -251,7 +255,7 @@ namespace GI
         if( curCnt <= decCnt ) return false;
         
         TypeSet::StackCntType retCnt = curCnt - decCnt;
-        NOTIFY( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
+        NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         return true;
     }
