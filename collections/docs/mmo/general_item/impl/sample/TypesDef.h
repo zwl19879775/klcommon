@@ -11,7 +11,7 @@
 #define _TEST_
 
 #ifdef _TEST_
-#define CGUID long long  
+#include "Test.h"
 #else
 #include "GUID.h"
 #endif
