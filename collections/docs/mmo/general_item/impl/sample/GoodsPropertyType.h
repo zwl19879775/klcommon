@@ -10,8 +10,6 @@ enum
     PBASIC_BEGIN = 0,
     PINDEX,
     PID,
-    PRGNX,
-    PRGNY,
     PORIGNAME,
     PNAME,
     PGOLD_PRICE,
@@ -31,8 +29,12 @@ enum
 
     PRUNTIME_BEGIN = 127, 
     PCELL_POS,
+    PRGNX,
+    PRGNY,
 
     PEXTEND_BEGIN = 255,
+    PINC_HP_MIN,
+    PINC_HP_MAX,
     PINC_HP,
     PCOOLDOWN,
     PCON_SIZE,

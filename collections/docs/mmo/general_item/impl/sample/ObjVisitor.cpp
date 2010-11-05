@@ -93,5 +93,31 @@ namespace ObjVisitor
         TypeSet::ValueType val = obj->GetValue( sizeKey );
         return TypeSet::ValueType::ToLong( val );
     }
+
+    void SetRgnPosX( GI::Object *obj, double x )
+    {
+        TypeSet::KeyType xKey( PRGNX );
+        if( !obj->HasProperty( xKey ) )
+        {
+            obj->AddProperty( xKey, TypeSet::ValueType( x ) );
+        }
+        else
+        {
+            obj->SetValue( xKey, TypeSet::ValueType( x ) );
+        }
+    }
+
+    void SetRgnPosY( GI::Object *obj, double y )
+    {
+        TypeSet::KeyType yKey( PRGNY );
+        if( !obj->HasProperty( yKey ) )
+        {
+            obj->AddProperty( yKey, TypeSet::ValueType( y ) );
+        }
+        else
+        {
+            obj->SetValue( yKey, TypeSet::ValueType( y ) );
+        }
+    }
 }
 

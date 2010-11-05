@@ -10,9 +10,9 @@ namespace GI
     {
     }
 
-    void PropertyTypeSet::Add( KeyType key, int type, PropertyType::GenValFunc func )
+    void PropertyTypeSet::Add( KeyType key, int type, PropertyType::GenValFunc func, void *u )
     {
-        PropertyType val( type, func );
+        PropertyType val( type, func, u );
         AddProperty( key, val );
     }
 
@@ -22,12 +22,12 @@ namespace GI
         return val.type;
     }
 
-    TypeSet::ValueType PropertyTypeSet::GenValue( KeyType key, Object *obj )
+    TypeSet::ValueType PropertyTypeSet::GenValue( KeyType key, const Object *obj )
     {
         PropertyType val = GetValue( key );
         if( val.func && IS_DYNAMIC( val.type ) )
         {
-            return val.func( obj );
+            return val.func( obj, val.u );
         }
         return TypeSet::ValueType();
     }

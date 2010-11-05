@@ -5,38 +5,18 @@
 #ifndef ___SUBCONTAINER_H_
 #define ___SUBCONTAINER_H_
 
-#include "../GIContainer.h"
-#include <vector>
+#include "BaseCellContainer.h"
 
-class CellContainer;
-class SubContainer : public GI::BaseContainer, public GI::SerialData
+class SubContainer : public BaseCellContainer
 {
-public:
-    struct Cell
-    {
-        enum { INVALID, EMPTY, USED };
-        TypeSet::IDType id;
-        int status;
-        CellContainer *con;
-        Cell() : status( INVALID ), con( 0 ) { }
-    };
-    typedef std::vector<Cell> CellListT;
 public:
     SubContainer();
 
     virtual ~SubContainer();
 
-    void SetSize( long size );
+    virtual bool Enable( long pos );
 
-    long GetSize() const;
-
-    void Enable( long pos );
-
-    void EnableAll();
-
-    void Disable( long pos );
-
-    void DisableAll();
+    virtual bool Disable( long pos );
 
     bool Move( BaseContainer *srcCon, TypeSet::IDType objID, long pos );
 
@@ -46,22 +26,13 @@ public:
 
     bool Swap( TypeSet::IDType srcObjID, TypeSet::IDType destObjID );
 
-    const Cell &GetCell( long pos ) const;
-
-    int GetCellStatus( long pos ) const { return GetCell( pos ).status; }
-
     bool CanSwap( const GI::Object *srcObj, const GI::Object *destObj );
+
+    long SubObjCount( long pos ) const;
 protected:
-    virtual bool Add( GI::Object *obj );
+    virtual bool FillCell( long pos, const GI::Object *obj );
 
-    virtual bool Remove( GI::Object *obj );
-
-    void FillCell( long pos, const GI::Object *obj, long conSize );
-
-    void UnFillCell( long pos );
-protected:
-    CellListT m_cells;
+    virtual bool UnFillCell( long pos );
 };
 
 #endif
-

@@ -1,19 +1,31 @@
 ///
 /// @file CellContainer.h
+/// 
 ///
-///
-#ifndef ___CELLCONTAINER_H_
-#define ___CELLCONTAINER_H_
+#ifndef ___CELL_CONTAINER_H_
+#define ___CELL_CONTAINER_H_
 
-#include "BaseCellContainer.h"
+#include "../GIContainer.h"
 #include "RefObject.h"
+#include <vector>
 
-class CellContainer : public BaseCellContainer
+class CellContainer : public GI::MergeContainer, public GI::SerialData
 {
 public:
-    CellContainer();
+    struct Cell
+    {
+        enum Status { INVALID, EMPTY, USED } status;
+        TypeSet::IDType id;
+        Cell() : status( EMPTY ), id( TypeSet::IDType() ) { }
+    };
+    typedef std::vector<Cell> CellListT;
+
+public:
+    CellContainer( long maxCell );
 
     virtual ~CellContainer();
+
+    bool SetSize( long size );
 
     /// Destroy objects by 'rets'.
     void BatchDestroy( const DelRetListT *rets );
@@ -26,16 +38,16 @@ public:
     virtual bool MoveAll( BaseContainer *srcCon );
 
     /// Move some count objects from 'srcCon'. The 'pos' must be empty.
-    bool Move( BaseCellContainer *srcCon, TypeSet::IDType objID, 
+    bool Move( MergeContainer *srcCon, TypeSet::IDType objID, 
             TypeSet::StackCntType cnt, long pos );  
     
     /// Merge the object in 'srcCon' to 'this'.(full merge or partial merge)
     /// The 'pos' must have the same type object which can be merged.
-    bool Merge( BaseCellContainer *srcCon, TypeSet::IDType objID, 
+    bool Merge( MergeContainer *srcCon, TypeSet::IDType objID, 
             TypeSet::StackCntType cnt, long pos );    
 
     /// Swap the object in 'srcCon' to 'this'.
-    bool Swap( BaseCellContainer *srcCon, TypeSet::IDType srcObj, TypeSet::IDType thisObj );
+    bool Swap( BaseContainer *srcCon, TypeSet::IDType srcObj, TypeSet::IDType thisObj );
 
     /// Move objects in this container. The 'newPos' must be empty.
     bool Move( TypeSet::IDType objID, long newPos );
@@ -61,11 +73,51 @@ public:
 
     virtual bool UnSerialize( GI::ByteBuffer &buf );
 
-    /// Refill the cell information.
     bool ReFill();
 
+    long GetMaxCellCnt() const { return m_maxCellCnt; }
+
+    long GetUsedCellCnt() const { return m_usedCellCnt; }
+
+    const CellListT &GetCells() const { return m_cells; }
+
+    /// Get the specified cell.
+    const Cell &GetCell( long pos ) const;
+    
+    template <typename T>
+    void TraverseCell( T fn );
 protected:
+    void ResetCells();
+    
     bool DoAdd( GI::Object *obj, const AddRet &ret );
+
+    void FillCell( long pos, TypeSet::IDType id );
+
+    void UnFillCell( long pos );
+
+    int GetCellStatus( long pos );
+    
+    /// The 'obj' must has correct CELL_POS property.
+    virtual bool Add( GI::Object *obj );
+
+    /// Remove the object and unfill the cell.
+    virtual bool Remove( GI::Object *obj );
+
+protected:
+    long m_maxCellCnt;
+    long m_usedCellCnt;
+    CellListT m_cells;
 };
 
+template <typename T>
+void CellContainer::TraverseCell( T fn )
+{
+    for( CellListT::const_iterator it = m_cells.begin();
+            it != m_cells.end(); ++ it )
+    {
+        fn( (const Cell&) it );
+    }
+}
+
 #endif
+

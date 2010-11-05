@@ -4,14 +4,37 @@
 ///
 #include "CellContainer.h"
 #include "RefContainer.h"
+#include "GoodsPropertyType.h"
 #include "ObjVisitor.h"
 
-CellContainer::CellContainer()
+CellContainer::CellContainer( long maxCell )
 {
+    m_usedCellCnt = 0;
+    SetSize( maxCell );
+    ResetCells();
 }
 
 CellContainer::~CellContainer()
 {
+}
+
+bool CellContainer::SetSize( long size )
+{
+    if( size < m_usedCellCnt ) return false;
+    m_cells.resize( size );
+    m_maxCellCnt = size;
+    return true;
+}
+
+void CellContainer::ResetCells()
+{
+    for( CellListT::iterator it = m_cells.begin();
+            it != m_cells.end(); ++ it )
+    {
+        Cell &cell = *it;
+        cell.status = Cell::EMPTY;
+    }
+    m_usedCellCnt = 0;
 }
 
 void CellContainer::BatchDestroy( const DelRetListT *rets )
@@ -20,15 +43,14 @@ void CellContainer::BatchDestroy( const DelRetListT *rets )
             it != rets->end(); ++ it )
     {
         const DelRet &delRet = *it;
-        const Cell &cell = GetCell( delRet.pos );
-        if( cell.status != Cell::USED ) continue;
+        TypeSet::IDType id = m_cells[delRet.pos].id;
         if( delRet.op == DelRet::DEL )
         {
-            Destroy( cell.id );
+            Destroy( id );
         }
         else
         {
-            DecStack( cell.id, delRet.dec );
+            DecStack( id, delRet.dec );
         }
     }
 }
@@ -48,7 +70,7 @@ bool CellContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID )
     return true; 
 }
 
-bool CellContainer::Move( BaseCellContainer *srcCon, TypeSet::IDType objID, 
+bool CellContainer::Move( MergeContainer *srcCon, TypeSet::IDType objID, 
         TypeSet::StackCntType cnt, long pos )
 {
     if( GetCellStatus( pos ) != Cell::EMPTY ) return false;
@@ -75,7 +97,7 @@ bool CellContainer::Move( BaseCellContainer *srcCon, TypeSet::IDType objID,
     return true;
 }
 
-bool CellContainer::Merge( BaseCellContainer *srcCon, TypeSet::IDType objID, 
+bool CellContainer::Merge( MergeContainer *srcCon, TypeSet::IDType objID, 
         TypeSet::StackCntType cnt, long pos )
 {
     const GI::Object *obj = srcCon->GetObject( objID );
@@ -101,7 +123,7 @@ bool CellContainer::Merge( BaseCellContainer *srcCon, TypeSet::IDType objID,
     return true;
 }
 
-bool CellContainer::Swap( BaseCellContainer *srcCon, TypeSet::IDType srcObjID, TypeSet::IDType thisObjID ) 
+bool CellContainer::Swap( GI::BaseContainer *srcCon, TypeSet::IDType srcObjID, TypeSet::IDType thisObjID ) 
 {
     GI::Object *srcObj = AgentGet( srcCon, srcObjID );
     GI::Object *thisObj = Get( thisObjID );
@@ -126,7 +148,7 @@ bool CellContainer::Move( TypeSet::IDType objID, long newPos )
     long pos = ObjVisitor::Pos( obj ); 
     UnFillCell( pos );
     ObjVisitor::SetPos( obj, newPos );
-    FillCell( newPos, obj );
+    FillCell( newPos, objID );
     return true;
 }
 
@@ -139,8 +161,8 @@ bool CellContainer::Swap( TypeSet::IDType objID1, TypeSet::IDType objID2 )
     long pos2 = ObjVisitor::Pos( obj2 );
     ObjVisitor::SetPos( obj1, pos2 );
     ObjVisitor::SetPos( obj2, pos1 );
-    FillCell( pos1, obj2 );
-    FillCell( pos2, obj1 );
+    FillCell( pos1, objID2 );
+    FillCell( pos2, objID1 );
     return true;
 }
 
@@ -184,7 +206,7 @@ bool CellContainer::Split( TypeSet::IDType objID, TypeSet::StackCntType splitCnt
 
 bool CellContainer::Merge( TypeSet::IDType obj1, TypeSet::IDType obj2 )
 {
-    return BaseCellContainer::Merge( obj1, obj2 );
+    return GI::MergeContainer::Merge( obj1, obj2 );
 }
 
 bool CellContainer::Merge( TypeSet::IDType objID, TypeSet::StackCntType cnt, long pos )
@@ -216,7 +238,8 @@ bool CellContainer::Merge( TypeSet::IDType objID, TypeSet::StackCntType cnt, lon
 
 void CellContainer::DestroyAll()
 {
-    BaseCellContainer::DestroyAll();
+    MergeContainer::DestroyAll();
+    ResetCells();
 }
 
 bool CellContainer::DoAdd( GI::Object *obj, const AddRet &ret )
@@ -229,24 +252,66 @@ bool CellContainer::DoAdd( GI::Object *obj, const AddRet &ret )
     else
     {
         GI::MergeContainer::Add( obj ); 
-        const Cell &cell = GetCell( ret.pos );
+        const Cell &cell = m_cells[ret.pos];
         Merge( cell.id, ret.id );
     }
     return true;
 }
 
+bool CellContainer::Add( GI::Object *obj )
+{
+    long pos = ObjVisitor::Pos( obj );
+    if( pos < 0 ) return false;
+    FillCell( pos, ObjVisitor::ID( obj ) );
+    return GI::MergeContainer::Add( obj );
+}
+
+bool CellContainer::Remove( GI::Object *obj )
+{
+    long pos = ObjVisitor::Pos( obj );
+    if( pos < 0 ) return false;
+    UnFillCell( pos );
+    return GI::MergeContainer::Remove( obj );
+}
+
+void CellContainer::FillCell( long pos, TypeSet::IDType id )
+{
+    Cell &cell = m_cells[pos];
+    cell.status = Cell::USED;
+    cell.id = id;
+    ++ m_usedCellCnt;
+}
+
+void CellContainer::UnFillCell( long pos )
+{
+    m_cells[pos].status = Cell::EMPTY;
+    -- m_usedCellCnt;
+}
+
+int CellContainer::GetCellStatus( long pos )
+{
+    return GetCell( pos ).status;
+}
+
+const CellContainer::Cell &CellContainer::GetCell( long pos ) const
+{
+    static Cell nullCell; nullCell.status = Cell::INVALID;
+    if( pos < 0 || pos > (long) m_cells.size() ) return nullCell;
+    return m_cells[pos];
+}
+
 bool CellContainer::ReFill()
 {
-    if( ObjCount() > Size() ) return false;
+    if( ObjCount() > GetMaxCellCnt() ) return false;
+    ResetCells();
     long pos = 0;
     for( ObjectMap::iterator it = m_objs.begin();
             it != m_objs.end(); ++ it, ++pos )
     {
         GI::Object *obj = it->second;
         ObjVisitor::SetPos( obj, pos );
-        FillCell( pos, obj );
+        FillCell( pos, it->first );
     }
     return true;
 }
-
 

@@ -3,7 +3,7 @@
 /// @author Kevin Lynx
 ///
 #include "C2SObjectMove.h"
-#include "../CellContainer.h"
+#include "../BaseCellContainer.h"
 #include "../ObjVisitor.h"
 
 MoveOperator::MoveOperator()
@@ -15,15 +15,15 @@ int MoveOperator::GetCellOperType()
 {
     if( m_info->src.ownerType != TYPE_PLAYER ||
         m_info->dest.ownerType != TYPE_PLAYER ) return NONE;
-    CellContainer *destCon = (CellContainer*) GetDestCon();
+    BaseCellContainer *destCon = (BaseCellContainer*) GetDestCon();
     long destPos = m_info->dest.conPos;
-    const CellContainer::Cell &cell = destCon->GetCell( destPos );
-    if( cell.status == CellContainer::Cell::INVALID ) return NONE;
+    const BaseCellContainer::Cell &cell = destCon->GetCell( destPos );
+    if( cell.status == BaseCellContainer::Cell::DISABLED ) return NONE;
     long operCnt = m_info->obj.cnt;
-    CellContainer *srcCon = (CellContainer*) GetSrcCon();
+    BaseCellContainer *srcCon = (BaseCellContainer*) GetSrcCon();
     const GI::Object *srcObj = srcCon->GetObject( m_info->obj.id );
     long srcCnt = ObjVisitor::Count( srcObj );
-    if( cell.status == CellContainer::Cell::EMPTY ) 
+    if( cell.status == BaseCellContainer::Cell::EMPTY ) 
     {
         if( operCnt < srcCnt ) return SPLIT;
         return MOVE;
