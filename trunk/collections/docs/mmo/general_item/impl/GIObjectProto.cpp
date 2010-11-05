@@ -6,6 +6,49 @@
 
 namespace GI
 {
+    struct Serializer
+    {
+        Serializer( ByteBuffer &buf ) : m_buf( buf ) { }
+
+        void operator() ( const ObjectProto::KeyType &k,  
+                const ObjectProto::ValueType &v ) const
+        {
+            k.Serialize( m_buf );
+            v.Serialize( m_buf );
+        }
+
+        void operator() ( const ObjProtoFactory::KeyType &k,
+                const ObjProtoFactory::ValueType &v ) const
+        {
+            m_buf.Push( &k, sizeof( k ) );
+            v->Serialize( m_buf );
+        }
+
+        ByteBuffer &m_buf;
+    };
+
+    void ObjectProto::Serialize( ByteBuffer &buf ) const
+    {
+        buf.Push( Size() );
+        Traverse( Serializer( buf ) );
+    }
+
+    bool ObjectProto::UnSerialize( ByteBuffer &buf )
+    {
+        Clear();
+        size_t size;
+        if( !buf.Pop( &size ) ) return false;
+        for( size_t i = 0; i < size; ++ i )
+        {
+            KeyType key;
+            ValueType value;
+            key.UnSerialize( buf );
+            value.UnSerialize( buf );
+            AddProperty( key, value );
+        } 
+        return true;
+    }
+
     ObjProtoFactory::ObjProtoFactory( ProtoLoader *loader ) :
         SelfType( NULL ), m_loader( loader )
     {
@@ -29,6 +72,31 @@ namespace GI
             delete it->second;
         }
         Clear();
+    }
+
+    void ObjProtoFactory::Serialize( ByteBuffer &buf ) const
+    {
+        buf.Push( Size() );
+        Traverse( Serializer( buf ) );
+    }
+
+    bool ObjProtoFactory::UnSerialize( ByteBuffer &buf )
+    {
+        Release();
+        size_t size;
+        if( !buf.Pop( &size ) ) return false;
+        for( size_t i = 0; i < size; ++ i )
+        {
+            ObjectProto *proto = new ObjectProto();
+            if( !proto->UnSerialize( buf ) ) delete proto;
+            else
+            {
+                TypeSet::IndexType index = TypeSet::ValueType::ToIndex( proto->GetValue(
+                            KeySet::IndexKey ) );
+                AddProperty( index, proto );
+            }
+        }
+        return true;
     }
 
     const ObjectProto *ObjProtoFactory::GetProto( TypeSet::IndexType index ) const

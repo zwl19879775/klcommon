@@ -33,6 +33,10 @@ namespace ObjVisitor
     long ConSize( const GI::Object *obj );
 
     long Type( const GI::Object *obj );
+
+    void SetRgnPosX( GI::Object *obj, double x );
+
+    void SetRgnPosY( GI::Object *obj, double y );
 }
 
 #endif

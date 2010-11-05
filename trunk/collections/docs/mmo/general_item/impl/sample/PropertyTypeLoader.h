@@ -6,6 +6,7 @@
 #define ___PROPERTY_TYPE_LOADER_H_
 
 #include "../GIBase.h"
+#include "ValGenFuncs.h"
 #include <vector>
 
 class PropertyTypeLoader : public GI::SerialData
@@ -15,18 +16,23 @@ public:
     {
         int key;
         int type;
-        // more...
+        ValGen::Param param;
     };
     typedef std::vector<Item> ItemListT;
 public:
+    PropertyTypeLoader() { }
+
+    virtual ~PropertyTypeLoader() { Clear(); }
 
     bool Load();
 
+    void Clear();
+
     virtual void Serialize( GI::ByteBuffer &buf ) const;
 
-    /// UnSerialize these config and build Property Prototype.
     virtual bool UnSerialize( GI::ByteBuffer &buf );
 
+    void Build() const;
 private:
     ItemListT m_items;
 };

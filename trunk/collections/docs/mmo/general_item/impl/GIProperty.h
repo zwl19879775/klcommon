@@ -23,12 +23,12 @@ namespace GI
         PT_INDEX    = 0x0020,
     };
 
-#define IS_STATIC( t ) (t & PT_STATIC)
-#define IS_DYNAMIC( t ) (t & PT_DYNAMIC)
-#define IS_DETAIL( t ) (t & PT_DETAIL)
-#define IS_GENERAL( t ) (t & PT_GENERAL)
-#define IS_IDENTIFY( t ) (t & PT_IDENTIFY)
-#define IS_INDEX( t ) (t & PT_INDEX)
+#define IS_STATIC( t ) (t & GI::PT_STATIC)
+#define IS_DYNAMIC( t ) (t & GI::PT_DYNAMIC)
+#define IS_DETAIL( t ) (t & GI::PT_DETAIL)
+#define IS_GENERAL( t ) (t & GI::PT_GENERAL)
+#define IS_IDENTIFY( t ) (t & GI::PT_IDENTIFY)
+#define IS_INDEX( t ) (t & GI::PT_INDEX)
 
     /// Listen on properties.
     template <typename Key, typename Value>
@@ -80,10 +80,11 @@ namespace GI
         /// Set a property value, if the property does not exist, return false.
         virtual bool SetValue( Key key, Value val );
 
-        /// Traverse the whole property table.
+        /// Traverse the whole property table. op( key, value );
         template <typename Fn>
         void Traverse( Fn op ) const;
 
+        size_t Size() const { return m_properties.size(); }
     protected:
         /// Table to store <key, value>.
         Table m_properties;
@@ -97,9 +98,11 @@ namespace GI
     {
         int type;
         /// Callback function to generate dynamic properties.
-        typedef TypeSet::ValueType (*GenValFunc)( Object *obj );
+        typedef TypeSet::ValueType (*GenValFunc)( const Object *obj, void *u );
         GenValFunc func;
-        PropertyType( int t = PT_NULL, GenValFunc f = NULL ) : type( t ), func( f )
+        void *u;
+        PropertyType( int t = PT_NULL, GenValFunc f = NULL, void *_u ) : 
+            type( t ), func( f ), u( _u )
         {
         }
     };
@@ -115,14 +118,14 @@ namespace GI
         PropertyTypeSet();
 
         /// Add a new property type.
-        void Add( KeyType key, int type, PropertyType::GenValFunc func );
+        void Add( KeyType key, int type, PropertyType::GenValFunc func, void *u );
 
         /// Get a property type.
         int GetType( KeyType key );
 
         /// Generate a property value, the property must be a dynamic 
         /// property.
-        TypeSet::ValueType GenValue( KeyType key, Object *obj );
+        TypeSet::ValueType GenValue( KeyType key, const Object *obj );
     };
 
 #include "GIPropertySetImpl.h"

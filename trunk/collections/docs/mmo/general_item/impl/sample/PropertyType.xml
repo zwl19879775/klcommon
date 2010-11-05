@@ -2,9 +2,7 @@
 <PropertyType>
     <Basic>
         <property key="PINDEX" type="PT_STATIC | PT_INDEX" />
-        <property key="PID" type="PT_DYNAMIC | PT_IDENTIFY" />
-        <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" />
-        <property key="PRGNY" type="PT_DYNAMIC | PT_GENERAL" />
+        <property key="PID" type="PT_DYNAMIC | PT_IDENTIFY" gen="SPEC_GEN_GUID" arg=""/>
         <property key="PORIGNAME" type="PT_STATIC" />
         <property key="PNAME" type="PT_STATIC" />
         <property key="PGOLD_PRICE" type="PT_STATIC" />
@@ -23,10 +21,18 @@
         <!--deprecated end-->
         <property key="PDESC" type="PT_STATIC" />
         <property key="PMAX_STACKCNT" type="PT_STATIC" />
-        <property key="PSTACKCNT" type="PT_DYNAMIC" />
+        <property key="PSTACKCNT" type="PT_DYNAMIC" gen="DEFAULT" arg="DLONG"/>
     </Basic>
+    <Runtime>
+        <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" />
+        <property key="PRGNY" type="PT_DYNAMIC | PT_GENERAL" />
+        <property key="PCELL_POS" type="PT_DYNAMIC" />
+    </Runtime>
     <Extend>
-        <property key="PINC_HP" type="PT_STATIC" />
+        <property key="PINC_HP_MIN" type="PT_STATIC" />
+        <property key="PINC_HP_MAX" type="PT_STATIC" />
+        <property key="PINC_HP" type="PT_DYNAMIC" gen="RANGE" arg="PINC_HP_MIN,
+            PINC_HP_MAX" />
         <property key="PCOOLDOWN" type="PT_STATIC" />
         <!--TODO: add more-->
     </Extend>

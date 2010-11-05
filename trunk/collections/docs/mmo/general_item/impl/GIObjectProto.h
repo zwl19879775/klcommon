@@ -7,6 +7,7 @@
 #define ___GI_OBJECT_PROTO_H_
 
 #include "GIProperty.h"
+#include "GIBase.h"
 
 namespace GI
 {
@@ -16,7 +17,10 @@ namespace GI
     ///
     class ObjectProto : public PropertySet<TypeSet::KeyType, TypeSet::ValueType>
     {
-        // add more...
+    public:
+        void Serialize( ByteBuffer &buf ) const;
+
+        bool UnSerialize( ByteBuffer &buf );
     };
 
     class ObjProtoFactory;
@@ -47,6 +51,10 @@ namespace GI
 
         /// Release all the prototypes, called by destructor.
         void Release();
+
+        void Serialize( ByteBuffer &buf ) const;
+
+        bool UnSerialize( ByteBuffer &buf );
 
         /// Get object prototype by object index. 
         /// Return null if the prototype does not exist.
