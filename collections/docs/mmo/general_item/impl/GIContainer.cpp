@@ -4,12 +4,22 @@
 /// 
 #include "GIContainer.h"
 #include "GIObject.h"
-#include "GIObjectProto.h"
 #include "GIContainerListener.h"
+#include "GIObjCreator.h"
 
 namespace GI
 {
+    struct Serializer
+    {
+        Serializer( GI::ByteBuffer &buf ) : m_buf( buf ) { }
 
+        void operator() ( TypeSet::IDType id, const Object *obj )
+        {
+            obj->Serialize( m_buf );
+        }
+
+        GI::ByteBuffer &m_buf;
+    };
 
     BaseContainer::BaseContainer()
     {
@@ -63,8 +73,7 @@ namespace GI
         Object *obj = Get( objID );
         if( !obj ) return false;
         Remove( obj );
-        NOTIFY_LISTENER( OnDestroy( obj ) );
-        delete obj;
+        SINGLETON( ObjCreator ).Destroy( obj );
         return true;
     }
 
@@ -75,10 +84,30 @@ namespace GI
         {
             // TODO: 
             NOTIFY_LISTENER( OnRemove( it->second ) );
-            NOTIFY_LISTENER( OnDestroy( it->second ) );
-            delete it->second;
+            SINGLETON( ObjCreator ).Destroy( it->second );
         }
         m_objs.clear();
+    }
+
+    void BaseContainer::Serialize( GI::ByteBuffer &buf ) const
+    {
+        buf.Push( ObjCount() );
+        Traverse( Serializer( buf ) );
+    }
+
+    bool BaseContainer::UnSerialize( GI::ByteBuffer &buf )
+    {
+        DestroyAll();
+        long cnt;
+        if( !buf.Pop( &cnt ) ) return false;
+        for( long i = 0; i < cnt; ++ i )
+        {
+            Object *obj = SINGLETON( ObjCreator ).Create();
+            obj->UnSerialize( buf );
+            SINGLETON( ObjCreator ).SetProto( obj );
+            Add( obj );
+        }
+        return true;
     }
 
     const Object *BaseContainer::GetObject( TypeSet::IDType objID ) const
@@ -126,22 +155,6 @@ namespace GI
         return con->Get( id );
     }
     ///////////////////////////////////////////////////////////////////////////
-    struct Creator
-    {
-        Creator( Object *obj ) : m_obj( obj ) { }
-
-        void operator() ( ObjectProto::KeyType key, ObjectProto::ValueType val ) 
-        {
-            PropertyTypeSet &pts = PropertyTypeSet::getSingleton();
-            int t = pts.GetType( key );
-            if( IS_DYNAMIC( t ) )
-            {
-                val = pts.GenValue( key, m_obj );
-                m_obj->AddProperty( key, val );
-            }
-        }
-        Object *m_obj;
-    };
     FactoryContainer::FactoryContainer()
     {
     }
@@ -154,17 +167,16 @@ namespace GI
     {
         Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
-        NOTIFY_LISTENER( OnCreate( obj ) );
         Add( obj );
         return true;
     }
 
     Object *FactoryContainer::DoCreate( TypeSet::IndexType index, Object::PListenerType *listener )
     {
-        Object *obj = new Object( listener );
+        Object *obj = SINGLETON( ObjCreator ).Create();
         if( !FillProperty( index, obj ) )
         {
-            delete obj;
+            SINGLETON( ObjCreator ).Destroy( obj );
             obj = NULL;
         }
         return obj;
@@ -172,11 +184,7 @@ namespace GI
 
     bool FactoryContainer::FillProperty( TypeSet::IndexType index, Object *obj )
     {
-        const ObjectProto *proto = ObjProtoFactory::getSingleton().GetProto( index );
-        if( !proto ) return false;
-        obj->SetProto( proto );
-        proto->Traverse( Creator( obj ) );
-        return true;
+        return SINGLETON( ObjCreator ).FillProperty( index, obj );
     }
     ///////////////////////////////////////////////////////////////////////////
     ModifyContainer::ModifyContainer()
@@ -191,7 +199,6 @@ namespace GI
     {
         Object *obj = Get( objID );
         if( !obj ) return false;
-        NOTIFY_LISTENER( OnModify( obj, key, value ) );
         obj->SetValue( key, value );
         return true;
     }
@@ -219,10 +226,7 @@ namespace GI
         TypeSet::StackCntType sCnt2 = GetStackCnt( obj2 );
 
         if( sCnt1 + sCnt2 > maxSCnt ) return false;
-        NOTIFY_LISTENER( OnModify( obj1, KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) ) );
         obj1->SetValue( KeySet::StackCntKey, TypeSet::ValueType( sCnt1 + sCnt2 ) );
-        // destroy object2
-        NOTIFY_LISTENER( OnDestroy( obj2 ) );
         Destroy( objID2 );
 
         return true;
@@ -238,10 +242,7 @@ namespace GI
         TypeSet::StackCntType retCnt = curCnt - splitCnt;
         NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
-        // clone a new object.
-        Object *newObj = new Object( NULL );
-        obj->Clone( newObj );
-        NOTIFY_LISTENER( OnCreate( newObj ) );
+        Object *newObj = SINGLETON( ObjCreator ).Clone( obj );
         newObj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( splitCnt ) );
         Add( newObj );
         return true;
@@ -253,9 +254,7 @@ namespace GI
         if( !obj ) return false;
         TypeSet::StackCntType curCnt = GetStackCnt( obj );
         if( curCnt <= decCnt ) return false;
-        
         TypeSet::StackCntType retCnt = curCnt - decCnt;
-        NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         return true;
     }

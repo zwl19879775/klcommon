@@ -41,7 +41,7 @@ namespace GI
     Object::Object( PListenerType *listener ) : SelfType( listener ),
         m_proto( NULL )
     {
-        m_detailCnt = 0;
+        m_dynamicCnt = 0;
         m_generalCnt = 0;
     }
 
@@ -65,7 +65,7 @@ namespace GI
         if( ret )
         {
             int t = PropertyTypeSet::getSingleton().GetType( key );
-            if( IS_DETAIL( t ) ) ++ m_detailCnt;
+            if( IS_DYNAMIC( t ) ) ++ m_dynamicCnt;
             if( IS_GENERAL( t ) ) ++ m_generalCnt;
         }
         return ret;
@@ -74,14 +74,14 @@ namespace GI
     void Object::RemoveProperty( KeyType key )
     {
         int t = PropertyTypeSet::getSingleton().GetType( key );
-        if( IS_DETAIL( t ) ) -- m_detailCnt;
+        if( IS_DYNAMIC( t ) ) -- m_dynamicCnt;
         if( IS_GENERAL( t ) ) -- m_generalCnt;
         SelfType::RemoveProperty( key );
     }
 
     void Object::Clear()
     {
-        m_detailCnt = 0;
+        m_dynamicCnt = 0;
         m_generalCnt = 0;
         SelfType::Clear();
     }
@@ -101,10 +101,9 @@ namespace GI
         m_proto = proto;
     }
 
-    void Object::SerializeBasic( ByteBuffer &buf )
+    void Object::SerializeBasic( ByteBuffer &buf ) const
     {
-        int cnt = 2;
-        buf.Push( &cnt, sizeof( cnt ) );
+        buf.Push( 2L );
         KeySet::IndexKey.Serialize( buf );
         ValueType index = GetValue( KeySet::IndexKey );
         index.Serialize( buf );
@@ -113,33 +112,25 @@ namespace GI
         id.Serialize( buf );
     }
 
-    bool Object::UnSerializeBasic( ByteBuffer &buf )
+    bool Object::UnSerializeBasic( ByteBuffer &buf ) 
     {
         return UnSerializeProperties( buf );
     }
 
-    void Object::Serialize( ByteBuffer &buf ) const
+    void Object::SerializeDynamic( ByteBuffer &buf ) const
     {
+        buf.Push( m_dynamicCnt );
         Traverse( Serializer( buf, PT_DYNAMIC ) );
     }
 
-    bool Object::UnSerialize( ByteBuffer &buf )
+    bool Object::UnSerializeDynamic( ByteBuffer &buf )
     {
         return UnSerializeProperties( buf );
     }
 
-    void Object::SerializeDetail( ByteBuffer &buf )
+    void Object::SerializeGeneral( ByteBuffer &buf ) const
     {
-        Traverse( Serializer( buf, PT_DETAIL ) );
-    }
-
-    bool Object::UnSerializeDetail( ByteBuffer &buf )
-    {
-        return UnSerializeProperties( buf );
-    }
-
-    void Object::SerializeGeneral( ByteBuffer &buf )
-    {
+        buf.Push( m_generalCnt );
         Traverse( Serializer( buf, PT_GENERAL ) );
     }
 
@@ -148,11 +139,25 @@ namespace GI
         return UnSerializeProperties( buf );
     }
 
+    void Object::Serialize( ByteBuffer &buf ) const
+    {
+        buf.Push( 1L );
+        KeySet::IndexKey.Serialize( buf );
+        ValueType index = GetValue( KeySet::IndexKey );
+        index.Serialize( buf );
+        SerializeDynamic( buf );
+    }
+
+    bool Object::UnSerialize( ByteBuffer &buf )
+    {
+        return UnSerializeProperties( buf ) && UnSerializeDynamic( buf );
+    }
+
     bool Object::UnSerializeProperties( ByteBuffer &buf )
     {
-        int cnt;
+        long cnt;
         buf.Pop( &cnt, sizeof( cnt ) );
-        for( int i = 0; i < cnt; ++ i )
+        for( long i = 0; i < cnt; ++ i )
         {
             KeyType key;
             ValueType value;
@@ -161,7 +166,7 @@ namespace GI
                 return false;
             }
             int type = PropertyTypeSet::getSingleton().GetType( key );
-            if( IS_DYNAMIC( type ) )
+            if( IS_DYNAMIC( type ) && IS_INDEX( type ) )
             {
                 AddProperty( key, value );
             }

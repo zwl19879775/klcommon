@@ -4,10 +4,18 @@
 #ifndef ___GOODS_PROPERTY_TYPE_H_
 #define ___GOODS_PROPERTY_TYPE_H_
 
+/// Adapter codes.
+enum PSection
+{
+    PSEC_EXT = 0,
+    PSEC_BASE = 512,
+    PSEC_RUNTIME = 640,
+};
+
 /// Property enum type.
 enum 
 {
-    PBASIC_BEGIN = 0,
+    PBASIC_BEGIN = PSEC_BASE,
     PINDEX,
     PID,
     PORIGNAME,
@@ -26,18 +34,24 @@ enum
     PDESC,
     PMAX_STACKCNT,
     PSTACKCNT,
+    PMAKER_NAME, // adapter code
+    PBUY_PRICE,
+    PBASIC_END,
 
-    PRUNTIME_BEGIN = 127, 
+    PRUNTIME_BEGIN = PSEC_RUNTIME, 
     PCELL_POS,
     PRGNX,
     PRGNY,
+    PRUNTIME_END,
 
-    PEXTEND_BEGIN = 255,
+    PEXTEND_BEGIN = PSEC_EXT,
+    PWEAPON_LEVEL,
     PINC_HP_MIN,
     PINC_HP_MAX,
     PINC_HP,
     PCOOLDOWN,
     PCON_SIZE,
+    PEXTEND_END,
 
     PALL_END
 };

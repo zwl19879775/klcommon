@@ -7,6 +7,7 @@
 
 namespace GI
 {
+    class ByteBuffer;
     class Object;
     class BaseContainer;
 }

@@ -12,7 +12,7 @@
 
 enum
 {
-    TYPE_PLAYER, TYPE_REGION, TYPE_SESSION
+    TYPE_PLAYER, TYPE_REGION, TYPE_SESSION, TYPE_GOODS
 };
 
 enum
@@ -54,5 +54,62 @@ public:
     TiXmlElement *NextSiblingElement();
     const char *Attribute( const char *s );
 };
+
+class DBReadSet
+{
+public:
+    struct Temp
+    {
+        void *pDBPtr;
+    } *pDBReadParam;
+
+    void GetBufferFromByteArray( void *d, size_t size );
+};
+
+class DBWriteSet
+{
+public:
+    void AddToByteArray( const void *u, size_t size );
+};
+
+class CMessage
+{
+public:
+    CMessage( long t );
+
+    template <typename T>
+    void Add( T t );
+
+    long GetLong();
+
+    void GetGUID( CGUID &id );
+
+    bool GetDBReadSet( DBReadSet &db );
+
+    bool GetDBWriteSet( DBWriteSet &db );
+
+    void SendToPlayer( const CGUID &id );
+};
+
+enum
+{
+    MSG_S2C_CONTAINER_OBJECT_MOVE,
+};
+
+class PlayerContainer;
+class CPlayer
+{
+public:
+    PlayerContainer &GetContainer();
+};
+
+class Game
+{
+public:
+    CPlayer *FindPlayer( const CGUID &id );
+};
+
+Game *GetGame();
+
 #endif
 

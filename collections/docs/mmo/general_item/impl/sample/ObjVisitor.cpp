@@ -7,6 +7,18 @@
 
 namespace ObjVisitor
 {
+    void SetIfExist( GI::Object *obj, TypeSet::KeyType key, TypeSet::ValueType val )
+    {
+        if( obj->HasProperty( key ) )
+        {
+            obj->SetValue( key, val );
+        }
+        else
+        {
+            obj->AddProperty( key, val );
+        }
+    }
+
     TypeSet::IDType ID( const GI::Object *obj )
     {
         TypeSet::ValueType val = obj->GetValue( KeySet::IDKey );

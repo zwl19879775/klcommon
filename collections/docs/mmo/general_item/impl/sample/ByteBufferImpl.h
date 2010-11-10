@@ -21,6 +21,13 @@ public:
         return true;
     }
 
+    virtual bool PopFromSize( void *d )
+    {
+        size_t size;
+        if( !Pop( &size, sizeof( size ) ) ) return false;
+        return Pop( d, size );
+    }
+
     virtual void Push( const void *u, size_t size ) { }
 private:
     DBReadSet &m_db;
@@ -36,6 +43,12 @@ public:
     virtual void Push( const void *u, size_t size ) 
     {
         m_db.AddToByteArray( u, size );
+    }
+
+    virtual void PushWithSize( const void *u, size_t size )
+    {
+        Push( &size, sizeof( size ) );
+        Push( u, size );
     }
 
     virtual bool Pop( void *d, size_t size ) { return false; }

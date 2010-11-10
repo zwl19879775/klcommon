@@ -75,13 +75,13 @@ void C2SObjectMoveDispatcher::Register( Identifier id, MoveOperator *op )
     m_funcs[id] = op;
 }
 
-bool C2SObjectMoveDispatcher::Run( const C2SObjectMoveInfo &info )
+bool C2SObjectMoveDispatcher::Run( const C2SObjectMoveInfo &info, ObjOperSender *res )
 {
     Identifier id = ToId( info ); 
     HandlerTableT::const_iterator it = m_funcs.find( id );
     if( it == m_funcs.end() ) return false;
     MoveOperator *op = it->second;
-    op->Setup( &info );
+    op->Setup( &info, res );
     if( !op->Check() ) return false;
     return op->Move();
 }

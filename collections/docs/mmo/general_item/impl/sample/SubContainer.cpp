@@ -6,7 +6,6 @@
 #include "CellContainer.h"
 #include "ObjVisitor.h"
 
-#define CAST_CELL(u) ((CellContainer*)(u))
 
 SubContainer::SubContainer()
 {
@@ -132,5 +131,12 @@ bool SubContainer::UnFillCell( long pos )
     if( !BaseCellContainer::UnFillCell( pos ) ) return false;
     /*CAST_CELL( m_cells[pos].u )->ReSize( 0 );*/
     return true;
+}
+
+BaseCellContainer *SubContainer::GetSubCon( long pos ) const
+{
+    const Cell &cell = GetCell( pos );
+    if( cell.status != Cell::USED ) return NULL;
+    return CAST_CELL( cell.u );
 }
 

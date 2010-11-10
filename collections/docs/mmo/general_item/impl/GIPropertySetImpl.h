@@ -6,6 +6,12 @@ PropertySet<Key, Value, Table>::PropertySet( PListenerType *listener ) :
 }
 
 template <typename Key, typename Value, typename Table>
+void PropertySet<Key, Value, Table>::SetListener( PListenerType *listener )
+{
+    m_proListener = listener;
+}
+
+template <typename Key, typename Value, typename Table>
 bool PropertySet<Key, Value, Table>::AddProperty( Key key, Value val )
 {
     if( HasProperty( key ) ) return false;

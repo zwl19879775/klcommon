@@ -96,7 +96,7 @@ bool PropertyTypeLoader::Load()
 void PropertyTypeLoader::Clear()
 {
     m_items.clear();
-    GI::PropertyTypeSet &pts = GI::PropertyTypeSet::getSingleton();
+    GI::PropertyTypeSet &pts = SINGLETON( GI::PropertyTypeSet );
     pts.Clear();
 }
 

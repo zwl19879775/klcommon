@@ -14,11 +14,12 @@
 #include GI_DEPTYPES
 #endif
 
-namespace GI
-{
-    /// the position an object in a container.
-    typedef int PosType;
-}
+/// Config singleton class getting.
+#define SINGLETON( c ) c::getSingleton()
+#define SINGLETON_PTR( c ) c::getSingletonPtr()
+
+/// Config property value (un)serialize no type.
+#define VALUE_NO_TYPE
 
 #endif
 

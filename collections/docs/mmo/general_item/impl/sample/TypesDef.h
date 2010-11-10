@@ -7,6 +7,7 @@
 
 #include "../GIBase.h"
 #include <string>
+#include <utility>
 
 #define _TEST_
 
@@ -24,7 +25,7 @@ namespace GI
 class PropertyKey : public GI::SerialData
 {
 public:
-    PropertyKey( int k = -1 ) : m_key( k )
+    PropertyKey( long k = -1 ) : m_key( k )
     {
     }
 
@@ -43,16 +44,24 @@ public:
     {
         return buf.Pop( &m_key, sizeof( m_key ) );
     }
+
+    operator long () const 
+    {
+        return m_key;
+    }
 private:
-    int m_key;
+    long m_key;
 };
 
 class PropertyValue : public GI::SerialData
 {
 public:
+    enum ValType{ TINVALID, TLONG, TSTRING, TDOUBLE, TGUID, TPAIR } ;
     typedef long Index;
     typedef CGUID Identify;
     typedef long Stack;
+    /// for extend properties.
+    typedef std::pair<long, long> LongPair;
 public:
     PropertyValue();
 
@@ -64,11 +73,17 @@ public:
 
     explicit PropertyValue( const std::string &v );
 
+    PropertyValue( long first, long second );
+
+    PropertyValue( const LongPair &p );
+
     PropertyValue( const PropertyValue &other );
 
     virtual ~PropertyValue();
 
     bool Valid() const;
+
+    int Type() const { return (int) m_type; }
 
     PropertyValue &operator = ( const PropertyValue &other );
 
@@ -90,13 +105,14 @@ public:
     static double ToDouble( const PropertyValue &val );
     static CGUID ToGUID( const PropertyValue &val );
     static std::string ToString( const PropertyValue &val );
+    static LongPair ToPair( const PropertyValue &val );
 private:
 
     void Set( int type, const void *val );
 
     void Free();
 private:
-    enum Type{ TINVALID, TLONG, TSTRING, TDOUBLE, TGUID } m_type;
+    ValType m_type;
     /// Value storage.
     union 
     {
@@ -104,6 +120,7 @@ private:
         double *dv;
         std::string *sv;
         CGUID *gv;
+        LongPair *pv;
     } m_value;
 };
 
@@ -125,6 +142,10 @@ struct KeySet
     static const TypeSet::KeyType StackCntKey;
     static const TypeSet::KeyType MaxStackCntKey;
 };
+
+#define KEYTYPE(k) TypeSet::KeyType(k)
+#define VALUETYPE(v) TypeSet::ValueType(v)
+#define VALUETYPE2(v1,v2) TypeSet::ValueType(v1, v2)
 
 #endif
 

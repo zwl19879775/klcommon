@@ -40,6 +40,12 @@ namespace GI
         /// Destroy all the objects in this container.
         virtual void DestroyAll();
 
+        /// Serialize all the objects in this container.
+        virtual void Serialize( GI::ByteBuffer &buf ) const;
+
+        /// Unserialize objects.
+        virtual bool UnSerialize( GI::ByteBuffer &buf );
+
         /// Get the object by its id.
         const Object *GetObject( TypeSet::IDType objID ) const;
 

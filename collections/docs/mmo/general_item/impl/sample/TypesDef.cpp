@@ -31,6 +31,17 @@ PropertyValue::PropertyValue( const std::string &v )
     Set( TSTRING, &v );
 }
 
+PropertyValue::PropertyValue( long first, long second )
+{
+    LongPair p( first, second );
+    Set( TPAIR, &p );
+}
+
+PropertyValue::PropertyValue( const LongPair &p )
+{
+    Set( TPAIR, &p );
+}
+
 PropertyValue::PropertyValue( const PropertyValue &other )
 {
     *this = other;
@@ -73,6 +84,9 @@ bool PropertyValue::operator == ( const PropertyValue &other ) const
       case TGUID:
           ret = *m_value.gv == *other.m_value.gv;
           break;
+      case TPAIR:
+          ret = *m_value.pv == *other.m_value.pv;
+          break;
       case TINVALID:
           ret = true; // ?
           break;
@@ -105,6 +119,10 @@ void PropertyValue::Serialize( GI::ByteBuffer &buf ) const
           break;
       case TGUID: // TODO: how to serialize GUID depents on GUID impl.
           buf.Push( m_value.gv, sizeof( *m_value.gv ) );
+          break;
+      case TPAIR:
+          buf.Push( m_value.pv, sizeof( *m_value.pv ) );
+          break;
       default:
         break;
     }
@@ -145,6 +163,13 @@ bool PropertyValue::UnSerialize( GI::ByteBuffer &buf )
               Set( TGUID, &v );
           }
           break;
+      case TPAIR:
+          {
+              LongPair p;
+              ret = buf.Pop( &p, sizeof( p ) );
+              Set( TPAIR, &p );
+          }
+          break;
       default:
           m_value.lv = 0;
     }
@@ -164,6 +189,9 @@ void PropertyValue::Free()
       case TGUID:
           delete m_value.gv;
           break;
+      case TPAIR:
+          delete m_value.pv;
+          break;
       default:
           break;
     }
@@ -172,7 +200,7 @@ void PropertyValue::Free()
 
 void PropertyValue::Set( int type, const void *val )
 {
-    m_type = (Type) type;
+    m_type = (ValType) type;
     switch( type )
     {
       case TLONG:
@@ -186,6 +214,9 @@ void PropertyValue::Set( int type, const void *val )
         break;
       case TGUID:
         m_value.gv = new CGUID( *(const CGUID*)val );
+        break;
+      case TPAIR:
+        m_value.pv = new LongPair( *(const LongPair*)val );
         break;
       default:
         m_type = TINVALID;
@@ -234,6 +265,13 @@ std::string PropertyValue::ToString( const PropertyValue &val )
     assert( val.m_type == TSTRING );
     return *val.m_value.sv;
 }
+
+PropertyValue::LongPair PropertyValue::ToPair( const PropertyValue &val )
+{
+    assert( val.m_type == TPAIR );
+    return *val.m_value.pv;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 const TypeSet::KeyType KeySet::IDKey( PID );
 const TypeSet::KeyType KeySet::IndexKey( PINDEX );
