@@ -8,7 +8,7 @@
 #include "../GIContainer.h"
 #include <vector>
 
-class BaseCellContainer : public GI::MergeContainer, public GI::SerialData
+class BaseCellContainer : public GI::MergeContainer
 {
 public:
     struct Cell
@@ -20,6 +20,7 @@ public:
         Cell() : status( DISABLED ), id( TypeSet::IDType() ), u( 0 ) { }
     };
     typedef std::vector<Cell> CellListT;
+    typedef GI::MergeContainer Super;
 public:
     BaseCellContainer();
 
@@ -32,6 +33,10 @@ public:
     virtual bool Disable( long pos );
 
     void DisableAll();
+
+    void Serialize( GI::ByteBuffer &buf ) const;
+
+    bool UnSerialize( GI::ByteBuffer &buf );
     
     /// The new size('size') must greater than 'UsedSize'.
     bool ReSize( long size );
@@ -53,7 +58,7 @@ public:
     /// Get the cell status.
     int GetCellStatus( long pos ) const { return GetCell( pos ).status; }
 
-    /// Traverse all the cell. fn( const Cell& ).
+    /// Traverse all the cell. fn( pos, const Cell& ).
     template <typename T>
     void TraverseCell( T fn );
 
@@ -75,9 +80,8 @@ protected:
 template <typename T>
 void BaseCellContainer::TraverseCell( T fn )
 {
-    for( CellListT::const_iterator it = m_cells.begin();
-            it != m_cells.end(); ++ it )
-        fn( (const Cell&) *it );
+    for( size_t i = 0; i < m_cells.size(); ++ i )
+        fn( i, (const Cell&) m_cells[i] );
 }
 
 #endif

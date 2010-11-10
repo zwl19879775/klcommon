@@ -84,8 +84,8 @@ RefCellContainer::~RefCellContainer()
 void RefCellContainer::RefTo( const CellContainer *con )
 {
     con->Traverse( RefCellCollector( m_refObjs ) );
-    m_maxCellCnt = con->GetMaxCellCnt();
-    m_usedCellCnt = con->GetUsedCellCnt();
+    m_maxCellCnt = con->Size();
+    m_usedCellCnt = con->UsedSize();
     m_cells = con->GetCells();
 }
 

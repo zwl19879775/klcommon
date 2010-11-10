@@ -13,7 +13,7 @@ void GoodsFactory::SetStackCnt::operator() ( GI::Object *obj )
 bool GoodsFactory::BatchCreate( TypeSet::IndexType index, GI::Object::PListenerType *listener,
      long cnt )
 {
-    const GI::ObjectProto *proto = GI::ObjProtoFactory::getSingleton().GetProto( index );
+    const GI::ObjectProto *proto = SINGLETON( GI::ObjProtoFactory ).GetProto( index );
     if( !proto ) return false;
     TypeSet::ValueType maxStackCntVal = proto->GetValue( KeySet::StackCntKey ); 
     long maxStackCnt = TypeSet::ValueType::ToStackCnt( maxStackCntVal );

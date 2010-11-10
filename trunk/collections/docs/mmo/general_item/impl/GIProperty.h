@@ -61,6 +61,9 @@ namespace GI
 
         virtual ~PropertySet() { }
 
+        /// Set property listener.
+        void SetListener( PListenerType *listener );
+
         /// Add a new property in the table.
         virtual bool AddProperty( Key key, Value val );
 
@@ -101,7 +104,7 @@ namespace GI
         typedef TypeSet::ValueType (*GenValFunc)( const Object *obj, void *u );
         GenValFunc func;
         void *u;
-        PropertyType( int t = PT_NULL, GenValFunc f = NULL, void *_u ) : 
+        PropertyType( int t = PT_NULL, GenValFunc f = NULL, void *_u = NULL ) : 
             type( t ), func( f ), u( _u )
         {
         }

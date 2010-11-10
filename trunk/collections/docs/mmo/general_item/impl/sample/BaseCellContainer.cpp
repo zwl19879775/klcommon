@@ -50,6 +50,20 @@ void BaseCellContainer::DisableAll()
     }
 }
 
+void BaseCellContainer::Serialize( GI::ByteBuffer &buf ) const
+{
+    buf.Push( Size() );
+    Super::Serialize( buf );
+}
+
+bool BaseCellContainer::UnSerialize( GI::ByteBuffer &buf )
+{
+    long s;
+    if( !buf.Pop( &s ) ) return false;
+    ReSize( s );
+    return Super::UnSerialize( buf );
+}
+
 bool BaseCellContainer::ReSize( long size )
 {
     if( size <= UsedSize() ) return false;
@@ -97,7 +111,7 @@ bool BaseCellContainer::Add( GI::Object *obj )
     long pos = ObjVisitor::Pos( obj );
     if( pos < 0 || pos >= Size() ) return false;
     if( !FillCell( pos, obj ) ) return false;
-    return GI::MergeContainer::Add( obj );
+    return Super::Add( obj );
 }
 
 bool BaseCellContainer::Remove( GI::Object *obj )
@@ -105,6 +119,6 @@ bool BaseCellContainer::Remove( GI::Object *obj )
     long pos = ObjVisitor::Pos( obj );
     if( pos < 0 || pos >= Size() ) return false;
     if( !UnFillCell( pos ) ) return false;
-    return GI::MergeContainer::Remove( obj );
+    return Super::Remove( obj );
 }
 

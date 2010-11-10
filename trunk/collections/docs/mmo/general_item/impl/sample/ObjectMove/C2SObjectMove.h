@@ -11,7 +11,7 @@
 
 namespace GI { class BaseContainer; }
 
-class CBaseObject;
+class ObjOperSender;
 
 class MoveOperator
 {
@@ -22,7 +22,7 @@ public:
 
     virtual ~MoveOperator() { }
 
-    void Setup( const C2SObjectMoveInfo *info ) { m_info = info; }
+    void Setup( const C2SObjectMoveInfo *info, ObjOperSender *res );
 
     virtual bool Check() { return true; }
 
@@ -40,6 +40,7 @@ protected:
     GI::BaseContainer *GetDestCon();
 protected:
     const C2SObjectMoveInfo *m_info;
+    ObjOperSender *m_res;
 };
 
 ///
@@ -59,7 +60,7 @@ public:
 
     void Register( Identifier id, MoveOperator *op );
 
-    bool Run( const C2SObjectMoveInfo &info );
+    bool Run( const C2SObjectMoveInfo &info, ObjOperSender *res );
 
     static Identifier ToId( long srcType, long srcCon,
             long destType, long destCon );

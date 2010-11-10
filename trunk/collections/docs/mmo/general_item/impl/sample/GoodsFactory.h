@@ -17,7 +17,7 @@ public:
         
         void operator() ( GI::Object *obj );
 
-        int m_cnt;
+        long m_cnt;
     };
 public:
     GoodsFactory() { }

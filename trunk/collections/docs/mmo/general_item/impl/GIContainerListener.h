@@ -20,9 +20,11 @@ namespace GI
 
         virtual ~ContainerListener() { }
 
+        /// NOTE: Deprecated method.
         /// An object has been created.
         virtual void OnCreate( const Object *obj ) { }
 
+        /// NOTE: Deprecated method.
         /// An object will be destroyed.
         virtual void OnDestroy( const Object *obj ) { }
 
@@ -32,6 +34,7 @@ namespace GI
         /// An object will be removed from this container.
         virtual void OnRemove( const Object *obj ) { }
 
+        /// NOTE: Deprecated method.
         /// An object in this container will be modified properties.
         virtual void OnModify( const Object *obj, TypeSet::KeyType key, TypeSet::ValueType newVal ) { }
 

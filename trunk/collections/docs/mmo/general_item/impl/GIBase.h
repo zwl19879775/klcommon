@@ -15,7 +15,9 @@ namespace GI
     public:
         virtual ~ByteBuffer() { }
         virtual void Push( const void *d, size_t size ) = 0;
+        virtual void PushWithSize( const void *d, size_t size )  { }
         virtual bool Pop( void *d, size_t size ) = 0;
+        virtual bool PopFromSize( void *d ) { return false; }
 
         template <typename T>
         void Push( const T &d );

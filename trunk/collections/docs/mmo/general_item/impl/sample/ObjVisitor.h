@@ -10,6 +10,8 @@
 
 namespace ObjVisitor
 {
+    void SetIfExist( GI::Object *obj, TypeSet::KeyType key, TypeSet::ValueType val );
+
     TypeSet::IDType ID( const GI::Object *obj );
 
     long Count( const GI::Object *obj );

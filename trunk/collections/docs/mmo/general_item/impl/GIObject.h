@@ -45,19 +45,19 @@ namespace GI
         void SetProto( const ObjectProto *proto );
 
         /// (Un)Serialize basic properties like: index, id etc.
-        void SerializeBasic( ByteBuffer &buf );
+        void SerializeBasic( ByteBuffer &buf ) const;
         bool UnSerializeBasic( ByteBuffer &buf );
 
         /// (Un)Serialize dynamic properties.
+        virtual void SerializeDynamic( ByteBuffer &buf ) const;
+        virtual bool UnSerializeDynamic( ByteBuffer &buf );
+
+        /// (Un)Serialize index and dynamic properties.
         virtual void Serialize( ByteBuffer &buf ) const;
         virtual bool UnSerialize( ByteBuffer &buf );
 
-        /// (Un)Serialize detail properties.
-        void SerializeDetail( ByteBuffer &buf );
-        bool UnSerializeDetail( ByteBuffer &buf );
-
         /// (Un)Serialize general properties.
-        void SerializeGeneral( ByteBuffer &buf );
+        void SerializeGeneral( ByteBuffer &buf ) const;
         bool UnSerializeGeneral( ByteBuffer &buf );
 
     protected:
@@ -66,8 +66,8 @@ namespace GI
 
     protected:
         const ObjectProto *m_proto;
-        /// Detail properties count.
-        int m_detailCnt;
+        /// Dynamic properties count.
+        int m_dynamicCnt;
         /// General properties count.
         int m_generalCnt;
     };

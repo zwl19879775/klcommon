@@ -63,10 +63,7 @@ static bool LoadExtProperty( GI::ObjectProto *proto, CRFile *file )
         long val1 = ReadLong( file );
         long val2 = ReadLong( file );
 
-        // NOTE: different addon properties implementation.
-        SetIfExist( proto, KEYVALUE( type, val1 ) );
-        SetIfExist( proto, KEYVALUE( type + 1, val2 ) );
-
+        SetIfExist( proto, KEYVALUE( type, TypeSet::ValueType::LongPair( val1, val2 ) ) );
     }
     return true;
 }
