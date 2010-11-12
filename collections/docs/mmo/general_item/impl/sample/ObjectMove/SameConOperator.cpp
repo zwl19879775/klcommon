@@ -5,6 +5,8 @@
 #include "SameConOperator.h"
 #include "../CellContainer.h"
 #include "../ObjVisitor.h"
+#include "../ContainerDef.h"
+#include "../adapter/ObjOperSender.h"   
 
 SameConOperator s_sameConOperator;
 
@@ -34,7 +36,7 @@ bool SameConOperator::Move()
     }
     if( !ret )
     {
-        // TODO: failure response message.
+        m_res->SetOperType( ConDef::OT_INVALID );
     }
     return ret;
 }
@@ -58,7 +60,16 @@ bool SameConOperator::MoveInSameCon()
     switch( op )
     {
     case MOVE:
-        con->Move( m_info->obj.id, destPos );    
+        {
+            con->Move( m_info->obj.id, destPos );    
+            m_res->SetOperType( ConDef::OT_MOVE );
+            m_res->SetSrcCon( m_info->src.ownerID, m_info->src.ownerType, m_info->src.conID, m_info->src.conPos );
+            m_res->SetDestCon( m_info->dest.ownerID, m_info->src.ownerType, m_info->dest.conID, destPos );
+            const GI::Object *obj = con->GetObject( m_info->obj.id );
+            long cnt = ObjVisitor::Count( obj );
+            m_res->SetSrcObj( m_info->obj.id, cnt );
+            m_res->SetDestObj( m_info->obj.id, cnt );
+        }
         break;
     case SPLIT:
         con->Split( m_info->obj.id, m_info->obj.cnt, destPos );
@@ -73,7 +84,6 @@ bool SameConOperator::MoveInSameCon()
     default:
         return false;
     }
-    // TODO: response message.
     return true;
 }
 
@@ -101,7 +111,6 @@ bool SameConOperator::MoveInDiffCon()
     default:
         return false;
     }
-    // TODO: response message.
     return true;
 }
 

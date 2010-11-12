@@ -16,19 +16,27 @@ public:
 
     ~PlayerContainer();
 
+    void SetOwner( CPlayer *owner ) { m_owner = owner; }
+
     /// bool fn( type, BaseCellContainer* );
     template <typename T>
     bool Traverse( T fn );
 
     BaseCellContainer *GetContainer( long type );
 
-    static bool Move( GI::BaseContainer *srcCon, PlayerContainer *destCon );
+    /// Move all the objects in srcCon to player container.
+    bool Move( GI::BaseContainer *srcCon );
+
+    long GetType( GI::BaseContainer *con ) const;
+
+    CPlayer *GetOwner() const { return m_owner; }
 private:
-    long ToCellPos( long t );
+    long ToCellPos( long t ) const;
 
 public:
     SubContainer m_subCons;
     CellContainer m_mainCon;
+    CPlayer *m_owner;
 };
 
 template <typename T>

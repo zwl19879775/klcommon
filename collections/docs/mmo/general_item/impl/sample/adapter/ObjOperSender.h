@@ -28,6 +28,8 @@ public:
 
     void SetDestObj( const TypeSet::IDType &id, long cnt );
 
+    void Reset() { m_op = ConDef::OT_INVALID; }
+
 private:
     bool AddReFillInfo( GI::ByteBuffer &buf );
 

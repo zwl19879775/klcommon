@@ -120,7 +120,6 @@ namespace GI
         Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
         fn( obj );
-        if( m_listener ) m_listener->OnCreate( obj );
         Add( obj );
         return true;
     }

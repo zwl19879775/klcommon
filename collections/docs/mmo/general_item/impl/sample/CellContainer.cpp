@@ -5,6 +5,7 @@
 #include "CellContainer.h"
 #include "RefContainer.h"
 #include "ObjVisitor.h"
+#include "../GIObjCreator.h"
 
 CellContainer::CellContainer()
 {
@@ -45,7 +46,28 @@ bool CellContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID )
     if( !refCellCon.Add( refObj, &ret ) ) return false;
     if( !DoAdd( obj, ret ) ) return false;
     AgentRemove( srcCon, obj );
+    NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
     return true; 
+}
+
+bool CellContainer::MoveAll( BaseContainer *srcCon )
+{
+    RefCellContainer refCellCon;
+    RefBaseContainer refBaseCon;
+    AddRetListT addRets;
+    refBaseCon.RefTo( srcCon );
+    refCellCon.RefTo( this );
+    if( !refBaseCon.TestMoveAll( &refCellCon, &addRets ) ) return false;
+    for( AddRetListT::const_iterator it = addRets.begin();
+            it != addRets.end(); ++ it )
+    {
+        const AddRet &ret = *it;
+        GI::Object *obj = AgentGet( srcCon, ret.id );
+        DoAdd( obj, ret );
+        AgentRemove( srcCon, obj );
+        NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
+    }
+    return true;
 }
 
 bool CellContainer::Move( BaseCellContainer *srcCon, TypeSet::IDType objID, 
@@ -61,13 +83,12 @@ bool CellContainer::Move( BaseCellContainer *srcCon, TypeSet::IDType objID,
         AgentRemove( srcCon, obj );
         ObjVisitor::SetPos( obj, pos );
         Add( obj );
+        NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
     }
     else // partial move(split)
     {
         srcCon->DecStack( objID, cnt );
-        GI::Object *newObj = new GI::Object( NULL );
-        obj->Clone( newObj );
-        NOTIFY_LISTENER( OnCreate( newObj ) );
+        GI::Object *newObj = SINGLETON( GI::ObjCreator ).Clone( obj );
         ObjVisitor::SetCount( newObj, cnt );
         ObjVisitor::SetPos( newObj, pos );
         Add( newObj );
@@ -88,7 +109,6 @@ bool CellContainer::Merge( BaseCellContainer *srcCon, TypeSet::IDType objID,
     long thisCnt = ObjVisitor::Count( thisObj );
     long maxCnt = ObjVisitor::MaxCount( thisObj );
     if( cnt > srcCnt || thisCnt + cnt > maxCnt ) return false;
-    NOTIFY_LISTENER( OnModify( thisObj, KeySet::StackCntKey, TypeSet::ValueType( thisCnt + cnt ) ) );
     ObjVisitor::SetCount( thisObj, thisCnt + cnt );
     if( cnt == srcCnt ) // full merge
     {
@@ -127,6 +147,7 @@ bool CellContainer::Move( TypeSet::IDType objID, long newPos )
     UnFillCell( pos );
     ObjVisitor::SetPos( obj, newPos );
     FillCell( newPos, obj );
+    NOTIFY_LISTENER( OnMoved( this, this, obj ) );
     return true;
 }
 
@@ -144,24 +165,6 @@ bool CellContainer::Swap( TypeSet::IDType objID1, TypeSet::IDType objID2 )
     return true;
 }
 
-bool CellContainer::MoveAll( BaseContainer *srcCon )
-{
-    RefCellContainer refCellCon;
-    RefBaseContainer refBaseCon;
-    AddRetListT addRets;
-    refBaseCon.RefTo( srcCon );
-    refCellCon.RefTo( this );
-    if( !refBaseCon.TestMoveAll( &refCellCon, &addRets ) ) return false;
-    for( AddRetListT::const_iterator it = addRets.begin();
-            it != addRets.end(); ++ it )
-    {
-        const AddRet &ret = *it;
-        GI::Object *obj = AgentGet( srcCon, ret.id );
-        DoAdd( obj, ret );
-    }
-    return true;
-}
-
 bool CellContainer::Split( TypeSet::IDType objID, TypeSet::StackCntType splitCnt, long pos )
 {
     if( GetCellStatus( pos ) != Cell::EMPTY ) return false;
@@ -171,12 +174,9 @@ bool CellContainer::Split( TypeSet::IDType objID, TypeSet::StackCntType splitCnt
     if( splitCnt >= curCnt ) return false;
 
     TypeSet::StackCntType retCnt = curCnt - splitCnt;
-    NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
     obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
-    GI::Object *newObj = new GI::Object( NULL );
-    obj->Clone( newObj );
-    NOTIFY_LISTENER( OnCreate( newObj ) );
-    newObj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( splitCnt ) );
+    GI::Object *newObj = SINGLETON( GI::ObjCreator ).Clone( obj );
+    ObjVisitor::SetCount( newObj, splitCnt );
     ObjVisitor::SetPos( newObj, pos );
     Add( newObj );
     return true;
@@ -200,7 +200,6 @@ bool CellContainer::Merge( TypeSet::IDType objID, TypeSet::StackCntType cnt, lon
     long destCnt = ObjVisitor::Count( destObj );
     long maxCnt = ObjVisitor::Count( destObj );
     if( cnt > srcCnt || cnt + destCnt > maxCnt ) return false;
-    NOTIFY_LISTENER( OnModify( destObj, KeySet::StackCntKey, TypeSet::ValueType( destCnt + cnt ) ) );
     ObjVisitor::SetCount( destObj, destCnt + cnt );
     if( cnt == srcCnt )
     {
@@ -208,7 +207,6 @@ bool CellContainer::Merge( TypeSet::IDType objID, TypeSet::StackCntType cnt, lon
     }
     else
     {
-        NOTIFY_LISTENER( OnModify( srcObj, KeySet::StackCntKey, TypeSet::ValueType( srcCnt - cnt ) ) );
         ObjVisitor::SetCount( srcObj, srcCnt - cnt );
     }
     return true;

@@ -16,30 +16,38 @@ namespace GI
     class ContainerListener
     {
     public:
-        ContainerListener( BaseContainer *con ) : m_con( con ) { }
+        ContainerListener() { }
 
         virtual ~ContainerListener() { }
 
+        /// Attach this to a container, means listen on the container.
+        void Attach( BaseContainer *con );
+
+        /// Detach the listener.
+        void Detach( BaseContainer *con );
+
         /// NOTE: Deprecated method.
         /// An object has been created.
-        virtual void OnCreate( const Object *obj ) { }
+        virtual void OnCreate( BaseContainer *con, const Object *obj ) { }
 
         /// NOTE: Deprecated method.
         /// An object will be destroyed.
-        virtual void OnDestroy( const Object *obj ) { }
+        virtual void OnDestroy( BaseContainer *con, const Object *obj ) { }
 
         /// An object was added to this container.
-        virtual void OnAdd( const Object *obj ) { }
+        virtual void OnAdd( BaseContainer *con, const Object *obj ) { }
 
         /// An object will be removed from this container.
-        virtual void OnRemove( const Object *obj ) { }
+        virtual void OnRemove( BaseContainer *con, const Object *obj ) { }
+
+        /// An move operation has been finished.
+        virtual void OnMoved( BaseContainer *srcCon, BaseContainer *destCon,
+                const Object *obj ) { }
 
         /// NOTE: Deprecated method.
         /// An object in this container will be modified properties.
-        virtual void OnModify( const Object *obj, TypeSet::KeyType key, TypeSet::ValueType newVal ) { }
-
-    protected:
-        BaseContainer *m_con;
+        virtual void OnModify( BaseContainer *con, const Object *obj, 
+                TypeSet::KeyType key, TypeSet::ValueType newVal ) { }
     };    
 }
 
