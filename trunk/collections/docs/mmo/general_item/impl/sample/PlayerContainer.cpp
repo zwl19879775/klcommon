@@ -18,6 +18,7 @@ struct MoveOperator
 
 PlayerContainer::PlayerContainer()
 {
+    m_owner = NULL;
 }
 
 PlayerContainer::~PlayerContainer()
@@ -42,12 +43,22 @@ BaseCellContainer *PlayerContainer::GetContainer( long type )
     return NULL;
 }
 
-bool PlayerContainer::Move( GI::BaseContainer *srcCon, PlayerContainer *destCon )
+bool PlayerContainer::Move( GI::BaseContainer *srcCon )
 {
-    return destCon->Traverse( MoveOperator( srcCon ) );
+    return Traverse( MoveOperator( srcCon ) );
 }
 
-long PlayerContainer::ToCellPos( long t )
+long PlayerContainer::GetType( GI::BaseContainer *con ) const
+{
+    if( con == &m_mainCon ) return ConDef::PEI_PACKET;
+    for( long type = ConDef::PEI_PACK1; type <= ConDef::PEI_PACK4; ++ type )
+    {
+        if( con == m_subCons.GetSubCon( ToCellPos( type ) ) ) return type;
+    }
+    return ConDef::PEI_NONE;
+}
+
+long PlayerContainer::ToCellPos( long t ) const
 {
     return t - ConDef::PEI_PACK1;
 }

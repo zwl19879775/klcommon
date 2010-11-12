@@ -94,6 +94,7 @@ public:
 enum
 {
     MSG_S2C_CONTAINER_OBJECT_MOVE,
+    MSG_S2C_CONTAINER_OBJECT_AMOUNT_CHANGE
 };
 
 class PlayerContainer;
@@ -101,6 +102,8 @@ class CPlayer
 {
 public:
     PlayerContainer &GetContainer();
+
+    const CGUID &GetExID();
 };
 
 class Game

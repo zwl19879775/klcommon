@@ -10,6 +10,7 @@
 ObjOperSender::ObjOperSender()
 {
     m_op = ConDef::OT_INVALID;
+    memset( &m_info, 0, sizeof( m_info ) );
 }
 
 void ObjOperSender::AddObject( const GI::Object *obj )
@@ -75,6 +76,7 @@ void ObjOperSender::Send( const CGUID &shapeID )
     if( m_op != ConDef::OT_INVALID )
     {
         msg.SendToPlayer( shapeID );
+        Reset();
         return;
     }
     msg.Add( m_info.src.ownerType );
@@ -110,6 +112,7 @@ void ObjOperSender::Send( const CGUID &shapeID )
         if( !AddReFillInfo( wbuf ) ) return;
     }
     msg.SendToPlayer( shapeID );
+    Reset();
 }
 
 bool ObjOperSender::AddReFillInfo( GI::ByteBuffer &buf )

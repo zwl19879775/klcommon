@@ -5,6 +5,7 @@
 #include "ObjOperReceiver.h"
 #include "ObjOperSender.h"
 #include "../ObjectMove/C2SObjectMove.h"
+#include "../../GIConfig.h"
 
 void ReceiveObjOperMsg( CMessage *msg )
 {

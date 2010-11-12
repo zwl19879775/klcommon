@@ -7,9 +7,9 @@
 
 #include "../../kl_singleton.h"
 #include "ObjectMoveBase.h"
+#include "../../GIForwardRefs.h"
 #include <map>
 
-namespace GI { class BaseContainer; }
 
 class ObjOperSender;
 

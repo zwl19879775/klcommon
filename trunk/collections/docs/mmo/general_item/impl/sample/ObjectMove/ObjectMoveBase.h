@@ -41,5 +41,12 @@ struct S2CObjectMoveInfo
     ObjInfo destObj;
 };
 
+/// S2C object amount(stack count) change.
+struct S2CObjectAmountChangeInfo
+{
+    ObjConInfo con;
+    ObjInfo obj;
+};
+
 #endif
 

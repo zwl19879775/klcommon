@@ -21,6 +21,7 @@ destExtID(PEI_PACKET)
 destPos(posInContainer)
 srcObjType(0)
 srcObjID(0)
+srcObjAmount(0)
 destObjType(TYPE_GOODS)
 destObjID
 destObjAmount
@@ -35,6 +36,60 @@ srcPos
 objType
 objID
 objAmount
+
+移动到空位置的消息格式：
+OT_MOVE_OBJECT
+srcContainerType(TYPE_PLAYER)
+srcContainerID(playerID)
+srcExtID(PEI_PACKET)
+srcPos(pos before move)
+destContainerType(TYPE_PLAYER)
+destContainerID(playerID)
+destExtID(PEI_PACKET)
+destPos(pos after move)
+srcObjType(TYPE_GOODS)
+srcObjID(goodsID)
+srcObjAmount(goodsCnt)
+destObjType(TYPE_GOODS)
+destObjID(goodsID same as srcObjID)
+destObjAmount(goodsCnt)
+
+交换物品消息格式：
+OT_SWITCH_OBJECT
+srcContainerType(TYPE_PLAYER)
+srcContainerID(playerID)
+srcExtID(PEI_PACKET)
+srcPos(pos)
+destContainerType(TYPE_PLAYER)
+destContainerID(playerID)
+destExtID(PEI_PACKET)
+destPos(posInContainer)
+srcObjType(TYPE_GOODS)
+srcObjID(goodsID) 交换后的物品ID
+srcObjAmount(goodsCnt) 交换后的物品数量
+destObjType(TYPE_GOODS)
+destObjID(goodsID) 客户端操作的物品
+destObjAmount(goodsCnt)
+
+从场景拾取相同物品叠加到玩家背包消息格式：
+OT_MOVE_OBJECT
+srcContainerType(TYPE_REGION)
+srcContainerID(regionID)
+srcExtID(0)
+srcPos(pos)
+destContainerType(TYPE_PLAYER)
+destContainerID(playerID)
+destExtID(PEI_PACKET)
+destPos(posInContainer)
+srcObjType(TYPE_GOODS)
+srcObjID(region goodsID)
+srcObjAmount(goodsCnt)
+destObjType(TYPE_GOODS)
+destObjID(packet goodsID)
+destObjAmount(new Cnt)
+
+要交换物品A和B，客户端发来的消息中，A作为源B作为目标，交换后服务器返回的消息中，
+A则作为目标，B则为源。
 
 二、处理客户端的消息
 
@@ -114,4 +169,18 @@ struct Key
 
 对于交换子背包的操作，需要将物品被重新排列后的格子信息发送给客户端。
 
+-------
+对于格子容器针对物品的操作包括：
+容器内操作：
+移动，改变物品位置
+部分移动，创建物品、改变物品数量、设置物品位置
+交换，改变物品位置
+合并，改变物品数量、删除物品
+部分合并，改变物品数量
+容器间操作：
+移动，移除物品、添加物品、改变物品位置
+部分移动，添加物品、改变物品数量、创建物品、设置物品位置
+交换，添加物品、移除物品、改变物品位置
+合并，删除物品、改变物品数量
+部分合并，改变物品数量
 

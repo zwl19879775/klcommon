@@ -21,6 +21,7 @@ namespace ConDef
 
     enum ConType
     {
+        PEI_NONE = 0,
         PEI_PACKET = 1,
         PEI_EQUIPMENT,
         PEI_WALLET,

@@ -47,6 +47,7 @@ namespace GI
         if( !obj ) return false;
         if( !Add( obj ) ) return false;
         srcCon->Remove( obj );
+        NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
         return true;
     }
 
@@ -59,11 +60,12 @@ namespace GI
             bool addRet = Add( it->second );
             if( addRet && srcCon->m_listener )
             {
-                srcCon->m_listener->OnRemove( it->second );
+                srcCon->m_listener->OnRemove( srcCon, it->second );
                 srcCon->m_objs.erase( it++ );
             }
             else ++ it;
             ret = addRet && ret;
+            NOTIFY_LISTENER( OnMoved( srcCon, this, it->second ) );
         }
         return ret;
     }
@@ -83,7 +85,7 @@ namespace GI
                 it != m_objs.end(); )
         {
             // TODO: 
-            NOTIFY_LISTENER( OnRemove( it->second ) );
+            NOTIFY_LISTENER( OnRemove( this, it->second ) );
             SINGLETON( ObjCreator ).Destroy( it->second );
         }
         m_objs.clear();
@@ -124,7 +126,7 @@ namespace GI
 
     bool BaseContainer::Add( Object *obj )
     {
-        NOTIFY_LISTENER( OnAdd( obj ) );
+        NOTIFY_LISTENER( OnAdd( this, obj ) );
         TypeSet::ValueType idVal = obj->GetValue( KeySet::IDKey );
         TypeSet::IDType id = TypeSet::ValueType::ToID( idVal );
         m_objs[id] = obj; 
@@ -133,7 +135,7 @@ namespace GI
 
     bool BaseContainer::Remove( Object *obj )
     {
-        NOTIFY_LISTENER( OnRemove( obj ) );
+        NOTIFY_LISTENER( OnRemove( this, obj ) );
         TypeSet::ValueType idVal = obj->GetValue( KeySet::IDKey );
         TypeSet::IDType id = TypeSet::ValueType::ToID( idVal );
         m_objs.erase( id );
@@ -240,7 +242,6 @@ namespace GI
         if( splitCnt >= curCnt ) return false;
 
         TypeSet::StackCntType retCnt = curCnt - splitCnt;
-        NOTIFY_LISTENER( OnModify( obj, KeySet::StackCntKey, TypeSet::ValueType( retCnt ) ) );
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         Object *newObj = SINGLETON( ObjCreator ).Clone( obj );
         newObj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( splitCnt ) );
