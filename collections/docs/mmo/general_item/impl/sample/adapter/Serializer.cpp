@@ -19,15 +19,16 @@ namespace GIAdapter
 {
     struct SerializeExt
     {
-        void operator() ( const TypeSet::KeyType &key, const TypeSet::ValueType &val )
+        bool operator() ( const TypeSet::KeyType &key, const TypeSet::ValueType &val )
         {
             if( (long) key > PEXTEND_BEGIN && (long) key < PEXTEND_END )
             {
                 m_ps[&key] = &val;
             }
+            return false;
         }
 
-        void Serialize( GI::ByteBuffer &buf )
+        bool Serialize( GI::ByteBuffer &buf )
         {
             buf.Push( m_ps.size() );
             for( Properties::iterator it = m_ps.begin(); it != m_ps.end(); ++ it )
@@ -36,6 +37,7 @@ namespace GIAdapter
                 buf.Push( (short) (long)(*key) );
                 SerializeValue( *it->second, buf );
             }
+            return false;
         }
 
         typedef std::map<const TypeSet::KeyType*, const TypeSet::ValueType*> Properties;

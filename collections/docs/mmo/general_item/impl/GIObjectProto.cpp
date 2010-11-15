@@ -10,18 +10,20 @@ namespace GI
     {
         Serializer( ByteBuffer &buf ) : m_buf( buf ) { }
 
-        void operator() ( const ObjectProto::KeyType &k,  
+        bool operator() ( const ObjectProto::KeyType &k,  
                 const ObjectProto::ValueType &v ) const
         {
             k.Serialize( m_buf );
             v.Serialize( m_buf );
+            return false;
         }
 
-        void operator() ( const ObjProtoFactory::KeyType &k,
+        bool operator() ( const ObjProtoFactory::KeyType &k,
                 const ObjProtoFactory::ValueType &v ) const
         {
             m_buf.Push( &k, sizeof( k ) );
             v->Serialize( m_buf );
+            return false;
         }
 
         ByteBuffer &m_buf;

@@ -15,7 +15,7 @@ namespace GI
         Serializer( ByteBuffer &buf, int type ) :
            m_buf( buf ), m_type( type ) { }
 
-        void operator() ( Object::KeyType key, Object::ValueType value )
+        bool operator() ( Object::KeyType key, Object::ValueType value )
         {
             int t = PropertyTypeSet::getSingleton().GetType( key );
             if( t & m_type )
@@ -23,6 +23,7 @@ namespace GI
                 key.Serialize( m_buf );
                 value.Serialize( m_buf );
             }
+            return false;
         }
         ByteBuffer &m_buf;
         int m_type;
@@ -31,9 +32,10 @@ namespace GI
     struct Cloner
     {
         Cloner( Object *dest ) : m_dest( dest ) { }
-        void operator() ( Object::KeyType key, Object::ValueType value ) 
+        bool operator() ( Object::KeyType key, Object::ValueType value ) 
         {
             m_dest->AddProperty( key, value );
+            return false;
         }
         Object *m_dest;
     };

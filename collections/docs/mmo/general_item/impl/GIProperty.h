@@ -84,6 +84,7 @@ namespace GI
         virtual bool SetValue( Key key, Value val );
 
         /// Traverse the whole property table. op( key, value );
+        /// The process will stop when op return true.
         template <typename Fn>
         void Traverse( Fn op ) const;
 
