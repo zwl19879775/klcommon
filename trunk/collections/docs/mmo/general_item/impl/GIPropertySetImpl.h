@@ -65,7 +65,7 @@ void PropertySet<Key, Value, Table>::Traverse( Fn op ) const
     for( typename TableType::const_iterator it = m_properties.begin();
             it != m_properties.end(); ++ it )
     {
-        op( it->first, it->second );
+        if( op( it->first, it->second ) ) return;
     }
 }
 

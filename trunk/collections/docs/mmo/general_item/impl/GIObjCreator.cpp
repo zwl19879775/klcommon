@@ -36,7 +36,7 @@ namespace GI
     {
         Creator( Object *obj ) : m_obj( obj ) { }
 
-        void operator() ( ObjectProto::KeyType key, ObjectProto::ValueType val ) 
+        bool operator() ( ObjectProto::KeyType key, ObjectProto::ValueType val ) 
         {
             PropertyTypeSet &pts = SINGLETON( PropertyTypeSet );
             int t = pts.GetType( key );
@@ -49,6 +49,7 @@ namespace GI
             {
                 m_obj->AddProperty( key, val );
             }
+            return false;
         }
         Object *m_obj;
     };
