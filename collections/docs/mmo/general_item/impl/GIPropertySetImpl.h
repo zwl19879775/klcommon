@@ -6,9 +6,20 @@ PropertySet<Key, Value, Table>::PropertySet( PListenerType *listener ) :
 }
 
 template <typename Key, typename Value, typename Table>
+PropertySet<Key, Value, Table>::~PropertySet()
+{
+    SetListener( NULL );
+}
+
+template <typename Key, typename Value, typename Table>
 void PropertySet<Key, Value, Table>::SetListener( PListenerType *listener )
 {
+    if( m_proListener ) delete m_proListener;
     m_proListener = listener;
+    if( m_proListener )
+    {
+        m_proListener->SetOwner( this );
+    }
 }
 
 template <typename Key, typename Value, typename Table>

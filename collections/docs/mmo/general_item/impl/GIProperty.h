@@ -30,11 +30,22 @@ namespace GI
 #define IS_IDENTIFY( t ) (t & GI::PT_IDENTIFY)
 #define IS_INDEX( t ) (t & GI::PT_INDEX)
 
+    template <typename Key, typename Value,
+             typename Table>
+    class PropertySet;
+
     /// Listen on properties.
-    template <typename Key, typename Value>
+    template <typename Key, typename Value,
+             typename Table>
     class PropertyListener
     {
     public:
+        typedef PropertySet<Key, Value, Table> OwnerType;
+    public:
+        PropertyListener() { m_owner = NULL; }
+
+        virtual ~PropertyListener() { }
+
         /// Called when a new property is added.
         virtual void OnAdd( Key key, Value val ) { }
 
@@ -43,6 +54,10 @@ namespace GI
 
         /// Called when a property value has been changed.
         virtual void OnSet( Key key, Value oldVal, Value newVal ) { }
+
+        void SetOwner( const OwnerType *owner ) { m_owner = owner; }
+    protected:
+        const OwnerType *m_owner;
     };
 
     /// Manage a <key, value> table.
@@ -54,15 +69,19 @@ namespace GI
         typedef Key KeyType;
         typedef Value ValueType;
         typedef Table TableType;
-        typedef PropertyListener<KeyType, ValueType> PListenerType;
+        typedef PropertyListener<KeyType, ValueType, Table> PListenerType;
         typedef PropertySet<KeyType, ValueType> SelfType;
     public:
         PropertySet( PListenerType *listener = NULL );
 
-        virtual ~PropertySet() { }
+        virtual ~PropertySet();
 
         /// Set property listener.
+        /// The listener will be destroied automatically.
         void SetListener( PListenerType *listener );
+
+        /// Get the property listener.
+        PListenerType GetListener() const { return m_proListener; }
 
         /// Add a new property in the table.
         virtual bool AddProperty( Key key, Value val );
