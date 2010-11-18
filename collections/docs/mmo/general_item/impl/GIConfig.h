@@ -14,9 +14,15 @@
 #include GI_DEPTYPES
 #endif
 
+#define _USE_KL_SINGLETON
 /// Config singleton class getting.
+#ifdef _USE_KL_SINGLETON
+#include "kl_singleton.h"
+#define DEF_SINGLETON(c) : public kl_common::singleton<c>
+#define MULTI_DEF_SINGLETON(c) ,public kl_common::singleton<c>
 #define SINGLETON( c ) c::getSingleton()
 #define SINGLETON_PTR( c ) c::getSingletonPtr()
+#endif
 
 /// Config property value (un)serialize no type.
 #define VALUE_NO_TYPE

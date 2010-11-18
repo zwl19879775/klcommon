@@ -5,6 +5,7 @@
 #define ___BYTE_BUFFER_IMPL_H_
 
 #include "../GIBase.h"
+#include <vector>
 
 class ReadBuffer : public GI::ByteBuffer
 {
@@ -54,6 +55,43 @@ public:
     virtual bool Pop( void *d, size_t size ) { return false; }
 private:
     DBWriteSet &m_db;
+};
+
+/// Store data in this first.
+class StoreWriteBuffer : public GI::ByteBuffer
+{
+public:
+    typedef std::vector<unsigned char> DataBlockT;
+public:
+    StoreWriteBuffer( size_t reserved = 512 )
+    {
+        m_d.reserve( reserved );
+    }
+
+    virtual ~StoreWriteBuffer() { }
+
+    virtual void Push( const void *u, size_t size )
+    {
+        const unsigned char *d = (const unsigned char*) u; 
+        for( ; size > 0; -- size, ++ d )
+        {
+            m_d.push_back( *d );
+        }
+    }
+
+    virtual void PushWithSize( const void *u, size_t size )
+    {
+        Push( &size, sizeof( size ) );
+        Push( u, size );
+    }
+
+    virtual bool Pop( void *d, size_t size ) { return false; }
+
+    size_t Size() const { return m_d.size(); }
+
+    const void *Data() const { return &m_d[0]; }
+private:
+    DataBlockT m_d;
 };
 
 #endif

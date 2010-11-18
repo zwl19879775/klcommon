@@ -6,21 +6,6 @@
 #include "GoodsPropertyType.h"
 #include <assert.h>
 
-static RefObject &CollectRefObj( RefObject &refObj, TypeSet::IDType id, const GI::Object *obj )
-{
-    refObj.id = id;
-    TypeSet::ValueType indexVal = obj->GetValue( KeySet::IndexKey );
-    refObj.index = TypeSet::ValueType::ToLong( indexVal );
-    TypeSet::ValueType maxStackVal = obj->GetValue( KeySet::MaxStackCntKey );
-    refObj.maxStackCnt = TypeSet::ValueType::ToStackCnt( maxStackVal );
-    TypeSet::ValueType stackCntVal = obj->GetValue( KeySet::StackCntKey );
-    refObj.stackCnt = TypeSet::ValueType::ToStackCnt( stackCntVal );
-    TypeSet::ValueType posVal = obj->GetValue( TypeSet::KeyType( PCELL_POS ) );
-    assert( posVal.Valid() );
-    refObj.pos = TypeSet::ValueType::ToLong( posVal );
-    return refObj;
-}
-
 struct RefCellCollector
 {
     RefCellCollector( RefCellContainer::RefObjectTableT &refs ) : m_refs( refs ) { }
@@ -28,7 +13,7 @@ struct RefCellCollector
     void operator() ( TypeSet::IDType id, const GI::Object *obj )
     {
         RefObject refObj;
-        CollectRefObj( refObj, id, obj );
+        refObj.RefTo( obj );
         m_refs.insert( std::make_pair( refObj.index, refObj ) );
     }
 
@@ -42,7 +27,7 @@ struct RefBaseCollector
     void operator() ( TypeSet::IDType id, const GI::Object *obj )
     {
         RefObject refObj;
-        CollectRefObj( refObj, id, obj );
+        refObj.RefToNoPos( obj );
         m_refs.insert( std::make_pair( id, refObj ) );
     }
 

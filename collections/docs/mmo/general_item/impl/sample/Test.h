@@ -80,6 +80,8 @@ public:
     template <typename T>
     void Add( T t );
 
+    void AddEx( void*, size_t );
+
     long GetLong();
 
     void GetGUID( CGUID &id );

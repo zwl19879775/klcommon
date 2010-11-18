@@ -8,8 +8,11 @@
 #include "../GIObjectProto.h"
 
 class ObjProtoLoader : public GI::ProtoLoader
+    MULTI_DEF_SINGLETON( ObjProtoLoader )
 {
 public:
+    virtual ~ObjProtoLoader() { }
+
     virtual bool Load( GI::ObjProtoFactory *fac, void *u );
 };
 

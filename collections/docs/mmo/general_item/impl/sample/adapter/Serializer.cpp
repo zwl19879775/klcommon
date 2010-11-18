@@ -7,6 +7,7 @@
 #include "../GoodsPropertyType.h"
 #include "../SubContainer.h"
 #include "../CellContainer.h"
+#include "../ContainerDef.h"
 #include <map>
 
 #define SERIALIZE_P( obj, buf, k ) \
@@ -147,7 +148,7 @@ namespace GIAdapter
 
     bool SerializeSubContainer( const SubContainer *con, GI::ByteBuffer &buf )
     {
-        buf.Push( con->UsedSize() );
+        buf.Push( (unsigned char) con->UsedSize() );
         for( long i = 0; i < con->Size(); ++ i )
         {
             const SubContainer::Cell &cell = con->GetCell( i );
@@ -159,7 +160,7 @@ namespace GIAdapter
             }
         }
 
-        for( long i = 0; i < con->Size(); ++ i )
+        for( long i = 0; i < ConDef::SUB_CON_SIZE; ++ i )
         {
             const SubContainer::Cell &cell = con->GetCell( i );
             if( cell.status != SubContainer::Cell::USED )

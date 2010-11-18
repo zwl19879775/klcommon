@@ -4,13 +4,20 @@
 ///
 #include "RefObject.h"
 #include "GoodsPropertyType.h"
+#include "ObjVisitor.h"
 
 void RefObject::RefTo( const GI::Object *obj )
 {
-    id = TypeSet::ValueType::ToID( obj->GetValue( KeySet::IDKey ) );
-    index = TypeSet::ValueType::ToLong( obj->GetValue( KeySet::IndexKey ) );
-    maxStackCnt = TypeSet::ValueType::ToLong( obj->GetValue( KeySet::MaxStackCntKey ) );
-    stackCnt = TypeSet::ValueType::ToLong( obj->GetValue( KeySet::StackCntKey ) );
-    pos = TypeSet::ValueType::ToLong( obj->GetValue( TypeSet::KeyType( PCELL_POS ) ) );
+    RefToNoPos( obj );
+    pos = ObjVisitor::Pos( obj );
+}
+
+void RefObject::RefToNoPos( const GI::Object *obj )
+{
+    id = ObjVisitor::ID( obj );
+    index = ObjVisitor::Index( obj );
+    maxStackCnt = ObjVisitor::MaxCount( obj );
+    stackCnt = ObjVisitor::Count( obj );
+    pos = INVALID_POS;
 }
 

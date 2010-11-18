@@ -82,7 +82,7 @@ namespace GI
     void BaseContainer::DestroyAll()
     {
         for( ObjectMap::iterator it = m_objs.begin();
-                it != m_objs.end(); )
+                it != m_objs.end(); ++ it )
         {
             // TODO: 
             NOTIFY_LISTENER( OnRemove( this, it->second ) );

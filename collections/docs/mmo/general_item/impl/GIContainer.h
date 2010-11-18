@@ -12,6 +12,8 @@
 #include <map>
 
 #define NOTIFY_LISTENER( op ) if( m_listener ) m_listener->op
+#define CAST_LISTENER( c ) ((c*) m_listener )
+#define NOTIFY_LISTENER_EX( c, op ) if( m_listener ) CAST_LISTENER( c )->op
 
 namespace GI
 {

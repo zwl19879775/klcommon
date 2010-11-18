@@ -51,9 +51,16 @@ enum
     PINC_HP,
     PCOOLDOWN,
     PCON_SIZE,
+    PMAX_STACKCNT_DEP = 56,
     PEXTEND_END,
 
     PALL_END
+};
+
+/// Adapter code, for these goods without max stack count property.
+enum 
+{
+    DEFAULT_MAX_STACKCNT = 999999
 };
 
 #endif

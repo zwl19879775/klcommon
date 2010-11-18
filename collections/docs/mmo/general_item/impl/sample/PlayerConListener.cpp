@@ -6,6 +6,7 @@
 #include "PlayerContainer.h"
 #include "ObjVisitor.h"
 #include "adapter/ObjOperSender.h"
+#include "adapter/ObjAmountSender.h"
 
 struct SetAllListener
 {
@@ -76,4 +77,15 @@ void PlayerConListener::OnMoved( GI::BaseContainer *srcCon, GI::BaseContainer *d
     }
 }
 
+void PlayerConListener::OnMerged( GI::MergeContainer *con, const GI::Object *obj, const GI::Object *mergeObj )
+{
+    m_res->Reset();
+    ObjAmountSender res;
+    long type = m_con->GetType( con );
+    if( type == ConDef::PEI_NONE ) return;
+    long pos = ObjVisitor::Pos( obj );
+    res.SetCon( TYPE_PLAYER, m_con->GetOwner()->GetExID(), type, pos );
+    res.SetObj( ObjVisitor::ID( obj ), ObjVisitor::Count( obj ) );
+    res.Send( m_con->GetOwner()->GetExID() );
+}
 

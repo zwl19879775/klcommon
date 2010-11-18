@@ -53,6 +53,10 @@ void BaseCellContainer::DisableAll()
 void BaseCellContainer::Serialize( GI::ByteBuffer &buf ) const
 {
     buf.Push( Size() );
+    for( size_t i = 0; i < m_cells.size(); ++ i )
+    {
+        buf.Push( m_cells[i].status );
+    }
     Super::Serialize( buf );
 }
 
@@ -61,6 +65,11 @@ bool BaseCellContainer::UnSerialize( GI::ByteBuffer &buf )
     long s;
     if( !buf.Pop( &s ) ) return false;
     ReSize( s );
+    for( long i = 0; i < s; ++ i )
+    {
+        buf.Pop( &m_cells[i].status );
+        if( m_cells[i].status == Cell::USED ) m_cells[i].status = Cell::EMPTY;
+    }
     return Super::UnSerialize( buf );
 }
 

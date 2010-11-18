@@ -44,9 +44,7 @@ bool CellContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID )
     refObj.RefTo( obj );
     AddRet ret;
     if( !refCellCon.Add( refObj, &ret ) ) return false;
-    if( !DoAdd( obj, ret ) ) return false;
-    AgentRemove( srcCon, obj );
-    NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
+    if( !DoAdd( srcCon, ret ) ) return false;
     return true; 
 }
 
@@ -62,10 +60,7 @@ bool CellContainer::MoveAll( BaseContainer *srcCon )
             it != addRets.end(); ++ it )
     {
         const AddRet &ret = *it;
-        GI::Object *obj = AgentGet( srcCon, ret.id );
-        DoAdd( obj, ret );
-        AgentRemove( srcCon, obj );
-        NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
+        DoAdd( srcCon, ret );
     }
     return true;
 }
@@ -160,6 +155,8 @@ bool CellContainer::Swap( TypeSet::IDType objID1, TypeSet::IDType objID2 )
     long pos2 = ObjVisitor::Pos( obj2 );
     ObjVisitor::SetPos( obj1, pos2 );
     ObjVisitor::SetPos( obj2, pos1 );
+    UnFillCell( pos1 );
+    UnFillCell( pos2 );
     FillCell( pos1, obj2 );
     FillCell( pos2, obj1 );
     return true;
@@ -217,20 +214,29 @@ void CellContainer::DestroyAll()
     BaseCellContainer::DestroyAll();
 }
 
-bool CellContainer::DoAdd( GI::Object *obj, const AddRet &ret )
+bool CellContainer::DoAdd( GI::BaseContainer *con, const AddRet &ret )
 {
-    ObjVisitor::SetPos( obj, ret.pos );
     if( ret.op == AddRet::NEW )
     {
-        return Add( obj );
+        GI::Object *obj = AgentGet( con, ret.id );
+        AgentRemove( con, obj );
+        ObjVisitor::SetPos( obj, ret.pos );
+        Add( obj );
+        NOTIFY_LISTENER( OnMoved( con, this, obj ) );
+        return true;
     }
-    else
+    else if( ret.op == AddRet::CHG_STACKCNT )
     {
-        GI::MergeContainer::Add( obj ); 
         const Cell &cell = GetCell( ret.pos );
-        Merge( cell.id, ret.id );
+        if( cell.status != Cell::USED ) return false;
+        GI::Object *thisObj = Get( cell.id );
+        const GI::Object *obj = con->GetObject( ret.id );
+        ObjVisitor::SetCount( thisObj, ObjVisitor::Count( thisObj ) + ObjVisitor::Count( obj ) );
+        NOTIFY_LISTENER_EX( GI::MergeConListener, OnMerged( this, thisObj, obj ) );
+        con->Destroy( ret.id );
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool CellContainer::ReFill()

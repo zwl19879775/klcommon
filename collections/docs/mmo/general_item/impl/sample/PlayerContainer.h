@@ -27,6 +27,8 @@ public:
     /// Move all the objects in srcCon to player container.
     bool Move( GI::BaseContainer *srcCon );
 
+    void SerializeToClient( GI::ByteBuffer &buf ) const;
+
     long GetType( GI::BaseContainer *con ) const;
 
     CPlayer *GetOwner() const { return m_owner; }
@@ -42,7 +44,7 @@ public:
 template <typename T>
 bool PlayerContainer::Traverse( T fn )
 {
-    fn( ConDef::PEI_PACKET, &m_mainCon );
+    if( fn( ConDef::PEI_PACKET, &m_mainCon ) ) return true;
     for( long i = 0; i < m_subCons.Size(); ++ i )
     {
         const SubContainer::Cell &cell = m_subCons.GetCell( i );

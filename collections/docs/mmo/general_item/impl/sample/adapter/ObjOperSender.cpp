@@ -94,11 +94,11 @@ void ObjOperSender::Send( const CGUID &shapeID )
     if( m_op == ConDef::OT_NEW )
     {
         msg.Add( m_info.destObj.cnt );
-        DBWriteSet db;
-        WriteBuffer wbuf( db );
-        msg.GetDBWriteSet( db );
         if( !m_obj ) return;
-        GIAdapter::SerializeObj( m_obj, wbuf );
+        StoreWriteBuffer buf;
+        GIAdapter::SerializeObj( m_obj, buf );
+        msg.Add( (unsigned long) buf.Size() );
+        msg.AddEx( (void*) buf.Data(), buf.Size() );
     }
     else
     {
