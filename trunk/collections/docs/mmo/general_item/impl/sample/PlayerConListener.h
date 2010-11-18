@@ -10,7 +10,7 @@
 class PlayerContainer;
 class ObjOperSender;
 
-class PlayerConListener : public GI::ContainerListener
+class PlayerConListener : public GI::MergeConListener
 {
 public:
     PlayerConListener();
@@ -27,6 +27,8 @@ public:
 
     virtual void OnMoved( GI::BaseContainer *srcCon, GI::BaseContainer *destCon, 
             const GI::Object *obj );
+
+    virtual void OnMerged( GI::MergeContainer *con, const GI::Object *obj, const GI::Object *mergeObj );
 private:
     PlayerContainer *m_con;
     ObjOperSender *m_res;

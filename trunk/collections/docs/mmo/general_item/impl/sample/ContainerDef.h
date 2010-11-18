@@ -48,6 +48,12 @@ namespace ConDef
         PEI_DEPOT_PACK3,
         PEI_DEPOT_PACK4,
     };
+
+    enum
+    {
+        MAIN_CON_SIZE = 20,
+        SUB_CON_SIZE = 5,
+    };
 }
 
 #endif

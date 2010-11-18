@@ -9,7 +9,8 @@
 #include "ValGenFuncs.h"
 #include <vector>
 
-class PropertyTypeLoader : public GI::SerialData
+class PropertyTypeLoader : public GI::SerialData 
+    MULTI_DEF_SINGLETON( PropertyTypeLoader )
 {
 public:
     struct Item

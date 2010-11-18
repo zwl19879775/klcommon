@@ -13,7 +13,7 @@ static std::string SplitString( std::string &s, const char *split )
     size_t sp = s.find_first_not_of( split );
     if( sp == std::string::npos ) return "";
     size_t ep = s.find_first_of( split, sp );
-    std::string rs = s.substr( sp, ep == std::string::npos ? ep : ep - sp + 1 );
+    std::string rs = s.substr( sp, ep == std::string::npos ? ep : ep - sp );
     s.erase( 0, ep );
     return rs;
 }
@@ -83,7 +83,7 @@ bool PropertyTypeLoader::Load()
     for( ; segElem; segElem = segElem->NextSiblingElement() )
     {
         TiXmlElement *elem = segElem->FirstChildElement();
-        if( elem )
+        for( ; elem; elem = elem->NextSiblingElement() )
         {
             Item item;
             if( !LoadProperty( elem, &item ) ) continue;

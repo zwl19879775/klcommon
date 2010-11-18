@@ -5,9 +5,9 @@
 #ifndef ___C2SOBJECT_MOVE_H_
 #define ___C2SOBJECT_MOVE_H_
 
-#include "../../kl_singleton.h"
 #include "ObjectMoveBase.h"
 #include "../../GIForwardRefs.h"
+#include "../../GIConfig.h"
 #include <map>
 
 
@@ -47,8 +47,8 @@ protected:
 /// Dispatch game client object move request to these handlers.
 /// Singleton class.
 ///
-class C2SObjectMoveDispatcher : 
-    public kl_common::singleton<C2SObjectMoveDispatcher>
+class C2SObjectMoveDispatcher 
+    DEF_SINGLETON( C2SObjectMoveDispatcher )
 {
 public:
     typedef unsigned long Identifier;
@@ -74,7 +74,7 @@ private:
     { \
         C2SObjectMoveDispatcher::Identifier id = C2SObjectMoveDispatcher::ToId( \
             st, sid, dt, did ); \
-        C2SObjectMoveDispatcher::getSingleton().Register( id, op ); \
+        SINGLETON( C2SObjectMoveDispatcher ).Register( id, op ); \
     }
 #endif
 

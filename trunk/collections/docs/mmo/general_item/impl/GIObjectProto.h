@@ -38,8 +38,8 @@ namespace GI
     /// in PropertySet.
     ///
     class ObjProtoFactory : 
-        public PropertySet<TypeSet::IndexType, ObjectProto*>,
-        public kl_common::singleton<ObjProtoFactory>
+        public PropertySet<TypeSet::IndexType, ObjectProto*>
+        MULTI_DEF_SINGLETON( ObjProtoFactory )
     {
     public:
         ObjProtoFactory( ProtoLoader *loader );

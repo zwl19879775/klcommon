@@ -15,7 +15,7 @@ bool GoodsFactory::BatchCreate( TypeSet::IndexType index, GI::Object::PListenerT
 {
     const GI::ObjectProto *proto = SINGLETON( GI::ObjProtoFactory ).GetProto( index );
     if( !proto ) return false;
-    TypeSet::ValueType maxStackCntVal = proto->GetValue( KeySet::StackCntKey ); 
+    TypeSet::ValueType maxStackCntVal = proto->GetValue( KeySet::MaxStackCntKey ); 
     long maxStackCnt = TypeSet::ValueType::ToStackCnt( maxStackCntVal );
     if( !maxStackCnt ) return false;
     long createCnt = cnt < maxStackCnt ? cnt : maxStackCnt;

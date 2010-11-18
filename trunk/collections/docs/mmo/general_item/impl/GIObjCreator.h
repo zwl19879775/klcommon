@@ -6,7 +6,6 @@
 #ifndef ___GI_OBJ_CREATOR_H_
 #define ___GI_OBJ_CREATOR_H_
 
-#include "kl_singleton.h"
 #include "GIConfig.h"
 
 namespace GI
@@ -22,7 +21,7 @@ namespace GI
         virtual void OnDestroy( Object *obj ) { }
     };
 
-    class ObjCreator : public kl_common::singleton<ObjCreator>
+    class ObjCreator DEF_SINGLETON( ObjCreator )
     {
     public:
         ObjCreator( ObjectListener *listener ) : m_listener( listener )

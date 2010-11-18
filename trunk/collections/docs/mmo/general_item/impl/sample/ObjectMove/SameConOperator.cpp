@@ -56,7 +56,7 @@ bool SameConOperator::MoveInSameCon()
     int op = GetCellOperType();
     CellContainer *con = (CellContainer*) GetSrcCon();
     long destPos = m_info->dest.conPos;
-    const CellContainer::Cell &cell = con->GetCell( destPos );
+    CellContainer::Cell cell = con->GetCell( destPos );
     switch( op )
     {
     case MOVE:
@@ -79,7 +79,16 @@ bool SameConOperator::MoveInSameCon()
         con->Merge( m_info->obj.id, m_info->obj.cnt, destPos );
         break;
     case SWAP:
-        con->Swap( m_info->obj.id, cell.id );
+        {
+            con->Swap( m_info->obj.id, cell.id );
+            m_res->SetOperType( ConDef::OT_SWITCH_OBJ );
+            m_res->SetSrcCon( m_info->src.ownerID, m_info->src.ownerType, m_info->src.conID, m_info->src.conPos );
+            m_res->SetDestCon( m_info->dest.ownerID, m_info->dest.ownerType, m_info->dest.conID, m_info->dest.conPos );
+
+            const GI::Object *destObj = con->GetObject( cell.id );
+            m_res->SetDestObj( cell.id, ObjVisitor::Count( destObj ) );
+            m_res->SetSrcObj( m_info->obj.id, m_info->obj.cnt );
+        }
         break;
     default:
         return false;

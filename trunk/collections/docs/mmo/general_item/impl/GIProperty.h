@@ -7,7 +7,6 @@
 #define ___GI_PROPERTY_H_
 
 #include "GIConfig.h"
-#include "kl_singleton.h"
 #include <map>
 
 namespace GI
@@ -134,8 +133,8 @@ namespace GI
     /// Singleton class, to manage all the property types.
     /// The property types can be put in a single config file.
     ///
-    class PropertyTypeSet : public PropertySet<TypeSet::KeyType, PropertyType>, 
-        public kl_common::singleton<PropertyTypeSet>
+    class PropertyTypeSet : public PropertySet<TypeSet::KeyType, PropertyType>
+        MULTI_DEF_SINGLETON( PropertyTypeSet )
     {
     public:
         PropertyTypeSet();

@@ -56,16 +56,11 @@ public:
     /// Destroy all the objects and reset the cells.
     virtual void DestroyAll();
 
-    /// Serialize the cell information and all the objects.
-    virtual void Serialize( GI::ByteBuffer &buf ) const;
-
-    virtual bool UnSerialize( GI::ByteBuffer &buf );
-
     /// Refill the cell information.
     bool ReFill();
 
 protected:
-    bool DoAdd( GI::Object *obj, const AddRet &ret );
+    bool DoAdd( BaseContainer *con, const AddRet &ret );
 };
 
 #endif

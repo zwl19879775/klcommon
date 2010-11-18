@@ -24,9 +24,9 @@
         <property key="PSTACKCNT" type="PT_DYNAMIC" gen="DEFAULT" arg="DLONG"/>
     </Basic>
     <Runtime>
-        <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" />
-        <property key="PRGNY" type="PT_DYNAMIC | PT_GENERAL" />
-        <property key="PCELL_POS" type="PT_DYNAMIC" />
+        <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" gen="DEFAULT" arg="DDOUBLE"/>
+        <property key="PRGNY" type="PT_DYNAMIC | PT_GENERAL" gen="DEFAULT" arg="DDOUBLE"/>
+        <property key="PCELL_POS" type="PT_DYNAMIC" gen="DEFAULT" arg="DLONG"/>
     </Runtime>
     <Extend>
         <property key="PINC_HP_MIN" type="PT_STATIC" />

@@ -63,7 +63,14 @@ static bool LoadExtProperty( GI::ObjectProto *proto, CRFile *file )
         long val1 = ReadLong( file );
         long val2 = ReadLong( file );
 
-        SetIfExist( proto, KEYVALUE( type, TypeSet::ValueType::LongPair( val1, val2 ) ) );
+        if( type == PMAX_STACKCNT_DEP )
+        {
+            SetIfExist( proto, KEYVALUE( PMAX_STACKCNT, val1 ) );
+        }
+        else
+        {
+            SetIfExist( proto, KEYVALUE( type, TypeSet::ValueType::LongPair( val1, val2 ) ) );
+        }
     }
     return true;
 }
@@ -127,14 +134,17 @@ static bool LoadProto( GI::ObjectProto *proto, CRFile *file )
     pic = ReadLong( file );
     proto->AddProperty( KEYVALUE( PEQUIP_PICID, pic ) );
 
-    SkipByte<4*5>( file );
+    SkipByte<4*3>( file );
+    SkipByte<1>( file );
+    SkipByte<4>( file );
 
     std::string desc = ReadString( file );
     proto->AddProperty( KEYVALUE( PDESC, desc ) );
 
     // NOTE: 
-    proto->AddProperty( KEYVALUE( PMAX_STACKCNT, 1L ) );
+    proto->AddProperty( KEYVALUE( PMAX_STACKCNT, (long) DEFAULT_MAX_STACKCNT ) );
     proto->AddProperty( KEYVALUE( PSTACKCNT, 0L ) );
+    proto->AddProperty( KEYVALUE( PID, NULL_GUID ) );
 
     LoadExtProperty( proto, file );
     LoadSuitProperty( proto, file );
@@ -147,7 +157,7 @@ bool ObjProtoLoader::Load( GI::ObjProtoFactory *fac, void *u )
 {
     CRFile *file = rfOpen( "data/goods/goodslist.dat" );
     if( !file ) return false;
-    char mark[6];
+    char mark[6] = { 0 };
     file->ReadData( mark, 5 );
     if( strcmp( mark, "GOODS" ) ) return false;
     long version;

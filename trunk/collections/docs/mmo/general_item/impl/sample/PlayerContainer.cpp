@@ -3,6 +3,9 @@
 ///
 ///
 #include "PlayerContainer.h"
+#include "adapter/Serializer.h"
+#include "adapter/ObjOperSender.h"
+#include "PlayerConListener.h"
 
 struct MoveOperator
 {
@@ -18,6 +21,10 @@ struct MoveOperator
 
 PlayerContainer::PlayerContainer()
 {
+    m_mainCon.ReSize( ConDef::MAIN_CON_SIZE );
+    m_mainCon.EnableAll();
+    m_subCons.ReSize( ConDef::SUB_CON_SIZE );
+    m_subCons.EnableAll();
     m_owner = NULL;
 }
 
@@ -45,7 +52,27 @@ BaseCellContainer *PlayerContainer::GetContainer( long type )
 
 bool PlayerContainer::Move( GI::BaseContainer *srcCon )
 {
-    return Traverse( MoveOperator( srcCon ) );
+    PlayerConListener listener;
+    ObjOperSender res;
+    listener.Begin( this, &res );
+    bool ret = Traverse( MoveOperator( srcCon ) );
+    listener.End();
+    return ret;
+}
+
+void PlayerContainer::SerializeToClient( GI::ByteBuffer &buf ) const
+{
+    buf.Push( 4L );
+    GIAdapter::SerializeContainer( &m_mainCon, buf );
+    GIAdapter::SerializeSubContainer( &m_subCons, buf );
+    // TODO: wallet
+    buf.Push( 5L );
+    buf.Push( 0L );
+    buf.Push( NULL_GUID );
+    buf.Push( 0L );
+    buf.Push( NULL_GUID );
+    buf.Push( 0L );
+    buf.Push( NULL_GUID );
 }
 
 long PlayerContainer::GetType( GI::BaseContainer *con ) const

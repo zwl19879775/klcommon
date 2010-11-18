@@ -11,6 +11,7 @@
 
 struct RefObject
 {
+    enum { INVALID_POS = -1 };
     TypeSet::IDType id;
     TypeSet::IndexType index;
     long maxStackCnt;
@@ -18,6 +19,7 @@ struct RefObject
     long pos;
 
     void RefTo( const GI::Object *obj );
+    void RefToNoPos( const GI::Object *obj );
 };
 
 struct DelRet

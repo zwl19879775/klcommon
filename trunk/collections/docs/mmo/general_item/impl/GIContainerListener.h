@@ -12,6 +12,7 @@ namespace GI
 {
     class Object;
     class BaseContainer;
+    class MergeContainer;
 
     class ContainerListener
     {
@@ -49,6 +50,14 @@ namespace GI
         virtual void OnModify( BaseContainer *con, const Object *obj, 
                 TypeSet::KeyType key, TypeSet::ValueType newVal ) { }
     };    
+
+    class MergeConListener : public ContainerListener
+    {
+    public:
+        virtual ~MergeConListener() { }
+
+        virtual void OnMerged( MergeContainer *con, const Object *obj, const Object *mergedObj ) { }
+    };
 }
 
 #endif

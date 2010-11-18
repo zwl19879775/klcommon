@@ -9,6 +9,13 @@
 MoveOperator::MoveOperator()
 {
     m_info = NULL;
+    m_res = NULL;
+}
+
+void MoveOperator::Setup( const C2SObjectMoveInfo *info, ObjOperSender *res )
+{
+    m_info = info;
+    m_res = res;
 }
 
 int MoveOperator::GetCellOperType()
