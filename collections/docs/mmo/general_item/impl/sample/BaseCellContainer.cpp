@@ -73,6 +73,18 @@ bool BaseCellContainer::UnSerialize( GI::ByteBuffer &buf )
     return Super::UnSerialize( buf );
 }
 
+bool BaseCellContainer::Move( BaseContainer *srcCon, TypeSet::IDType objID, long pos )
+{
+    if( GetCellStatus( pos ) != Cell::EMPTY ) return false;
+    GI::Object *obj = AgentGet( srcCon, objID );
+    if( !obj ) return false;
+    AgentRemove( srcCon, obj );
+    ObjVisitor::SetPos( obj, pos );
+    Add( obj );
+    NOTIFY_LISTENER( OnMoved( srcCon, this, obj ) );
+    return true;
+}
+
 bool BaseCellContainer::ReSize( long size )
 {
     if( size <= UsedSize() ) return false;

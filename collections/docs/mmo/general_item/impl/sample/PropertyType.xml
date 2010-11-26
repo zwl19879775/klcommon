@@ -22,6 +22,8 @@
         <property key="PDESC" type="PT_STATIC" />
         <property key="PMAX_STACKCNT" type="PT_STATIC" />
         <property key="PSTACKCNT" type="PT_DYNAMIC" gen="DEFAULT" arg="DLONG"/>
+        <property key="PMAKER_NAME" type="PT_DYNAMIC" gen="DEFAULT"
+            arg="DSTRING"/>
     </Basic>
     <Runtime>
         <property key="PRGNX" type="PT_DYNAMIC | PT_GENERAL" gen="DEFAULT" arg="DDOUBLE"/>

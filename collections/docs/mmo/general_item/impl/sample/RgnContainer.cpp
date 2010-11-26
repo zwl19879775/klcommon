@@ -6,6 +6,7 @@
 #include "ObjVisitor.h"
 #include "GoodsPropertyType.h"
 #include "../GIObjectProto.h"
+#include "../GIObjCreator.h"
 
 void RgnContainer::SetStackCntPos::operator() ( GI::Object *obj )
 {
@@ -37,11 +38,11 @@ bool RgnContainer::Move( GI::MergeContainer *srcCon, TypeSet::IDType objID, Good
     }
     else // partial move
     {
-        GI::Object *newObj = new GI::Object( NULL );
-        srcObj->Clone( newObj );
+        GI::Object *newObj = SINGLETON( GI::ObjCreator ).Clone( srcObj );
+        ObjVisitor::SetCount( newObj, cnt );
         srcCon->DecStack( objID, cnt );
-        ObjVisitor::SetRgnPosX( srcObj, pos.x );
-        ObjVisitor::SetRgnPosY( srcObj, pos.y );
+        ObjVisitor::SetRgnPosX( newObj, pos.x );
+        ObjVisitor::SetRgnPosY( newObj, pos.y );
         Add( newObj );
     }
     return true;

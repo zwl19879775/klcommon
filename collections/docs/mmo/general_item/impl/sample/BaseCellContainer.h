@@ -37,7 +37,9 @@ public:
     void Serialize( GI::ByteBuffer &buf ) const;
 
     bool UnSerialize( GI::ByteBuffer &buf );
-    
+
+    virtual bool Move( BaseContainer *srcCon, TypeSet::IDType objID, long pos );
+
     /// The new size('size') must greater than 'UsedSize'.
     bool ReSize( long size );
 
@@ -60,7 +62,7 @@ public:
 
     /// Traverse all the cell. fn( pos, const Cell& ).
     template <typename T>
-    void TraverseCell( T fn );
+    void TraverseCell( T fn ) const;
 
 protected:
     virtual bool FillCell( long pos, const GI::Object *obj );
@@ -78,7 +80,7 @@ protected:
 };
 
 template <typename T>
-void BaseCellContainer::TraverseCell( T fn )
+void BaseCellContainer::TraverseCell( T fn ) const
 {
     for( size_t i = 0; i < m_cells.size(); ++ i )
         fn( i, (const Cell&) m_cells[i] );

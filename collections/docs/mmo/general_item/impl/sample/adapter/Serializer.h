@@ -19,6 +19,9 @@ namespace GIAdapter
     /// Serialize goods to client region, only for region display.
     bool SerializeGeneral( const GI::Object *obj, GI::ByteBuffer &buf );
 
+    /// Serialize extend dynamic properties.
+    bool SerializeExtDynamic( const GI::Object *obj, GI::ByteBuffer &buf );
+
     /// Serialize goods property value.
     bool SerializeValue( const TypeSet::ValueType &val, GI::ByteBuffer &buf );
 
@@ -27,6 +30,8 @@ namespace GIAdapter
 
     /// Serialize sub container and these goods in the sub container.
     bool SerializeSubContainer( const SubContainer *con, GI::ByteBuffer &buf );
+
+    bool UnSerializeExtDynamic( GI::Object *obj, GI::ByteBuffer &buf );
 }
 
 #endif
