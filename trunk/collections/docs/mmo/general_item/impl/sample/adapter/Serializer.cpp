@@ -22,7 +22,10 @@ namespace GIAdapter
     {
         bool operator() ( const TypeSet::KeyType &key, const TypeSet::ValueType &val )
         {
-            if( (long) key > PEXTEND_BEGIN && (long) key < PEXTEND_END )
+            int type = SINGLETON( GI::PropertyTypeSet ).GetType( key );
+            long lkey = (long) key;
+            if( lkey > PEXTEND_BEGIN && lkey < PEXTEND_END &&
+                IS_DYNAMIC(type) )
             {
                 m_ps[&key] = &val;
             }
@@ -56,10 +59,7 @@ namespace GIAdapter
         SERIALIZE_P( obj, buf, PBUY_PRICE ); 
         SERIALIZE_P( obj, buf, PTYPE ); 
 
-        SerializeExt serializer;
-        obj->Traverse( serializer );
-        serializer.Serialize( buf );
-
+        SerializeExtDynamic( obj, buf );
         // Rgn position is not useful here.
         buf.Push( 0L );
         buf.Push( 0L );
@@ -78,6 +78,14 @@ namespace GIAdapter
         SERIALIZE_P( obj, buf, PRGNY );
         // Weapon level.
         buf.Push( 0L );
+        return true;
+    }
+
+    bool SerializeExtDynamic( const GI::Object *obj, GI::ByteBuffer &buf )
+    {
+        SerializeExt serializer;
+        obj->Traverse( serializer );
+        serializer.Serialize( buf );
         return true;
     }
 
@@ -171,6 +179,22 @@ namespace GIAdapter
             {
                 SerializeContainer( CAST_CELL( cell.u ), buf );
             }
+        }
+        return true;
+    }
+
+    bool UnSerializeExtDynamic( GI::Object *obj, GI::ByteBuffer &buf )
+    {
+        size_t cnt;
+        if( !buf.Pop( &cnt, sizeof( cnt ) ) ) return false;
+        for( size_t i = 0; i < cnt; ++ i )
+        {
+            short key ;
+            buf.Pop( &key, sizeof( key ) );
+            long v1, v2;
+            buf.Pop( &v1, sizeof( v1 ) );
+            buf.Pop( &v2, sizeof( v2 ) );
+            obj->AddProperty( KEYTYPE( (long) key ), VALUETYPE2( v1, v2 ) );
         }
         return true;
     }

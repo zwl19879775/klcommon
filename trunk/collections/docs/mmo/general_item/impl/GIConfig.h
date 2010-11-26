@@ -24,8 +24,5 @@
 #define SINGLETON_PTR( c ) c::getSingletonPtr()
 #endif
 
-/// Config property value (un)serialize no type.
-#define VALUE_NO_TYPE
-
 #endif
 

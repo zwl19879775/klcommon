@@ -103,6 +103,14 @@ static bool LoadTriggerProperty( GI::ObjectProto *proto, CRFile *file )
     return true;
 }
 
+static void AddAdapterProperty( GI::ObjectProto *proto )
+{
+    proto->AddProperty( KEYVALUE( PMAX_STACKCNT, (long) DEFAULT_MAX_STACKCNT ) );
+    proto->AddProperty( KEYVALUE( PSTACKCNT, 0L ) );
+    proto->AddProperty( KEYVALUE( PID, NULL_GUID ) );
+    proto->AddProperty( KEYVALUE( PMAKER_NAME, "" ) );
+}
+
 static bool LoadProto( GI::ObjectProto *proto, CRFile *file )
 {
     long index = ReadLong( file );
@@ -142,9 +150,7 @@ static bool LoadProto( GI::ObjectProto *proto, CRFile *file )
     proto->AddProperty( KEYVALUE( PDESC, desc ) );
 
     // NOTE: 
-    proto->AddProperty( KEYVALUE( PMAX_STACKCNT, (long) DEFAULT_MAX_STACKCNT ) );
-    proto->AddProperty( KEYVALUE( PSTACKCNT, 0L ) );
-    proto->AddProperty( KEYVALUE( PID, NULL_GUID ) );
+    AddAdapterProperty( proto );
 
     LoadExtProperty( proto, file );
     LoadSuitProperty( proto, file );

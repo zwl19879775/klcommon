@@ -168,7 +168,7 @@ namespace GI
                 return false;
             }
             int type = PropertyTypeSet::getSingleton().GetType( key );
-            if( IS_DYNAMIC( type ) && IS_INDEX( type ) )
+            if( IS_DYNAMIC( type ) || IS_INDEX( type ) )
             {
                 AddProperty( key, value );
             }

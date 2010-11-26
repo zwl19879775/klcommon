@@ -11,7 +11,7 @@ struct MoveOperator
 {
     MoveOperator( GI::BaseContainer *con ) : m_con( con ) { }
 
-    bool operator() ( long type, BaseCellContainer *con )
+    bool operator() ( long type, CellContainer *con )
     {
         return con->MoveAll( m_con );
     }
