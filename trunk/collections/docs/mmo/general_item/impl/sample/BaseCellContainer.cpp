@@ -62,6 +62,7 @@ void BaseCellContainer::Serialize( GI::ByteBuffer &buf ) const
 
 bool BaseCellContainer::UnSerialize( GI::ByteBuffer &buf )
 {
+    DestroyAll();
     long s;
     if( !buf.Pop( &s ) ) return false;
     ReSize( s );

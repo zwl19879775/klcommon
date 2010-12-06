@@ -41,6 +41,9 @@ namespace GI
         /// An object will be removed from this container.
         virtual void OnRemove( BaseContainer *con, const Object *obj ) { }
 
+        /// An object's stack count (amount) has changed.
+        virtual void OnSetAmount( BaseContainer *con, const Object *obj ) { }  
+       
         /// An move operation has been finished.
         virtual void OnMoved( BaseContainer *srcCon, BaseContainer *destCon,
                 const Object *obj ) { }

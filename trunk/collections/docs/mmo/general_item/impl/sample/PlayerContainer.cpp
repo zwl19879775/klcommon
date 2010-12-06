@@ -19,7 +19,7 @@ struct MoveOperator
     GI::BaseContainer *m_con;
 };
 
-PlayerContainer::PlayerContainer()
+PlayerContainer::PlayerContainer() : m_goldCon( GOLD_INDEX )
 {
     m_mainCon.ReSize( ConDef::MAIN_CON_SIZE );
     m_mainCon.EnableAll();
@@ -82,6 +82,7 @@ long PlayerContainer::GetType( GI::BaseContainer *con ) const
     {
         if( con == m_subCons.GetSubCon( ToCellPos( type ) ) ) return type;
     }
+    if( con == &m_goldCon ) return ConDef::PEI_WALLET;
     return ConDef::PEI_NONE;
 }
 
