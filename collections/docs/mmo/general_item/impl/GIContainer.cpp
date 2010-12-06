@@ -81,14 +81,14 @@ namespace GI
 
     void BaseContainer::DestroyAll()
     {
-        for( ObjectMap::iterator it = m_objs.begin();
-                it != m_objs.end(); ++ it )
+        size_t size = m_objs.size();
+        for( size_t i = 0; i < size; ++ i )
         {
-            // TODO: 
-            NOTIFY_LISTENER( OnRemove( this, it->second ) );
-            SINGLETON( ObjCreator ).Destroy( it->second );
+            ObjectMap::iterator it = m_objs.begin();
+            Object *obj = it->second;
+            Remove( obj );
+            SINGLETON( ObjCreator ).Destroy( obj );
         }
-        m_objs.clear();
     }
 
     void BaseContainer::Serialize( GI::ByteBuffer &buf ) const
@@ -107,7 +107,7 @@ namespace GI
             Object *obj = SINGLETON( ObjCreator ).Create();
             obj->UnSerialize( buf );
             SINGLETON( ObjCreator ).SetProto( obj );
-            Add( obj );
+            if( !Add( obj ) ) AddFailed( obj );
         }
         return true;
     }
@@ -156,6 +156,11 @@ namespace GI
     {
         return con->Get( id );
     }
+
+    void BaseContainer::AddFailed( Object *obj )
+    {
+        SINGLETON( ObjCreator ).Destroy( obj );
+    }
     ///////////////////////////////////////////////////////////////////////////
     FactoryContainer::FactoryContainer()
     {
@@ -169,7 +174,11 @@ namespace GI
     {
         Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
-        Add( obj );
+        if( !Add( obj ) )
+        {
+            AddFailed( obj );
+            return false;
+        }
         return true;
     }
 
@@ -245,7 +254,11 @@ namespace GI
         obj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( retCnt ) );
         Object *newObj = SINGLETON( ObjCreator ).Clone( obj );
         newObj->SetValue( KeySet::StackCntKey, TypeSet::ValueType( splitCnt ) );
-        Add( newObj );
+        if( !Add( newObj ) )
+        {
+            AddFailed( newObj );
+            return false;
+        }
         return true;
     }
 

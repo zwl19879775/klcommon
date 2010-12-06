@@ -8,6 +8,7 @@
 #include "SubContainer.h"
 #include "CellContainer.h"
 #include "ContainerDef.h"
+#include "SingleContainer.h"
 
 class PlayerContainer
 {
@@ -38,6 +39,7 @@ private:
 public:
     SubContainer m_subCons;
     CellContainer m_mainCon;
+    SingleContainer m_goldCon;
     CPlayer *m_owner;
 };
 

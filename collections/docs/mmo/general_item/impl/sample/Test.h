@@ -22,8 +22,14 @@ enum
 
 enum
 {
+    GOLD_INDEX = 1000,
+};
+
+enum
+{
     PEI_PACKET, PEI_PACK, PEI_PACK1, PEI_PACK2, PEI_PACK3, PEI_PACK4,
     PEI_DEPOT, PEI_DEPOTPACK, PEI_DEPOT1, PEI_DEPOT2, PEI_DEPOT3, PEI_DEPOT4,
+    PEI_WALLET,
 };
 
 #define random( min, max ) ( rand()%(max-min) + min )

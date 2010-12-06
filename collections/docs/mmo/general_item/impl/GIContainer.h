@@ -78,6 +78,8 @@ namespace GI
 
         static Object *AgentGet( BaseContainer *con, TypeSet::IDType objID );
 
+        /// When add an object failed, destroy the object.
+        static void AddFailed( Object *obj );
     protected:
         ObjectMap m_objs;
         ContainerListener *m_listener;
@@ -122,7 +124,11 @@ namespace GI
         Object *obj = DoCreate( index, listener );
         if( !obj ) return false;
         fn( obj );
-        Add( obj );
+        if( !Add( obj ) ) 
+        {
+            AddFailed( obj );
+            return false;
+        }
         return true;
     }
 
