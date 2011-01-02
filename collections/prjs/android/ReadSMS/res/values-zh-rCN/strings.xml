@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuickSMS</string>
+    <string name="write_new_msg">新信息</string>
+    <string name="view_contact">联系人</string>
+    <string name="input_address">输入号码</string>
+    <string name="call">电话</string>
+    <string name="write_body">输入信息</string>
+    <string name="send">发送</string>
+    <string name="menu_export_all_text">导出所有为纯文本</string>
+    <string name="menu_export_text">导出为文本</string>
+    <string name="export_success">导出成功！</string>
+    <string name="export_failed">导出失败！</string>
+    <string name="contact_recent">最近联系</string>
+    <string name="contact_all">所有</string>
+    <string name="from_me">我</string>
+    <string name="time_month">月</string>
+    <string name="time_day">日</string>
+    <string name="notify_no_body">请输入信息！</string>
+    <string name="notify_no_addr">请输入号码</string>
+    <string name="notify_send_success">信息发送成功！</string>
+</resources>

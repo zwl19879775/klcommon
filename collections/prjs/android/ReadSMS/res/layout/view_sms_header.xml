@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dip"
+        android:paddingBottom="2dip"
+        android:paddingLeft="8dip"
+        android:paddingRight="8dip"
+        android:background="#888888"
+        >
+       <QuickContactBadge
+	        android:id="@+id/thread_contact_avatar"
+	        android:layout_centerVertical="true"
+	        android:src="@drawable/ic_contact_picture"
+            android:colorBackground="#888888"
+	        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+</RelativeLayout>
