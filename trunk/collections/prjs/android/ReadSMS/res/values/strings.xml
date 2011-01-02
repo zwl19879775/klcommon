@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QuickSMS</string>
+    <string name="write_new_msg">Write new message</string>
+    <string name="view_contact">Contacts</string>
+    <string name="input_address">Input number</string>
+    <string name="call">Call</string>
+    <string name="write_body">Type message here</string>
+    <string name="send">Send</string>
+    <string name="menu_export_all_text">Export all to text</string>
+    <string name="menu_export_text">Export to text</string>
+    <string name="export_success">Export successfully!</string>
+    <string name="export_failed">Export failed!</string>
+    <string name="contact_recent">Recent</string>
+    <string name="contact_all">All</string>
+    <string name="from_me">ME</string>
+    <string name="time_month">m</string>
+    <string name="time_day">d</string>
+    <string name="notify_no_body">Please input message!</string>
+    <string name="notify_no_addr">Please input number!</string>
+    <string name="notify_send_success">Send message successfully!</string>
+</resources>

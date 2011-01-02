@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical" >
+    <!-- the header views -->
+    <FrameLayout 
+        android:id="@+id/view_sms_header"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+    </FrameLayout>
+    <ListView  
+        android:id="@+id/sms_detail"
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:clickable="false"
+        android:choiceMode="none"
+        android:divider="#000000"
+        android:dividerHeight="0px"
+        android:layout_weight="0.8"
+        android:background="#ffffff"
+        android:cacheColorHint="#ffffff"
+        />
+    <!-- declare 'edit box' and 'send' button -->
+    <RelativeLayout  
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dip"
+        android:paddingBottom="12dip"
+        android:paddingLeft="8dip"
+        android:paddingRight="8dip"
+        android:background="#888888"
+        >
+        <EditText android:id="@+id/new_sms_context"
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:minWidth="249dip"
+            android:maxWidth="250dip"
+            android:layout_weight="0.1"
+            android:hint="@string/write_body" />
+        <Button android:id="@+id/new_sms_send"
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight ="true"
+            android:text="@string/send" />      
+    </RelativeLayout>
+</LinearLayout>
