@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Alarming</string>
+    <string name="menu_insert">Add an alarm</string>
+    <string name="menu_exit">Exit</string>
+    <string name="menu_del">Delete</string>
+    <string name="menu_cancel">Cancel</string>
+    <string name="monday_s">周一</string>
+    <string name="tuesday_s">周二</string>
+    <string name="wednesday_s">周三</string>
+	<string name="thusday_s">周四</string>
+  	<string name="friday_s">周五</string>
+    <string name="saturday_s">周六</string>
+  	<string name="sunday_s">周日</string>
+</resources>
