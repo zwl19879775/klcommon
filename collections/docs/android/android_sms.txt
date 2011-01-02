@@ -1,0 +1,69 @@
+
+12.31.2010
+
+MMmsApp是整个程序的Application，onCreate里负责了大部分初始化工作。
+
+整个程序包含的Service有：
+.transaction.TransactionService
+.transaction.SmsReceiverService
+
+包含的Receiver有：
+.transactionn.PushReceiver (WAP_PUSH_RECEIVED)
+.transaction.MmsSystemEventReceiver (ACTION_CHANGED/BOOT_COMPLETED)
+.transaction.PrivilegedSmsReceiver( SMS_RECEIVED)
+.transaction.SmsReceiver( BOOT_COMPLTED/)
+.transaction.MessageStatusReceiver
+.transaction.SimFullReceiver
+.transaction.SmsRejectedReceiver
+
+主Activity: .ui.ConversationList
+
+关于Contact信息，在程序初始化时，没有明显的数据查询动作。
+
+##异步数据库操作AsyncQueryHandler##
+
+ThreadListQueryHandler实现了AsyncQueryHandler回调接口，用于查询短信数据。
+
+ConversationList:onStart时，开启异步短信查询。startAsyncQuery.
+查询所有短信：startQueryForAll
+
+短信UI列表中，每个item被绑定数据时，会主动去取得数据。
+ConversationListAdapter: bindView : Conversation.from(cursor
+
+##看起来，程序使用了自己定义的简化短信数据，基于会话，可以更快速的响应##
+
+1.1.2011
+
+startAsyncQuery -> onQueryComplete -> mListAdapter.changeCursor ->
+newView -> bindView -> Conversation.from(cursor -> 映射Conversation到
+ConversationListItemData -> 映射ListItemData到ListView的每一个item
+
+##值得一提的是，在Conversation.from里似乎已经读取了联系人列表##
+
+Conversation:fillFromCursor -> ContactList:getByIds -> ContactCache:get
+
+##程序启动时，        
+Conversation.init(this);会开启线程读入所有的会话，同时会查询完整的联系人
+信息。##
+
+1.2.2011
+
+关于会话关联的联系人信息，很有可能是在ContactCache:get中，pushTask到一个
+异步更新线程。这里只是取得一个简单的联系人给conversation，当线程确实取得
+联系人信息后，则回调更新数据。
+	for (UpdateListener l : iterator) {
+		if (V) Log.d(TAG, "updating " + l);
+		l.onUpdate(c);
+	}
+
+ConversationListItem.java
+
+    public void onUpdate(Contact updated) {
+        mHandler.post(new Runnable() {
+            public void run() {
+                updateFromView();
+            }
+        });
+    }
+
+
