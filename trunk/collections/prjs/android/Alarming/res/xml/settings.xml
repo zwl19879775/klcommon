@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+	<Preference android:key="time_id" android:summary="7:00AM" android:title="04:24"></Preference>
+	<RingtonePreference 
+		android:ringtoneType="alarm" 
+		android:key="ring_id" 
+		android:title="铃声">
+	</RingtonePreference>
+	<CheckBoxPreference 
+		android:key="wake_id" 
+		android:title="震动">
+	</CheckBoxPreference>
+	<EditTextPreference 
+		android:title="标签" 
+		android:dialogTitle="标签" 
+		android:key="label_id" 
+		android:summary="none">
+	</EditTextPreference>
+	<com.kl.android.Alarming.ListPreferenceMultiSelect 
+		android:defaultValue="#ALL#"
+		android:dialogTitle="重复" 
+		android:title="重复" 
+		android:key="repeat_multi_id" 
+		android:entries="@array/repeat_res" 
+		android:entryValues="@array/repeat_res_value">
+	</com.kl.android.Alarming.ListPreferenceMultiSelect>
+<CheckBoxPreference android:title="开启" android:key="enable_id"></CheckBoxPreference>
+</PreferenceScreen>

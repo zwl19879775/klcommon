@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>	
+	<string-array name="repeat_res">
+		<item>星期一</item>
+		<item>星期二</item>
+		<item>星期三</item>
+		<item>星期四</item>
+		<item>星期五</item>
+		<item>星期六</item>
+		<item>星期日</item>
+	</string-array>
+	<string-array name="repeat_res_value">
+		<item>001</item>
+		<item>002</item>
+		<item>003</item>
+		<item>004</item>
+		<item>005</item>
+		<item>006</item>
+		<item>007</item>
+	</string-array>
+</resources>
