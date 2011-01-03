@@ -85,7 +85,7 @@ public class ThreadSmsStore implements SMSReader.SMSStore,
 		ThreadItem item = new ThreadItem();
 		item.mThreadID = sms.mThreadID;
 		item.mContact = ContactManager.instance().queryContactByAddr(context, sms.mAddress);
-		if( item.mContact == null ) item.mContact = ContactManager.instance().getTempContact(sms.mAddress);
+		if( item.mContact == null ) item.mContact = ContactManager.instance().getSimpleContact(sms.mAddress);
 		item.mSmsList.add(sms);
 		mAllSms.put(toKey(sms), item);	
 	}
