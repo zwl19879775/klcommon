@@ -197,7 +197,7 @@ public class ContactManager {
 	}
 	
 	/// A stranger, we only have his phone number.
-	public Contact getTempContact(String number) {
+	public Contact getSimpleContact(String number) {
 		Contact contact = new Contact();
 		contact.mName = number;
 		PhoneNum num = new PhoneNum();

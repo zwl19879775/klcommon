@@ -1,0 +1,87 @@
+
+如下代码：
+
+__declspec(naked)
+void call(void* pfn, ...) 
+{
+    __asm 
+    {
+        pop eax;
+        add eax, 3;
+        xchg dword ptr[esp], eax;
+        push eax;
+        ret;
+    }
+}
+
+再看它的用法：
+
+void print_str( const char *s )
+{
+    printf( "%s\n", s );
+}
+call( print_str, "a string" );
+
+call函数的大致作用，就是调用传递进去的函数print_str，并将参数"a string"传递给目标
+函数。
+
+但是它是怎么做到的呢？虽然call只有简单的几句汇编代码，但是却包含了很多函数在编译
+器中的汇编层实现。要了解这段代码的意思，需要知道如下相关知识：
+
+0、函数调用的实现中，编译器通过系统堆栈(ESP寄存器指向）传递参数；
+1、C语言默认的函数调用规则(_cdecl)中，调用者从右往左将参数压入堆栈，并且调用者负
+责堆栈平衡，也就是保证调用函数的前后，ESP不变；
+2、汇编指令call本质上是先将返回地址，通常是该条指令的下一条指令压入堆栈，然后直
+接跳转到目标位置；
+3、汇编指令ret则是先从堆栈栈顶取出返回地址，然后跳转过去；
+4、汇编指令add加上其操作数，貌似占3个字节长度；
+5、在visual studio中，DEBUG模式下编译器会在我们的代码中插入各种检测代码，而
+__declspec(naked)则是告诉编译器：别往这里添加代码。
+
+了解了以上常识后，再看这段代码，其本质无非就是利用了这些规则，在代码段跳来跳去。
+我们来逐步分析一下：
+
+在调用call函数的地方，大概的代码为：
+
+caller:
+// 堆栈状态，从左往右分别表示栈顶至下
+// ret_addr是call后的地址，即add esp, 8的位置
+// a1, a2表示函数参数，callee_addr是这里的print_str
+// stack: ret_addr, callee_addr, a1, a2, ...
+call( print_str, "a string" ); 
+add esp, 8 //清除参数传递所占用的堆栈空间，维持堆栈平衡
+end_label //位于add后的指令，后面会提到
+
+call:
+// 此时堆栈stack: ret_addr, a1, a2
+pop eax // eax = ret_addr; stack: callee_addr, a1, a2, ...
+add eax, 3 // eax = end_label; stack: callee_addr, a1, a2, ...
+xchg dword ptr[esp], eax // eax = callee_addr; stack: end_label, a1, a2, ...
+push eax // stack: callee_addr, end_label, a1, a2, ...
+ret // 取出callee_addr并跳转，也就跳转到print_str函数的入口，此时堆栈
+    // stack: end_label, a1, a2, ...
+
+callee(print_str):
+...
+... 无视函数内容
+...
+ret // print_str返回，此时正常情况下，堆栈stack: end_label, a1, a2, ...
+	// 取出end_label并跳转，stack: a1, a2, ...
+
+那么当callee结束时，则跳转回caller函数中。不过，如过你所见，此时堆栈中还保留着再
+调用call函数时传入的参数：stack: a1, a2, ...，所以，DEBUG模式下，VS就会提示你堆
+栈不平衡。这里简单的处理就是手动来进行堆栈平衡：
+
+    call( print_str, "a string" );
+    __asm
+    {
+        add esp, 4; 
+    }
+
+传入了多少个参数，就得相应地改变esp的值：
+
+
+
+
+
+

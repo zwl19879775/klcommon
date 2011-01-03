@@ -66,4 +66,10 @@ ConversationListItem.java
         });
     }
 
+1.3.2011
+
+使用CursorAdapter配合ListView，当ListView的某些项不需要显示时，程序就不会去数据
+库查询对应的行数据。如果自己实现的ListViewItem，在bind时需要查询联系人，借用该机
+制甚至不需要去数据库查询该联系人的信息。
+
 
