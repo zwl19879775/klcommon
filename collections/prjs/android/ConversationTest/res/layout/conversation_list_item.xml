@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.kl.test.ConversationTest.ConversationListItem
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="?android:attr/listPreferredItemHeight" 
+  android:paddingRight="10dip" >
+      <QuickContactBadge
+        android:id="@+id/contact_avatar"
+        android:layout_marginLeft="7dip"
+        android:layout_centerVertical="true"
+        android:src="@drawable/icon"
+        style="?android:attr/quickContactBadgeStyleWindowSmall" />
+      <TextView android:id="@+id/from"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:layout_marginTop="6dip"
+        android:layout_marginRight="5dip"
+        android:layout_marginLeft="7dip"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/contact_avatar"
+        android:layout_alignWithParentIfMissing="true"
+        android:ellipsize="marquee"
+        android:textSize="20dip"  />
+      <TextView android:id="@+id/snippet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="7dip"
+        android:layout_below="@id/from"
+        android:layout_toRightOf="@id/contact_avatar"
+        android:layout_alignParentBottom="true"
+        android:layout_alignWithParentIfMissing="true"
+        android:ellipsize="end"
+        android:textSize="12dip" />
+      <TextView android:id="@+id/date"
+        android:layout_marginTop="2dip"
+        android:layout_marginBottom="10dip"
+        android:layout_marginLeft="5dip"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:singleLine="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true" 
+        android:textSize="12dip"/>
+</com.kl.test.ConversationTest.ConversationListItem>
