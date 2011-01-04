@@ -22,12 +22,17 @@ public class ConversationListItem extends RelativeLayout
     public ConversationListItem(Context context) {
         super(context);
         if(sDefaultAvatar == null) {
+        	Log.d("Load default avatar icon.");
         	sDefaultAvatar = context.getResources().getDrawable(R.drawable.ic_contact_picture);
         }
     }
-
+    
     public ConversationListItem(Context context, AttributeSet attrs) {
         super(context, attrs);
+        if(sDefaultAvatar == null) {
+        	Log.d("Load default avatar icon.");
+        	sDefaultAvatar = context.getResources().getDrawable(R.drawable.ic_contact_picture);
+        }
     }
 
     @Override

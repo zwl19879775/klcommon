@@ -1,12 +1,26 @@
 package com.kl.test.ConversationTest;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.content.AsyncQueryHandler;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+
+class ConversationCache {
+	private static Map<Long, Conversation> sCache = new HashMap<Long, Conversation>();
+	
+	public static Conversation get(long id) {
+		return sCache.get(id);
+	}
+	
+	public static void add(Conversation conv) {
+		sCache.put(conv.mID, conv);
+	}
+}
 
 public class Conversation {
 	public static final Uri FULL_CONTENT_URI = Uri.parse("content://mms-sms/conversations");
@@ -24,6 +38,11 @@ public class Conversation {
     /// When used with CursorAdapter, must query "_id" column.
     private static final String[] PROJECTION = { 
     	ID, DATE, MESSAGE_COUNT, SNIPPET, RECIPIENT_IDS };
+    private static final int ID_INDEX = 0;
+    private static final int DATE_INDEX = 1;
+    private static final int MESSAGE_COUNT_INDEX = 2;
+    private static final int SNIPPET_INDEX = 3;
+    private static final int RECIPIENT_IDS_INDEX = 4;
     /// data.
     public long mDate;
     public long mMessageCnt;
@@ -32,20 +51,27 @@ public class Conversation {
     public long mID;
     public ContactManager.Contact mContact;
     
+    /// these Log here will cost much run time too.
+    /// If there waste much time in this function, it will make
+    /// the list view seems not smooth.
     public static Conversation from(Context context, Cursor cur) {
-    	long t = System.currentTimeMillis();
-    	Conversation conv = new Conversation();
-    	int date = cur.getColumnIndex(DATE);
-    	int msgCnt = cur.getColumnIndex(MESSAGE_COUNT);
-    	int snippet = cur.getColumnIndex(SNIPPET);
-    	int id = cur.getColumnIndex(ID);
-    	conv.mID = cur.getLong(id);
-    	conv.mDate = cur.getLong(date);
-    	conv.mMessageCnt = cur.getLong(msgCnt);
-    	conv.mSnippet = cur.getString(snippet);
-    	conv.mRecipientIds = cur.getString(cur.getColumnIndex(RECIPIENT_IDS));
-    	conv.mContact = ContactManager.instance().asyncQueryContact(context, conv.getNumber()) ;
-    	Log.d(String.format("Conversation time:%d", System.currentTimeMillis() - t));
+    	//long t = System.currentTimeMillis();
+    	long id = cur.getLong(ID_INDEX);
+    	Conversation conv = ConversationCache.get(id);
+    	if(conv == null) {
+    		conv = new Conversation();
+    		conv.mID = id;
+    		conv.mDate = cur.getLong(DATE_INDEX);
+    		conv.mMessageCnt = cur.getLong(MESSAGE_COUNT_INDEX);
+    		conv.mSnippet = cur.getString(SNIPPET_INDEX);
+    		conv.mRecipientIds = cur.getString(RECIPIENT_IDS_INDEX);
+    		conv.mContact = ContactManager.instance().asyncQueryContact(context, conv.getNumber()) ;
+    		ConversationCache.add(conv);
+    	}
+    	else {
+    		//Log.d(String.format("Get in cache %d", id));
+    	}
+    	//Log.d(String.format("Conversation time:%d", System.currentTimeMillis() - t));
     	return conv;
     }
     
