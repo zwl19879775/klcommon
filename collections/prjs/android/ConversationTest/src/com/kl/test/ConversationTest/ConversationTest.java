@@ -7,6 +7,9 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.ListView;
 
+/*
+ Use ListActivity can make the list view scroll more smoothly.
+*/
 public class ConversationTest extends Activity {
 	private static final int QUERY_ALL_TOKEN = 1;
 	private ConversationListAdapter mAdapter;
