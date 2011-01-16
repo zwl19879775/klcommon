@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BlackList</string>
+    <string name="no_log_entry">No log entry</string>
+    <string name="view_log">View log</string>
+    <string name="view_sms">View SMS </string>
+    <string name="remove">Remove</string>
+    <string name="add">Add</string>
+    <string name="add_tip">add a new black list</string>
+    <string name="remove_all">Remove all</string>
+    <string name="tab_sms">SMS</string>
+    <string name="tab_calllog">Call log</string>
+    <string name="tab_contact">Contact</string>
+    <string name="calllog_incoming">Incoming</string>
+    <string name="calllog_outgoing">Outgoing</string>
+    <string name="calllog_missed">Missed</string>
+    <string name="add_to">Add to blacklist</string>
+    <string name="add_completed">Add completed!</string>
+    <string name="block_mms">Block SMS/MMS message</string>
+    <string name="block_phone">Block phone call</string>
+</resources>

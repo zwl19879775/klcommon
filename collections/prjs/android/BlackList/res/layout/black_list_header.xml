@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="?android:attr/listPreferredItemHeight" 
+ >
+    <TextView android:id="@+id/black_header_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="7dip"
+        android:layout_marginTop="5dip"
+        android:text="@string/add"
+        android:textSize="22dip"  />
+      <TextView android:id="@+id/black_header_tip"
+        android:layout_marginTop="2dip"
+        android:layout_marginBottom="6dip"
+        android:layout_marginLeft="7dip"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_alignParentBottom="true" 
+        android:text="@string/add_tip"
+        android:textSize="12dip"/>
+</RelativeLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BlackList</string>
+    <string name="no_log_entry">没有屏蔽日志</string>
+    <string name="view_log">查看日志</string>
+    <string name="view_sms">查看短信</string>
+    <string name="remove">移除</string>
+    <string name="add">添加</string>
+    <string name="add_tip">添加一个新的黑名单</string>
+    <string name="remove_all">移除所有</string>
+    <string name="tab_sms">短信</string>
+    <string name="tab_calllog">通话记录</string>
+    <string name="tab_contact">联系人</string>
+    <string name="calllog_incoming">来电</string>
+    <string name="calllog_outgoing">去电</string>
+    <string name="calllog_missed">未接</string>
+    <string name="add_to">添加进黑名单</string>
+    <string name="add_completed">添加完成!</string>
+    <string name="block_mms">短信屏蔽</string>
+    <string name="block_phone">电话屏蔽</string>
+</resources>
