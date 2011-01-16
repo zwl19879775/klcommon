@@ -64,4 +64,14 @@ public class BlockHelper {
 		context.getContentResolver().insert(BlackList.BlockLog.CONTENT_URI, val);
 		return true;
 	}
+	
+	public static boolean writePhoneCallBlockLog(Context context, long blackID, String number) {
+		String desc = String.format("[Reject phone call from (%s)]", number);
+		ContentValues val = new ContentValues();
+		val.put(BlackList.BlockLog.BLACK_ID, blackID);
+		val.put(BlackList.BlockLog.DESC, desc);
+		val.put(BlackList.BlockLog.TYPE, BlackList.BlockLog.TYPE_CONTACT);
+		context.getContentResolver().insert(BlackList.BlockLog.CONTENT_URI, val);
+		return true;
+	}
 }
