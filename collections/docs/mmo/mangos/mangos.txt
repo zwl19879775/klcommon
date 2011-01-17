@@ -2,6 +2,12 @@ MaNGOS source reading based on version 0.12
 Kevin Lynx
 Started on 9.1.2010
 
+9.21.2010
+
+代码中将各种生物（Creature）的移动分离成各个单独的MovementGenerator，如：
+ConfusedMovementGenerator/HomeMovementGenerator，这些类均用于产生移动的路径点，
+在每帧更新时，通过Traverller/DestinationHolder实现移动。
+
 9.17.2010
 
 ObjectRegistry维护了一个KEY-VALUE的表。FactoryHolder抽象了一个只负责创建对象的工
