@@ -1,8 +1,5 @@
 print( "2.lua" )
-print( "ID:".._Script.ID() )
-print( _ENV )
-_T = 3
-print( _T )
+func1( " 2.lua" )
 --_ENV = 2
 --dofile( "scripts/print_G.lua" )
 wait( 5 );
