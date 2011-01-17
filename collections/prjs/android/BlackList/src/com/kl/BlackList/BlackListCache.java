@@ -165,6 +165,7 @@ public class BlackListCache {
 	}
 	
 	private void loadAll(Cursor cursor, OnOperCompleted handler) {
+		mLatest = true;
 		if(!cursor.moveToFirst()) {
 			return;
 		}
@@ -173,7 +174,6 @@ public class BlackListCache {
 			mCache.add(item);
 		} while(cursor.moveToNext());
 		handler.onCompleted();
-		mLatest = true;
 		Log.i(String.format("Read %d black list items.", mCache.size()));
 	}
 
