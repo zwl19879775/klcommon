@@ -104,6 +104,13 @@ char *message_pcname(const Message *msg, char *pc)
     return pc;
 }
 
+unsigned long message_cmdno(const Message *msg)
+{
+    char v[32];
+    readin(msg->full_header, v, ':', 4);
+    return atol(v);
+}
+
 char *message_groupnumber(const Message *msg, char *number)
 {
     readin(msg->body, number, '#', 1);

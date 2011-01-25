@@ -59,6 +59,8 @@ char *message_username(const Message *msg, char *user);
 
 char *message_pcname(const Message *msg, char *pc);
 
+unsigned long message_cmdno(const Message *msg);
+
 /* must be called after decrypt */
 char *message_groupnumber(const Message *msg, char *number);
 
