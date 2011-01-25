@@ -74,10 +74,21 @@ void save_message(const Message *msg)
     fwrite(msg->body, strlen(msg->body), 1, fp);
     fclose(fp);
 }
+
 #else
 #define save_raw_message(a, b)
 #define save_message(a)
 #endif
+
+void save_group_message(const Message *msg, const char *group, const char *user, const char *pc)
+{
+    char file[512];
+    sprintf(file, "msg_%s_.txt", group);
+    FILE *fp = fopen(file, "a+");
+    if(!fp) return;
+    fprintf(fp, "%s:%s\n%s\n", user, pc, msg->body);
+    fclose(fp);
+}
 
 void test_response_msg(SOCKET s, const sockaddr_in *clientaddr, const Message *src_msg)
 {
@@ -120,14 +131,21 @@ void handle_message(const char *buf, int size, Message *msg)
     char num[32];
     char user[64];
     char pc[64];
-    printf("================================================================================\n");
     save_raw_message(buf, size);
     message_create(buf, size, msg);
     message_decrypt(msg);
     save_message(msg);
+    unsigned long c = message_cmdno(msg);
+    if(c != TEXTCMD)
+    {
+        logd("Non text command(%x), ignore it.\n", c);
+        return;
+    }
+    printf("================================================================================\n");
     printf("GroupNo(%s)\tUser(%s)\tPC(%s)\n", message_groupnumber(msg, num), message_username(msg, user),
         message_pcname(msg, pc));
     printf("%s\n", msg->body);
+    save_group_message(msg, num, user, pc);
     printf("================================================================================\n");
 }
 
@@ -148,7 +166,7 @@ void loop(SOCKET s)
             Sleep(1000);
             continue;
         }
-        printf("Recv data from (%s-%d)(size=%d).\n", inet_ntoa(client_addr.sin_addr), 
+        logd("Recv data from (%s-%d)(size=%d).\n", inet_ntoa(client_addr.sin_addr), 
             ntohs(client_addr.sin_port), ret);
         handle_message(buf, ret, &msg);
         /* send response */

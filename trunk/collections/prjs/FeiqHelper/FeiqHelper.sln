@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FeiqHelper", "FeiqHelper\FeiqHelper.vcproj", "{839A3460-50D0-4BE6-9469-2C9DF32DCCA8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FeiqDll", "FeiqDll\FeiqDll.vcproj", "{69159396-6A35-4D90-A322-84302499E98C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{839A3460-50D0-4BE6-9469-2C9DF32DCCA8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{839A3460-50D0-4BE6-9469-2C9DF32DCCA8}.Debug|Win32.Build.0 = Debug|Win32
+		{839A3460-50D0-4BE6-9469-2C9DF32DCCA8}.Release|Win32.ActiveCfg = Release|Win32
+		{839A3460-50D0-4BE6-9469-2C9DF32DCCA8}.Release|Win32.Build.0 = Release|Win32
+		{69159396-6A35-4D90-A322-84302499E98C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{69159396-6A35-4D90-A322-84302499E98C}.Debug|Win32.Build.0 = Debug|Win32
+		{69159396-6A35-4D90-A322-84302499E98C}.Release|Win32.ActiveCfg = Release|Win32
+		{69159396-6A35-4D90-A322-84302499E98C}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
