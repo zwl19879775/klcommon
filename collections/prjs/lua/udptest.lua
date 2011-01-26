@@ -1,9 +1,14 @@
 --[[
  Feiq adapter IM coded by Kevin Lynx 
  1.25.2011
+ when get online, send 0(no extra data) and 600001(with nick name and group name),
+ and the others get online, should send a response 600003(with nick name and group name
+ to him.
+ 0 and 600001 is a broadcast message.
 --]]
 g_msg_handlers = { }
 
+-------------------------------------------------------------------------------
 function skipto(s, c, i)
    local s,_ = string.find(s, c, i) 
    return s
@@ -65,6 +70,7 @@ function msg_decrypt_body(body, bodys, mac)
 	return decrypt
 end
 
+-------------------------------------------------------------------------------
 function handle_recv_data(data, ip, port)
 	print("recv data from " .. ip)
 	print(data)
@@ -108,6 +114,22 @@ function mh_registerall()
 end
 -------------------------------------------------------------------------------
 
+function set_sockoption(udp)
+    local ret, msg = udp:setoption("ip-add-membership", 
+        { multiaddr= "226.81.9.8", interface="*" } )
+    if ret == nil then
+        print(msg)
+    else
+        print("add multicast memeber success")
+    end
+    ret, msg = udp:setoption("broadcast", true)
+    if ret == nil then
+        print(msg)
+    else
+        print("enable broadcast success")
+    end
+end
+
 require("blowfish")
 local socket = require("socket")
 local udp = socket.udp()
@@ -118,14 +140,8 @@ else
     print("bind ok")
 end
 
-ret, msg = udp:setoption("ip-add-membership", 
-    { multiaddr= "226.81.9.8", interface="*" } )
-if ret == nil then
-    print(msg)
-    return
-else
-    print("setoption success")
-end
+set_sockoption(udp)
+
 mh_registerall()
 while true do
     local data, ip, port = udp:receivefrom()
