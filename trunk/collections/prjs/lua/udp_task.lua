@@ -9,22 +9,25 @@ GROUP_NUM = ""
 
 function handle_set_group(udp, buf)
     GROUP_NUM = readin(buf, ':', 1)
-    print("set group number : " .. GROUP_NUM)
+    logi("set group number : " .. GROUP_NUM)
 end
 
 function handle_send_msg(udp, buf)
     if GROUP_NUM == "" then
-        print("group number has not been set")
+        logw("group number has not been set")
         return
     end
     local text = readin(buf, ':', 1)
-    print(string.format("send group message <%s> to <%s>", text, GROUP_NUM))
+    logi(string.format("send group message <%s> to <%s>", text, GROUP_NUM))
     send_group_msg(udp, GROUP_NUM, text)
 end
 
 function handle_send_groupentry(udp)
-    print(string.format("send group <%s> entry mssage", GROUP_NUM))
+    logi(string.format("send group <%s> entry mssage", GROUP_NUM))
     send_br_groupentry(udp, GROUP_NUM)
+end
+
+function handle_chat_msg(udp)
 end
 
 function handle_cmd(buf, flags, udp)
@@ -35,6 +38,8 @@ function handle_cmd(buf, flags, udp)
         handle_send_msg(udp, buf)
     elseif t == "group" then
         handle_send_groupentry(udp)
+	elseif t == "chat" then
+		handle_chat_msg(udp, buf)
     end
 end
 
