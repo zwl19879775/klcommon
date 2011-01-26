@@ -3,10 +3,6 @@
   Kevin Lynx
   1.26.2011
 --]]
-MSG_NOOP = 0x00
-MSG_BR_ENTRY = 0x600001
-MSG_SEND_GROUP = 0x400023
-MSG_BR_GROUPENTRY = 0x2000C9
 
 NICKNAME = "PC128"
 GROUPNAME = "ELF"
@@ -24,7 +20,7 @@ function send_br_entry(udp)
     fullh = msg_create_fullheader(feiqh, MSG_BR_ENTRY)
     msg = msg_create(fullh, get_nickname_group())
     udp:sendto(msg, BROADCAST_ADDR, BIND_PORT)
-    print("send br entry message")
+    logi("send br entry message")
 end
 
 function send_group_msg(udp, group_num, text)
@@ -33,7 +29,7 @@ function send_group_msg(udp, group_num, text)
     local fullh = msg_create_fullheader(feiqh, MSG_SEND_GROUP)
     local msg = msg_create(fullh, body)
     udp:sendto(msg, MULTI_ADDR, BIND_PORT)
-    print("send group text message")
+    logi("send group text message")
 end
 
 function send_br_groupentry(udp, group_num)
@@ -42,5 +38,5 @@ function send_br_groupentry(udp, group_num)
     local fullh = msg_create_fullheader(feiqh, MSG_BR_GROUPENTRY)
     local msg = msg_create(fullh, body)
     udp:sendto(msg, MULTI_ADDR, BIND_PORT)
-    print("send group entry message.")
+    logi("send group entry message.")
 end

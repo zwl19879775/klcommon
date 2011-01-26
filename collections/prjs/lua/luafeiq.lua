@@ -5,28 +5,30 @@
 --]]
 print("luafeiq start...")
 
+dofile("log.lua")
 dofile("utils.lua")
+dofile("userlist.lua")
+dofile("message_defs.lua")
 dofile("message.lua")
 dofile("handler_table.lua")
 dofile("message_handlers.lua")
 dofile("udpentry.lua")
 dofile("message_sender.lua")
 
-UDP = nil
 TESTFLAG = false
 
 function luafeiq_init()
+	logi("luafeiq init...")
     local udp = udp_init()
     if TESTFLAG ~= true then
         send_br_entry(udp)
     end
-    UDP = udp
     return udp
 end
 
-function luafeiq_run()
+function luafeiq_run(udp)
     while true do
-        udp_runonce(UDP)
+        udp_runonce(udp)
     end
 end
 
@@ -38,9 +40,9 @@ end
 
 -- TEST purpose
 function luafeiq_test()
-    luafeiq_init()
-    test_send_group_msg("abc", UDP)
-    luafeiq_run()
+    local udp = luafeiq_init()
+    test_send_group_msg("abc", udp)
+    luafeiq_run(udp)
 end
 
 local test_flag = arg[1]
