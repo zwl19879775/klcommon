@@ -45,7 +45,7 @@ end
 function udp_runonce(udp)
     local data, ip, port = udp:receivefrom()
     if data ~= nil then-- timeout or error
-        handle_recv_data(data, ip, port)
+        handle_recv_data(udp, data, ip, port)
     end
 end
 

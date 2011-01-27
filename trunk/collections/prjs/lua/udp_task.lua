@@ -27,7 +27,11 @@ function handle_send_groupentry(udp)
     send_br_groupentry(udp, GROUP_NUM)
 end
 
-function handle_chat_msg(udp)
+function handle_chat_msg(udp, buf)
+    logd("handle chat command");
+    local ip = readin(buf, ':', 1)
+    local text = readin(buf, ':', 2)
+    send_chat_msg(udp, ip, BIND_PORT, text)
 end
 
 function handle_cmd(buf, flags, udp)
