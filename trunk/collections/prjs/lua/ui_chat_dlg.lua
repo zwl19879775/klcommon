@@ -16,8 +16,10 @@ end
 function chatdlg_set_btncb(window)
     window.btn_send.action = function(btn)
         local text = window.text_body.value
+        window.text_body.value = ""
         -- TODO: udp object
         send_chat_msg(udp, window.user.ip, BIND_PORT, text)
+        window.text_history.append = string.format("%s:\n%s", "ME", text)
     end
 end
 
