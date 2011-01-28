@@ -5,6 +5,7 @@
 --]]
 
 USERLIST = { }
+userlist_listener = nil
 
 function user_dump(user)
 	return string.format("user(ip:%s,port:%s,nick:%s,group:%s)",
@@ -15,9 +16,14 @@ function user_create(ip, port, nickname, groupname)
 	local user = { }
 	user.ip = ip
 	user.port = port
-	user.nickname = nickname
-	user.groupname = groupname
+	user.nickname = check_string(nickname)
+	user.groupname = check_string(groupname)
 	return user
+end
+
+function user_setlistener(listener)
+    logi("set user listener")
+    userlist_listener = listener 
 end
 
 function user_add(user)
@@ -26,6 +32,13 @@ function user_add(user)
 	end
 	USERLIST[user.ip] = user
 	logd(string.format("add user: %s", user_dump(user)))
+    if userlist_listener ~= nil then
+        userlist_listener.onadd(user)
+    end
+end
+
+function user_equal(u1, u2)
+    return u1.ip == u2.ip
 end
 
 function user_get(ip)
@@ -33,6 +46,9 @@ function user_get(ip)
 end
 
 function user_remove(ip)
+    if USERLIST[ip] ~= nil and userlist_listener ~= nil then
+        userlist_listener.onremove(USERLIST[ip])
+    end
 	USERLIST[ip] = nil
 end
 
