@@ -1,49 +1,65 @@
--- testtree2.lua
-
+require 'lfs'
 require 'iuplua'
-require 'iupluacontrols'
-tree = iup.tree{}
+require( "iupluacontrols" )
 
-function assoc (idx,value)
-    iup.TreeSetTableId(tree,idx,{value})
+
+local append = table.insert
+
+function get_dir (path)
+    local files = {}
+    local dirs = {}
+    for f in lfs.dir(path) do
+        if f ~= '.' and f ~= '..' then
+            if lfs.attributes(path..'/'..f,'mode') == 'file' then
+                append(files,f)
+            else
+                append(dirs,f)
+            end
+        end
+    end
+    return files,dirs
 end
 
-function addbranch(self,label,value)
-    self.addbranch = label
-    assoc(1,value or label)
+tree = iup.tree {}
+
+function set (id,value,attrib)
+    iup.TreeSetTableId(tree,id,{value,attrib})
+    print(string.format("id=%d, name=%s", id, tree.value))
 end
 
-function addleaf(self,label,value)
-    self.addleaf1 = label
-    assoc(2,value or label)
+function get(id)
+    return iup.TreeGetTable(tree,id)
 end
 
-tree.name = "Animals"
-addbranch(tree,"Birds")
-addbranch(tree,"Crustaceans")
-addleaf(tree,"Shrimp")
-addleaf(tree,"Lobster")
-addbranch(tree,"Mammals")
-addleaf(tree,"Horse")
-addleaf(tree,"Whale")
-
-function dump (tp,id)
-    local t = iup.TreeGetTable(tree,id)
-    -- our string data is always the first element of this table
-    print(tp,id,t and t[1])
+function fill (path,id)
+    local files,dirs = get_dir(path)
+    id = id + 1
+    local state = "STATE"..id
+    for i = #files,1,-1 do -- put the files in reverse order!
+        tree.addleaf = files[i]
+        set(id,path..'/'..files[i])
+    end
+    for i = #dirs,1,-1 do -- ditto for directories!
+        tree.addbranch = dirs[i]
+        set(id,path..'/'..dirs[i],'dir')
+        tree[state] = "COLLAPSED"
+    end
 end
 
 function tree:branchopen_cb(id)
-    dump('open',id)
+    tree.value = id
+    local t = get(id)
+    if t[2] == 'dir' then
+        fill(t[1],id)
+        set(id,t[1],'xdir')
+    end
 end
 
-function tree:selection_cb (id,iselect)
-    if iselect == 1 then dump('select',id) end
-end
+dlg = iup.dialog{tree; title = "IupTree", size = "QUARTERxTHIRD"} 
+dlg:showxy(iup.CENTER,iup.CENTER)
 
-f = iup.dialog{tree; title = "Tree Test"}
-
-f:show()
+fill("c:\\", 0)
 
 iup.MainLoop()
+
 

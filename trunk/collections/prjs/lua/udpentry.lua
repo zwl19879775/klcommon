@@ -31,7 +31,7 @@ function udp_setoption(udp)
     else
         print("enable broadcast success")
     end
-    udp:settimeout(0.2)
+    udp:settimeout(0.02)
 end
 
 function udp_init()
