@@ -2,6 +2,7 @@
   Put udp stuff in a lua task
   Kevin Lynx
   1.26.2011
+  1.28.2011 unused code, instead IUP GUI.
 --]]
 local main_id = arg[1]
 

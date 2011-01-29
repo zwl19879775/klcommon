@@ -7,8 +7,6 @@
 NICKNAME = "PC128"
 GROUPNAME = "ELF"
 --]]
-NICKNAME = "PC128"
-GROUPNAME = "2048"
 
 function get_nickname_group()
     return NICKNAME .. string.char(0) .. GROUPNAME .. string.char(0)

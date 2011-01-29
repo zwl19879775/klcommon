@@ -18,6 +18,7 @@ function user_create(ip, port, nickname, groupname)
 	user.port = port
 	user.nickname = check_string(nickname)
 	user.groupname = check_string(groupname)
+	user.message = chatlog_create()
 	return user
 end
 
@@ -28,10 +29,11 @@ end
 
 function user_add(user)
 	if USERLIST[user.ip] then
-		logd(string.format("user %s already exist", user.ip))
+		logw(string.format("user %s already exist, remove the exist one", user.ip))
+		user_remove(user.ip)
 	end
 	USERLIST[user.ip] = user
-	logd(string.format("add user: %s", user_dump(user)))
+	logi(string.format("add user: %s", user_dump(user)))
     if userlist_listener ~= nil then
         userlist_listener.onadd(user)
     end
@@ -49,6 +51,7 @@ function user_remove(ip)
     if USERLIST[ip] ~= nil and userlist_listener ~= nil then
         userlist_listener.onremove(USERLIST[ip])
     end
+	logi(string.format("remove user %s", ip))
 	USERLIST[ip] = nil
 end
 
