@@ -6,10 +6,6 @@
 
 require("blowfish") -- to decrypt/encrypt messages
 
-MAC_ADDRESS = "0022155B1925"
-USERNAME = "C1024"
-PCNAME = "PC256"
-
 function skipto(s, c, i)
    local s,_ = string.find(s, c, i) 
    return s
@@ -106,5 +102,13 @@ function msg_create_group_body(text, group_num, mac)
     body = body .. text
     local encrypt_body = msg_encrypt_body(body, mac)
     return encrypt_body
+end
+
+function msg_read_groupnum(groupmsg)
+	return readin(groupmsg, '#', 1)
+end
+
+function msg_read_groupbody(groupmsg)
+	return readin(groupmsg, '#', 2)
 end
 
