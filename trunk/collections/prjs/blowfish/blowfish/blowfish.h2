@@ -266,5 +266,3 @@ static DWORD bf_S[4][256] = {
   0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6,
 };
 
-
-
