@@ -7,6 +7,10 @@
 // modify H.Shirouzu 07/2002 (add change_order(), CBC mode)
 // modify H.Shirouzu 01/2004 (add PKCS#5 mode)
 
+#ifndef WIN32
+typedef long long _int64;
+#endif
+
 #define MAXKEYBYTES		56		// 448 bits max
 #define NPASS			16		// SBox passes
 

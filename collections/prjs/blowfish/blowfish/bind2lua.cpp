@@ -3,12 +3,18 @@
   Kevin Lynx
   1.25.2011
 */
-#include <lua.hpp>
+#include <lua5.1/lua.hpp>
+#include <stddef.h>
 #include "blowfish.h"
 
 #ifndef LUA_BLOWFISH_API
+#ifdef WIN32
 #define LUA_BLOWFISH_API __declspec(dllexport)
+#else
+#define LUA_BLOWFISH_API extern
 #endif
+#endif
+
 #ifdef _DEBUG
 #include <stdio.h>
 #define logd printf
