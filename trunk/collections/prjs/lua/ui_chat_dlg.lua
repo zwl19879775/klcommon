@@ -29,7 +29,7 @@ function chatdlg_attach(window, data, data_t)
 		window.dlg.title = string.format("Chat with %s", data.nickname)
 	else
 		chatdlg_attach_group(window, data)
-		window.dlg.title = string.format("Group Chat in %s", data.number)
+		window.dlg.title = string.format("Group Chat in %s", group_format_name(data))
 	end
 end
 

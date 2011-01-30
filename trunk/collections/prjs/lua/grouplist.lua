@@ -14,9 +14,10 @@ function group_setlistener(listener)
 	grouplist_listener = listener
 end
 
-function group_create(groupnum)
+function group_create(groupnum, groupname)
 	local group = {}
 	group.number = groupnum
+    group.name = groupname
 	group.message = chatlog_create()
 	return group
 end
@@ -34,5 +35,12 @@ end
 
 function group_get(groupnum)
 	return GROUPLIST[groupnum]
+end
+
+function group_format_name(group)
+    if group.name ~= nil then
+        return string.format("%s(%s)", group.name, group.number)
+    end
+    return group.number
 end
 

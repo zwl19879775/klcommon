@@ -83,13 +83,13 @@ function msg_encrypt_body(body, mac)
 end
 
 function msg_create_feiqheader(bodys)
-    local h = string.format("1_lbt4_0#128#%s#0#0#%d", MAC_ADDRESS, bodys)
+    local h = string.format("1_lbt4_0#128#%s#0#0#%d", config_macaddress(), bodys)
     return h
 end
 
 function msg_create_fullheader(feiqheader, cmd)
     local h = string.format("%s:%d:%s:%s:%d:", feiqheader, os.time(), 
-        USERNAME, PCNAME, cmd)
+        config_loginname(), config_pcname(), cmd)
     return h
 end
 
