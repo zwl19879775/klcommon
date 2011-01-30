@@ -7,6 +7,10 @@
 require( "iuplua" )
 require( "iupluacontrols" )
 
+print(iup.GetGlobal("UTF8AUTOCONVERT"))
+iup.SetGlobal("UTF8AUTOCONVERT", "NO")
+print(iup.GetGlobal("UTF8AUTOCONVERT"))
+
 dofile("chat_dlg.lua")
 --------------------------------------------------------------------------------
 
@@ -64,7 +68,7 @@ function init_tree_atributes()
     tree.name = "All"
     tree.addexpanded = "NO"
     branch_add(tree, code_group)
-    branch_addleaf(tree, code_group, "codera")
+    branch_addleaf(tree, code_group, "程序")
     branch_add(tree, test_group)
     branch_addleaf(tree, code_group, "coderb")
     branch_addleaf(tree, test_group, "testera")

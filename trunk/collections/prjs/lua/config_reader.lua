@@ -3,7 +3,8 @@
   Kevin Lynx
   1.30.2011
 --]]
-require("LuaXML")
+--require("LuaXML") --windows
+require("LuaXml") -- linux
 
 CONFIG = {}
 CONFIG_TAGS = { "loginname", "pcname", "nickname", "groupname", "macaddress" }
