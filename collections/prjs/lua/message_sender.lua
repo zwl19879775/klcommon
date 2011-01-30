@@ -3,13 +3,9 @@
   Kevin Lynx
   1.26.2011
 --]]
---[[
-NICKNAME = "PC128"
-GROUPNAME = "ELF"
---]]
 
 function get_nickname_group()
-    return NICKNAME .. string.char(0) .. GROUPNAME .. string.char(0)
+    return  config_nickname() .. string.char(0) .. config_groupname() .. string.char(0)
 end
 
 function send_br_entry(udp)
@@ -24,6 +20,14 @@ function send_br_entry(udp)
     logi("send br entry message")
 end
 
+function send_br_entryexit(udp)
+    local feiqh = msg_create_feiqheader(0)
+    local fullh = msg_create_fullheader(feiqh, MSG_BR_EXIT)
+    local msg = msg_create(fullh, "")
+    udp:sendto(msg, BROADCAST_ADDR, BIND_PORT)
+    logi("send br entry exit message")
+end
+
 function send_br_entryans(udp, ip, port)
     local feiqh = msg_create_feiqheader(0)
     local fullh = msg_create_fullheader(feiqh, combine(MSG_BR_ENTRYANS, OPT_ABSENCE))
@@ -33,7 +37,7 @@ function send_br_entryans(udp, ip, port)
 end
 
 function send_group_msg(udp, group_num, text)
-    local body = msg_create_group_body(text, group_num, MAC_ADDRESS)
+    local body = msg_create_group_body(text, group_num, config_macaddress())
     local feiqh = msg_create_feiqheader(string.len(body))
     local fullh = msg_create_fullheader(feiqh, combine(MSG_SEND_GROUP, OPT_FILEATTACH))
     local msg = msg_create(fullh, body)
@@ -42,7 +46,7 @@ function send_group_msg(udp, group_num, text)
 end
 
 function send_br_groupentry(udp, group_num)
-    local body = msg_create_group_body("", group_num, MAC_ADDRESS)
+    local body = msg_create_group_body("", group_num, config_macaddress())
     local feiqh = msg_create_feiqheader(string.len(body))
     local fullh = msg_create_fullheader(feiqh, combine(MSG_BR_GROUPENTRY, OPT_FILEATTACH))
     local msg = msg_create(fullh, body)
@@ -65,4 +69,5 @@ function send_chat_msg(udp, ip, port, text)
     udp:sendto(msg, ip, port)
     logi(string.format("send chat msg to:%s-%d", ip, port))
 end
+
 

@@ -15,19 +15,12 @@ dofile("message_handlers.lua")
 dofile("udpentry.lua")
 dofile("message_sender.lua")
 dofile("message_history.lua")
+dofile("config_reader.lua")
 
 TESTFLAG = false
 
-MAC_ADDRESS = "0022155B1925"
-USERNAME = "C1024"
-PCNAME = "PC256"
-NICKNAME = "PC128"
-GROUPNAME = "2048"
-
 -- global object, handle these global data.
 luafeiq = {}
--- represent these groups where this user in.
-focused_groups = { "1234", "5678" }
 
 function luafeiq_initdata()
 	luafeiq.udp = nil
@@ -59,8 +52,10 @@ function luafeiq_handle_recv_groupmsg(arg, groupnum, text)
 	end
 	local group = group_get(groupnum)
 	if group == nil then
-		logi(string.format("recv unexist group %s message, create a new one", groupnum));
-		group = group_create(groupnum)
+		logi(string.format("recv nonexist group %s message, create a new one", groupnum));
+        -- query if we focused on this group, if so the group will have a name
+        local name = config_get_groupname(groupnum)
+		group = group_create(groupnum, name)
 		group_insert(group)
 	end
 	-- insert a chat log entry
@@ -71,13 +66,17 @@ function luafeiq_handle_recv_groupmsg(arg, groupnum, text)
 end
 
 function luafeiq_send_groupentry(udp)
-	for i, v in ipairs(focused_groups) do
-		send_br_groupentry(udp, v)
-	end
+    config_iterate_group(function(number, name) 
+        send_br_groupentry(udp, number)
+        logi(string.format("send group entry message (%s,%s)", number, name))
+    end)
 end
 
 function luafeiq_init()
 	logi("luafeiq init...")
+    if config_load() then
+        logi("load config success")
+    end
     luafeiq.udp = udp_init()
     if TESTFLAG ~= true then
         send_br_entry(luafeiq.udp)
@@ -87,6 +86,7 @@ function luafeiq_init()
 end
 
 function luafeiq_release()
+    send_br_entryexit(luafeiq.udp)
 	luafeiq.udp:close()
 end
 
@@ -101,7 +101,7 @@ function luafeiq_udp()
 end
 
 function luafeiq_isself(username, pcname)
-	return username == USERNAME and pcname == PCNAME
+	return username == config_loginname() and pcname == config_pcname()
 end
 
 -- TEST purpose

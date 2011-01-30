@@ -13,6 +13,11 @@ function handle_recv_data(udp, data, ip, port)
 end
 
 function mh_handle_group(arg)
+	-- as the group message is multicast, so we can received other groups
+	-- message which we may donot care.
+	if not GROUP_RECV_OTHERS then
+		return
+	end
 	-- ignore self group messages
 	local username = msg_read_username(arg.fullheader)
 	local pcname = msg_read_pcname(arg.fullheader)
@@ -25,7 +30,9 @@ function mh_handle_group(arg)
     logi("-------------------------Group Message------------------------------------------")
     logi(string.format("%s:%s", username, pcname))
     logi(decrypt_body)
-	luafeiq_handle_recv_groupmsg(arg, msg_read_groupnum(decrypt_body),
+    local groupnum = msg_read_groupnum(decrypt_body)
+    groupnum = check_string(groupnum)
+	luafeiq_handle_recv_groupmsg(arg, groupnum,
 		msg_read_groupbody(decrypt_body))
 end
 
@@ -39,12 +46,15 @@ function mh_handle_entry_group(arg)
 	local bodys = msg_read_bodysize(arg.feiqheader)
 	local decrypt_body = msg_decrypt_body(arg.body, bodys, mac)
 	local groupnum = msg_read_groupnum(decrypt_body)
+    groupnum = check_string(groupnum)
 	logi("receive group entry message: " .. groupnum)
     logi(string.format("%s:%s", msg_read_username(arg.fullheader), msg_read_pcname(arg.fullheader)))
     logi(decrypt_body)
 	-- create a new group message 
 	if not group_exist(groupnum) then
-		local group = group_create(groupnum)
+        -- check whether this group has been focused, if so it has a name.
+        local groupname = config_get_groupname(groupnum)
+		local group = group_create(groupnum, groupname)
 		group_insert(group)
 	end
 end

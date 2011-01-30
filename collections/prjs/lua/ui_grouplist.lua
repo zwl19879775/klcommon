@@ -13,8 +13,8 @@ end
 
 function groupwnd_create_listener(tree, listener)
 	listener.onadd = function(group)
-		logi(string.format("add a group (%d) to group list window", group.number))
-		branch_addleaf(tree, tree.name, group.number, group)
+		logi(string.format("add a group (%s) to group list window", group.number))
+		branch_addleaf(tree, tree.name, group_format_name(group), group)
 		tree.redraw = "YES"
 	end
 end

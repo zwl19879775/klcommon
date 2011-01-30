@@ -89,7 +89,7 @@ function wrap_in_tabs()
 	tree.tabtitle = "Users"
 	-- the size of the tree seems some bugs.
 	-- here must set the correct rastersize, can make it works fine.
-	tree.rastersize = "10x10"
+	tree.rastersize = "10x10" -- tree.rastersize has default value "400x200"
 	local unread = unreaddlg_create()
 	unread.tabtitle = "Unread"
 	local grouplist = groupwnd_create()
@@ -106,6 +106,15 @@ local dlg = iup.dialog
 		size = "180x320",
 		maxbox = "NO"		
 	} 
+dlg.close_cb = function(dlg)
+    local ret = iup.Alarm("Exit", "Exit this application?",
+        "Exit", "No")
+    if ret == 1 then
+        -- exit the entire application
+        return iup.CLOSE
+    end
+    return iup.IGNORE
+end
 dlg:showxy(iup.CENTER,iup.CENTER)
 
 set_ui_listener()
