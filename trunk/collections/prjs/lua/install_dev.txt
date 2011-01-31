@@ -2,16 +2,17 @@
    sudo apt-get install liblua5.1-0-dev
 2. install lua binaray
    sudo apt-get install lua5.1
-3. install luasocket(2.0.2)
+3. install luasocket(2.0.2)(license same as lua)
    sudo apt-get install liblua5.1-socket-dev
-4. install luabitop
+4. install luabitop(license same as lua)
    sudo apt-get install liblua5.1-bitop-dev 
-5. install lualogging
+5. install lualogging(opensource)
    sudo apt-get install liblua5.1-logging
-6. download LuaXml
+6. download LuaXml(license same as lua)
    sudo cp luaxml/LuaXml.lua /usr/share/lua/5.1/
    sudo cp luaxml/LuaXML_lib.so /usr/lib/lua/5.1/
 7. download iup3.2, copy these shell scripts from iup3.3 to iup3.2 directory
+   (license some like MIT)
    sudo ./install
    sudo ./install-dev
    sudo ./config_lua_module
