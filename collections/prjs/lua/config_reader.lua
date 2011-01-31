@@ -3,8 +3,7 @@
   Kevin Lynx
   1.30.2011
 --]]
---require("LuaXML") --windows
-require("LuaXml") -- linux
+require("LuaXml")
 
 CONFIG = {}
 CONFIG_TAGS = { "loginname", "pcname", "nickname", "groupname", "macaddress" }
@@ -68,8 +67,8 @@ function config_load()
         if t == nil then
             logw(string.format("config file %s node does not configed", v))
         else
-            CONFIG[v] = t.value
-            logi(string.format("load %s as %s", v, t.value))
+            CONFIG[v] = env_s_g2u(t.value)
+            logi(string.format("load %s as %s", v, CONFIG[v]))
         end
     end
     local t = root:find("focusedgroups")
@@ -88,7 +87,7 @@ function config_loadgroups(t)
         local tag = t[i]
         local group = {}
         group[number] = string.lower(tag[number])
-        group[name] = tag[name]
+        group[name] = env_s_g2u(tag[name])
         logi(string.format("load group %s, %s", group[number], group[name]))
         groups[i] = group
         i = i + 1

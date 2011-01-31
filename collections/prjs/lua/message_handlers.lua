@@ -30,6 +30,7 @@ function mh_handle_group(arg)
     logi("-------------------------Group Message------------------------------------------")
     logi(string.format("%s:%s", username, pcname))
     logi(decrypt_body)
+    decrypt_body = env_s_g2u(decrypt_body)
     local groupnum = msg_read_groupnum(decrypt_body)
     groupnum = check_string(groupnum)
 	luafeiq_handle_recv_groupmsg(arg, groupnum,
@@ -70,6 +71,8 @@ function mh_handle_entry(arg)
 		nick = string.sub(arg.body, 0, s - 1)
 		group = string.sub(arg.body, s + 1)
 	end
+    nick = env_s_g2u(nick)
+    group = env_s_g2u(group)
 	logd(string.format("receive entry (%s)-(%s)", nick, group))
 	local user = user_create(arg.ip, arg.port, nick, group)
 	user_add(user)
@@ -90,20 +93,23 @@ function mh_handle_entry_ans(arg)
 		nick = string.sub(arg.body, 0, s - 1)
 		group = string.sub(arg.body, s + 1)
 	end
+    nick = env_s_g2u(nick)
+    group = env_s_g2u(group)
 	logd(string.format("receive entry answer from:%s-%s", arg.ip, arg.port))
 	local user = user_create(arg.ip, arg.port, nick, group)
 	user_add(user)
 end
 
 function mh_handle_recv_msg(arg)
+    local text = env_s_g2u(arg.body)
     logi("-------------------------Private Message----------------------------------------")
     logi(string.format("%s:%s", msg_read_username(arg.fullheader), msg_read_pcname(arg.fullheader)))
-    logi(arg.body)
+    logi(text)
     -- send response
     local msgno = readin(arg.fullheader, ':', 1)
     logd(string.format("msg number: %d", msgno))
     send_recved_msg(arg.udp, arg.ip, arg.port, msgno)
-    luafeiq_handle_recv_privatemsg(arg, arg.body)
+    luafeiq_handle_recv_privatemsg(arg, text)
 end
 
 -- when i send a message to someone, someone will response

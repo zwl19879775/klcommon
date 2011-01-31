@@ -1,0 +1,19 @@
+1. install lua development kit(libs/header files)
+   sudo apt-get install liblua5.1-0-dev
+2. install lua binaray
+   sudo apt-get install lua5.1
+3. install luasocket(2.0.2)
+   sudo apt-get install liblua5.1-socket-dev
+4. install luabitop
+   sudo apt-get install liblua5.1-bitop-dev 
+5. install lualogging
+   sudo apt-get install liblua5.1-logging
+6. download LuaXml
+   sudo cp luaxml/LuaXml.lua /usr/share/lua/5.1/
+   sudo cp luaxml/LuaXML_lib.so /usr/lib/lua/5.1/
+7. download iup3.2, copy these shell scripts from iup3.3 to iup3.2 directory
+   sudo ./install
+   sudo ./install-dev
+   sudo ./config_lua_module
+8. compile blowfish library and copy it to the library directory
+

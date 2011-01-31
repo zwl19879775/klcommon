@@ -1,4 +1,7 @@
 
+1.31.2011
+Test test string encoding between linux/windows
+
 1.30.2011
 Fix 当用户重新上线后，之前与它的聊天记录会丢失
 
