@@ -12,6 +12,7 @@ dofile("ui_chat_dlg.lua")
 dofile("ui_branch_utils.lua")
 dofile("ui_unread_message.lua")
 dofile("ui_grouplist.lua")
+dofile("ui_env.lua")
 
 OTHER_GROUP_NAME = "Others"
 UI_FONT = "COURIER_NORMAL_10" 
@@ -117,6 +118,7 @@ dlg.close_cb = function(dlg)
 end
 dlg:showxy(iup.CENTER,iup.CENTER)
 
+env_init()
 set_ui_listener()
 local udp = luafeiq_init()
 iup.SetIdle(idle_cb(udp))

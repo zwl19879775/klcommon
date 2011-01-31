@@ -32,7 +32,7 @@ function handle_chat_msg(udp, buf)
     logd("handle chat command");
     local ip = readin(buf, ':', 1)
     local text = readin(buf, ':', 2)
-    send_chat_msg(udp, ip, BIND_PORT, text)
+    send_chat_msg(udp, ip, DEST_PORT, text)
 end
 
 function handle_cmd(buf, flags, udp)

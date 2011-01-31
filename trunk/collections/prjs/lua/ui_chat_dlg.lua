@@ -72,7 +72,7 @@ end
 function chatdlg_send_msg(window, text)
 	if window.data_t == WINDOW_DATA_USER then
 		-- send private message
-		send_chat_msg(luafeiq_udp(), window.data.ip, BIND_PORT, text)
+		send_chat_msg(luafeiq_udp(), window.data.ip, DEST_PORT, text)
 	else
 		-- send group chat message
 		send_group_msg(luafeiq_udp(), window.data.number, text)
