@@ -1,0 +1,36 @@
+
+2.16.2011
+
+Chapter 2
+
+Note all the operators in Common Lisp are functions, but most are.
+
+One operator that doesn't follow the Common Lisp evaluation rule is quote.The
+quote operator takes a single argument, and just return it verbatim.
+For convenience, Common Lisp defines ' as an abbreviation for quote.
+
+Two Lisp data types that we don't commonly find in other languages are symbols
+and lists. Symbols are words. Ordinarily they are converted to uppercase.
+
+Lists are represented as zero or more elements enclosed in parenthese.
+
+In Common Lisp, there are two ways of representing the empty list. You can
+represent it as a pair of parentheses with nothing between them, or you can use
+the symbol nil.
+
+In Common Lisp, the symbol t is the default representation for truth(me:boolean
+ true). Falsity in Common Lisp is represented by nil, the empty list.
+
+A function whose return value is intended to be interpreted as truth or falsity
+is called a predicate. Common Lisp predicates often have names that end with p.
+
+The simplest conditional in Common Lisp is if:
+    (if (listp '(a b c)) (+ 1 2) (+ 5 6))
+
+Although t is the default representation for truth, everything except nil also
+counts as true in a logical context.
+
+You can define new functions with defun. It usually takes three or more
+arguments: a name, a list of parameters, and one or more expressions that will
+make up the body of the function.
+
