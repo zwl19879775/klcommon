@@ -1,7 +1,6 @@
 
-2.16.2011
 
-Chapter 2
+Chapter 2 (basic grammar)
 
 Note all the operators in Common Lisp are functions, but most are.
 
@@ -33,4 +32,85 @@ counts as true in a logical context.
 You can define new functions with defun. It usually takes three or more
 arguments: a name, a list of parameters, and one or more expressions that will
 make up the body of the function.
+
+One of the most frequently used operators in Common Lisp is let, which allows
+you to introduce new local variables.
+    
+    let (var val) (var val) (exp-list) 
+
+'exp-list' is the value returned by let.
+
+You can create a global variable by giving a symbol and a value to defparameter:
+
+    defparameter *glob* 99
+
+In Common Lisp the most general assignment operator is setf. We can use it to do
+assignments to eighter kind of variable.
+
+The do macro is the fundamental iteration operator in Common Lisp. Like let, do
+can create variables, and the first argument is a list of variable
+specifications. Each element of this list can be of the form:
+
+    (variable initial update) 
+
+If we give the name of a function to function(an operator like quote), it will
+return the associated object. Just as we can use ' as an abbreviation for quote,
+we can use #' as an abbreviation for function.
+
+To refer literally to an integet, we use a series of digits; to refer literally
+to a function, we use what's called a lambda expression. A lambda expression is
+a list containing the symbol lambda, followed by a list of parameters, followed
+by a body of zero or more expressions.
+
+In lisp, values have types, not variables.(me: like other script languages)
+
+Chapter 3 (me: some functions operated on list)
+
+Conses provide a convenient representation for pairs of any type.(me: pair)
+
+    (setf x (cons 'a 'b))
+
+The reason Lisp has no pointers is that every value is conceptually a pointer.
+When you assign a value to a variable or store it in a data structure, what gets
+stored is actually a pointer to the value.
+
+...(some sections i have not read)
+
+Chapter 4 (me: array,string, structure, hash)
+
+In Common List, you can make an array by calling make-array with a list of
+dimensions as the first argument.
+
+    (make-array '(2 3) :initial-element nil)
+
+If you want just a one-dimensional array, you can give an integer instead of a
+list as the first argument to make-array:
+    
+    (make-array 4 :initial-element nil)
+
+Strings are vectors of characters.
+
+In Common Lisp the type sequence includes both lists and vectors.
+
+A structure can be considered as a delux kind of vector. To define a structure,
+  we use defstruct.
+
+    (defstruct point x y)
+
+This defines a point to be a structure with two fields, x and y. It also
+implicitly defines the functions make-point, point-p, copy-point, point-x, and
+point-y.
+
+You create a hash table by calling make-hash-table, which has no required
+arguments:
+
+    setf ht (make-hash-table)
+
+Chapter 5
+
+Common Lisp has three basic operators for creating blocks of code: progn, block,
+and tagbody.
+
+The expressions with progn body are evaluated in order, and the value of the
+last is returned.
 
