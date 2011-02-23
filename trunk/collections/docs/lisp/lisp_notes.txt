@@ -278,3 +278,114 @@ There are two kinds of streams, character streams and binary streams.
     (format str "Something~%")
     (close str)
 
+Chapter 8 (Symbols)
+
+In fact, a symbol can have any string as its name. Common Lisp is not
+case-sensitive.
+
+Any sequence of characters between vertical bars(me: | ) is treated as a symbol.
+
+    (symbol-name '|a b c|)
+    "a b c"
+
+In Common Lisp every symbol has a property-list, or plist. (me: there is a
+ key-value list associated to a symbol)
+
+    (get 'name 'color)
+    (setf (get 'name 'color) 'red)
+    (symbol-plist 'name) (me: get 'name' property-list)
+
+In Common Lisp, property list aren't used very much. They have largely been
+superseded by hash tables.
+
+There is more to symbols than meets thy eye.
+
+Conceptually, packages are symbol-tables, mapping names to symbols. Every
+ordinary symbols belongs to a particular package. A symbol that belongs to a
+package is said to be interned in that package.
+
+    (intern "pkgName")
+
+Not all symbols are interned. Uninterned symbols are called gensyms.
+
+Here is what you might put at the top of a file containing a distinct package of
+code:
+
+    (defpackage "MY-APPLICATION"
+                (:use "COMMON-LISP" "MY-UTILITIES")
+                (:nickname "APP")
+                (:export "WIN" "LOSE" "DRAW"))
+    (in-package my-application)
+
+Symbols in the keyword package (known as keywords) have two unique properties:
+they always evaluate to themselves, and you can refer to them anywhere simply as
+:x, instead keyword:x. (me: means there is a pakcage named 'keyword', and the
+ symbols in this package can be refered as :symbol)
+
+
+Chapter 9 (Numbers)
+
+Common Lisp provides four distinct types of numbers: integers, floating-point
+numbers, ratios, and complex numbers.
+
+
+The Complex number a+bi is writtent as #c(a b).
+
+(me: ignore this chapter)
+
+Chapter 10 (Macros)
+
+Eval takes an expression, evaluates it, and returns its value. (me: it's not a
+ good way to generate codes in Lisp as the book said)
+
+    (eval '(+ 1 2 3))
+
+The most common way to write programs that write programs is by defining macros.
+Marros are usually defined by calling defmacro.
+
+    (defmacro nil! (x)
+        (list 'setf x nil))
+
+This defines a new operator called nil!, which will take one argument.
+
+To test a function, we call it, but to test a macro, we look at its expansion.
+The function macroexpand-1 takes a macro call and generates its expansion.
+
+    (macroexpand-1 '(nil! x))
+
+A macro call can expand into another macro call. When the compiler encounters a
+macro call, it simply keeps expanding it until it is no longer one.
+
+Like a regular quote, a backquote(`) alone protects its argument from
+evaluation.
+
+If you prefix a comma to something within a backquoted expression, it will be
+evaluated. Thus we can use backquote and comma together to build list templates. 
+
+    (setf a 1 b 2)
+    `(a is ,a and b is ,b)
+    (A is 1 AND B IS 2) (me: as you see, a and b after ',' has been evaluated)
+
+Comma-at(,@) is like comma, but splices its argument(which should be a list).
+Instead of the list itself, its elements are inserted in the template.
+
+    (setf lst '(a b c))
+    `(lst is ,lst)
+    `(its elements are ,@lst)
+    (ITS ELEMENTS ARE A B C)
+
+The most general solution (to solve name conflit in macro and the place where
+ the macro expands) is not to use ordinary symbols anywhere they might be
+captured. Instead we can use gensyms.
+
+    (defmacro ntimes (n &rest body)
+        (let ((g (gensym)))
+            `(do ((,g 0 (+ ,g 1)))
+                 ((>= ,g ,n))
+                 ,@body)))
+
+The function pprint, which prints expressions indented like code, is specially
+useful when looking at macro expansions.
+
+    (pprint (macroexpand-1 '(cond (a b) )))
+
