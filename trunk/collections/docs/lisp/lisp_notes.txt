@@ -36,7 +36,8 @@ make up the body of the function.
 One of the most frequently used operators in Common Lisp is let, which allows
 you to introduce new local variables.
     
-    let (var val) (var val) (exp-list) 
+    let ((var val) (var val)) (exp-list) 
+    i.e: (let ((x 7)) (format t "X=~A" x)(values x))
 
 'exp-list' is the value returned by let.
 
@@ -113,4 +114,167 @@ and tagbody.
 
 The expressions with progn body are evaluated in order, and the value of the
 last is returned.
+
+A block is like a progn with a name and an emergency exit.
+
+	(block head 
+	 	(return-from head 'result))
+
+There is also a return macro, which returns its argument as the value of an
+enclosing block named nil.
+
+Another operator we've used to group expressions is let.(me: try to undestand
+the difference between let and let*, try these codes below:
+
+    (setf x 1)
+    (let ((x 2) (y (+ x 1))) (+ x y)) (me: refer 'x' in setf)
+    ---------------------------------
+    (let* ((x 2) (y (+ x 1))) (+ x y)) (me: refer 'x' in let)
+   
+)
+
+So what if you do want the value of one new variable to depend on the value of
+another variable established by the same expression? In that case you would use
+a variant called let*.
+
+The simplest after if is when, which takes an expression and a body of code. The
+body will be evaluated if the test expression returns true.
+
+	(when (oddp that)
+	 	(format t "Hmm, that's odd")
+		(+ that 1))
+
+The opposite of when is unless, it takes the same arguments, but the body will
+be evaluated only if the test expression returns false.
+
+The mother of all conditions is cond. When the cond expression is evaluated,
+ the condition are evaluated in order until one of them returns true.
+
+    (cond ((cond-exp) (exp)(exp))
+          ((cond-exp) (exp)(exp))
+
+When you want to compare a value against a series of constants, there is case.
+
+(me: here is a typecase which can get the type of a symbol:
+
+    (typecase 'a
+      (number 'number)
+      (list 'list)
+      (t 't))
+
+)
+
+The basic iteration operator is do. (variable initial update)
+
+Besides do and do* there are several special-purpose iteration operators. To
+iterate over the elements of a list, we can use dolist:
+
+    (dolist (x '(a b c d) 'done)
+        (format t "~A " x))
+
+The third expression within the initial list will be evaluated and returned as
+the value of the dolist when iteration terminates.
+
+In Common Lisp, an expression can return zero or more values. The maximum number
+of return values is implementation-dependent, but it will be at least 19.
+
+If something is expeting only one value, all but the first will be discarded.
+
+Chapter 6 (Functions)
+
+The predicate fboundp tells whether there is a function with a symbol as its
+name. 
+
+    (fboundp '+)
+
+If a symbol is the name of a function, symbol-function will return it.
+
+    (symbol-function '+)
+    (setf (symbol-function 'add2)
+        #'(lambda (x) (+ x 2)))
+
+Functions defined via defun or setf of symbol-function are global functions.
+
+Local functions can be defined with labels, which is a kind of let for
+functions.
+
+    (labels ((add10 (x) (+ x 10))) 
+        (add10 2))
+
+Section 5.2 showed how a let expression could be understood as a function call.
+A do expression can be similarly explained as a call to a recursive function.
+
+
+Since we have seen several functions that could take varying numbers of
+arguments. To write such functions ourselves, we need to use something called a
+rest parameter.
+
+If we insert the token &rest before the last variable in the parameter list of a
+function, then when the function is called, this variable will be set to a list
+of all the remaining arguments.
+
+    (defun our-funcall (fn &rest args)
+      (apply fn args))
+    (our-funcall '+ 2 3 4) (me: args can contain more than args)
+
+We have also seen operators in which arguments could be omitted, and would
+default to certain values. Such parameters are called optional parameters.
+(By contrast, ordinary parameters are sometimes called required parameters)
+
+If the symbole &optional occurs in the parameter list of a function:
+
+    (defun philosoph (thing &optional property)
+       (list thing 'is property)) (me: property is either nil or something)
+
+then all the arguments after it are optional, and default to nil.
+
+We give an explicit default by enclosiing it in a list with the parameter.
+
+    (defun philosoph (thing &optional (property 'fun)) ...
+
+If you put the symbol &key in a parameter list, then all the parameters after it
+are optional. Moreover, when the function is called, these parameters will be
+identified not by their position, but by symbolic tags that precede them.
+
+    (defun keylist(a &key x y z)
+        (list a x y z)
+    (keylist 1 :y 2) 
+    (1 nil 2 nil)
+
+The way to get reusable software is to write programs bottom-up, and
+programmers don't have to be object-oriented to be written bottom-up.
+
+When a function refers to a variable defined outside it, it's called a free
+variable. A function that refers to a free lexical variable is called a closure.    
+
+With dynamic scope, we look for a variable in the environment where the function
+is called, not in the environment where it was defined.(me: consider this:
+    (let ((x 10))
+        (defun foo()
+            x))
+    (let ((x 20)) (foo)) (me: foo refer 'x' where it was defined)
+    10
+)
+
+To cause a variable to have dynamic scope, we must declare it to be special in
+any context where it occurs.
+
+    (let ((x 10))
+        (defun foo()
+            (declare (special x))
+            x))
+
+The usual way to compile Lisp code is not to compile functions individually, but
+to compile whole files with compile-file.
+
+A recursive algorithm solves a problem by dividing it into a finite number of
+similar, but smaller, problems.
+
+Chapter 7 (Input and Output)
+
+There are two kinds of streams, character streams and binary streams.
+    (setf path (make-pathname :name "myfile"))
+    (setf str (open path :direction :output :if-exists :supersede))
+    (format str "Something~%")
+    (close str)
 
