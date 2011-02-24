@@ -389,3 +389,23 @@ useful when looking at macro expansions.
 
     (pprint (macroexpand-1 '(cond (a b) )))
 
+Chapter 12 (Structure)
+
+Share structure:
+    
+    (setf part (list 'b 'c)
+          whole1 (cons 1 part)
+          whole2 (cons 2 part))
+
+If we want to avoid sharing structure, we can do it by copying.
+
+    (defun our-copy-list (lst)
+      (if (null lst)
+           nil
+           (cons (car lst) (our-copy-list (cdr lst)))))
+
+Lists can be car-or cdr-circular. Lisp can represent circular and shared
+structure.
+
+
+
