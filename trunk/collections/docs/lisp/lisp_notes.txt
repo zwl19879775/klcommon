@@ -389,6 +389,89 @@ useful when looking at macro expansions.
 
     (pprint (macroexpand-1 '(cond (a b) )))
 
+Chapter 11 (CLOS, me: object-oriented related stuff)
+
+The Common Lisp Object System, or CLOS, is a set of operators for doing
+object-oriented programming.
+
+(me: it seems there are not any explicit grammar in this section about
+ object-oritented, so record these codes below:)
+
+    (defclass colored ()
+        (color)) (me: a class named 'colored' with 1 data member 'color')
+    (defclass colored-circle (circle colored)
+        () ) (me: a class named 'colored-circle' inherited from 'circle' and
+                'colored' with no data member)
+
+    (defclass rectangle ()
+        (height width)) (me: 'rectangle' class has 2 data members)
+    (defmethod area ((x rectangle))
+        (* (slot-value x 'height) (slot-value x 'width)))
+    (me: a method of 'rectangle', and 'slot-value' returns a data member of an
+     object)
+
+    (let ((r (make-instance 'rectangle))) ;(me: create a rectangle object )
+        (setf (slot-value r 'height) 2 ;(me: set data member)
+              (slot-value r 'width) 3)
+        (area r)) ;(me: call 'area' method)
+
+(me: data member also is called slots in lisp)
+
+By defining an :accessor for a slot, we implicitly define a function that refers
+to the slot, making it unnecessary to call slot-value.
+
+    (defclass circle()
+        ((radius :accesor circle-radius)
+         (center :accesor circle-center))
+    (setf (circle-radius c) 1)
+    (circle-radius c)
+
+By specifying a :writer or a :reader instead of an :accessor, we could get just
+the first half of this behavior, or just the second.
+
+To specify a default value for a slot, we have to give an :initform argument. If
+we want to be able to initialize the slot in the call to make-instance, we
+define a parameter name as an :initarg.
+
+    (defclass circle ()
+        ((radius :accessor circle-radius
+                 :initarg :radius
+                 :initform 1) ...
+    (setf c (make-instance 'circle :radius 3))
+
+(me: we can specify a slot as a static member as in c++): We do this by
+declaring the slot to have :allocation :class.
+
+The second argument to defclass is a list of superclasses.
+
+A generic funciton is a function made up of one or more methods.
+Methods don't have to be specialized on classes defined by defclass. They can
+also be specialized on types.
+
+    (defmethod combine ((x number) (y number))
+        (+ x y))
+
+Methods can be augmented by auxiliary methods, including before-, after-, and
+around-methods.
+
+In standard method combination, calling a generic function invokes:
+1. The most specific around-method, if there is one
+2. Otherwise, in order:
+    a). All before-methods, from most specific to last specific
+    b). The most specific primary method
+    c). All after-methods, from least specific to most specific
+
+The value returned is the value of the around-method(in case 1) or the value of
+the most specific primary method(in case 2).
+
+    (defmethod speak :before ((i class-name))
+        (princ "before method"))
+    (defmethod speak :after ((i class-name))
+        (princ "after method"))
+    (defmethod speak :around ((i class-name))
+        (princ "around method"))
+
+
 Chapter 12 (Structure)
 
 Share structure:
