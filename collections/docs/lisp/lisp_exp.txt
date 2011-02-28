@@ -1,0 +1,30 @@
+
+2.28.2011
+
+#
+
+defvar is similar to defparameter, which establish name as a dynamic variable.
+
+    (defvar *var-name*)
+    (defvar *var-name* 1)
+
+Note: the character '*' is a part of the symbol:
+    
+    (values *var-name*)
+
+#
+
+We can use (load "filename") in clisp to load a lisp code file, and then we can
+call these functions defined in that file.
+
+#
+
+Unlike macro in C, macro in Lisp is much more like a function:
+
+
+    (defmacro as (tag content)
+        `(format t "<~(~A~)>~A</~(~A~)>"
+                   ',tag ,content ',tag))
+
+Here, we can use 'as' (as center "String").
+
