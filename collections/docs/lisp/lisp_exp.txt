@@ -28,3 +28,17 @@ Unlike macro in C, macro in Lisp is much more like a function:
 
 Here, we can use 'as' (as center "String").
 
+#
+
+defstruct can have some structure options like: ,type, constructor.
+    
+    (defstruct (html-process (:type list) 
+                (:constructor make-html-process (a b c)))
+        a b c)
+
+:type explicitly specifies the representation to be used for the structure. It
+can be :vector/list. 
+
+:constructor sepcifies the constructor function name.
+
+
