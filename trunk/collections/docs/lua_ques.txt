@@ -1,0 +1,146 @@
+
+1. 下列哪些是不合法的变量名
+
+A. name
+B. __name
+C. AND
+D. and
+
+ANS: D
+
+2. 下列关于LUA类型的说法正确的有
+
+A. 变量都有类型，一个boolean变量只能为true或false
+B. 给一个全局变量赋值nil可以删除该变量
+C. LUA认为false/nil/0都为假
+D. LUA中只有用双引号才能表示一个字符串，例如"a string"
+
+ANS: B 
+
+3. 关于LUA中字符串的操作正确的有
+
+A. 可以使用..连接任意类型到一个字符串上，例如"abc" .. d
+B. 10与"10"是相等的，即10=="10"结果为true
+C. 可以借助tonumber和tostring实现字符串和数字之间的转换
+D. 字符串以0作为结束符，就像C语言一样
+
+ANS: C
+
+4. 关于赋值语句以下正确的有
+
+A. a = 1, 2
+B. a, b = 1, 2
+C. x, y = y, x
+D. a, b, c = 1
+
+ANS: A B C D
+
+5. LUA中属于控制语句(例如判断、循环等)关键字的有
+
+A. loop
+B. while
+C. repeat
+D. if
+
+ANS: B C D
+
+6. LUA中定义函数的关键字是
+
+A. function
+B. local
+C. defun
+D. table
+
+ANS: A
+
+7. 假设有函数init(name, age)，下列调用方式语法正确的有
+
+A. init "kevin" 25
+B. init("kevin")
+C. init('kevin', 25)
+D. init('kevin', 25, "male")
+
+ANS: B C D
+
+8. 关于LUA函数返回值的说法下列正确的有
+
+A. 函数最后一条语句的值将作为函数返回值
+B. 函数支持多个返回值
+C. LUA中通过return语句实现函数的返回值
+D. 函数的返回值可以返回一个函数
+
+ANS: B C D
+
+9. 下列关于LUA函数定义的说法正确的有
+
+A. local修饰的函数是局部函数
+B. 函数可以嵌套，即在函数中可以定义另一个函数
+C. 函数都有函数名
+D. 函数可以调用自己
+
+ANS: A B D
+
+10. 下列关于for的使用正确的有
+
+A. for i = 0, i < 10, i = i + 1 do print(i) end
+B. for i = 0, 10 do print(i) end
+C. for i, v in ipairs(a) do print(v) end
+D. for (i = 0) (10) (1) do print(i) end
+
+ANS: B C
+
+11. 下列关于构造表(table)的做法正确的有
+
+A. w = { x = 1, s = "table" }
+B. w = { [1] = 1, [2] = 2 }
+C. w = {} w[1] = 1 w[2] = 2
+D. w = {} w.x = 1 w.s = "table"
+
+ANS: A B C D
+
+12. 表w = { "red", "green", "blue" }，下列关于遍历表的做法正确的有
+
+A. for i = 1, #w do print(w[i]) end
+B. for i = 0, #w-1 do print(w[i]) end
+C. for i, v in ipairs(w) do print(v) end
+D. for i, v in pairs(w) do print(v) end
+
+ANS: A C D
+
+13. 下列代码输出结果为
+     b = 10
+     print(b)
+     do 
+         local b = 2
+         print(b)
+     end
+
+A. 10 10
+B. 10 2
+C. 10 nil
+D. nil nil
+
+ANS: B
+
+14. 下列代码输出结果为
+ 
+	fun1 = function( x, y )
+		return x+y
+	end
+	fun2 = function( x, y )
+		return x * y
+	end
+	
+	local x = 10
+	local y = fun1( 20 , x )
+	local z = fun2( x  , y )
+	print( x, y, z)
+	
+A. 10  30  300
+B. 100 20  300
+C. 10  300 100
+d. 200 100 300
+
+ANS: A
+
+
