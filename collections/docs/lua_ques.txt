@@ -143,4 +143,156 @@ d. 200 100 300
 
 ANS: A
 
+15. 下列代码输出结果为
+
+    function pythagorean(a, b)
+        local c = a^2 + b^2
+        return math.sqrt(c)
+    end
+    print(pythagorean(3, 4))
+
+A. 3
+B. 4
+C. 5
+D. 6
+
+ANS: C
+
+16. 关于LUA中table的描述正确的有
+
+A. table是LUA中唯一的复杂数据结构
+B. table在初始化时就确定了大小，不可扩展
+C. table可以使用整数和其他类型作为索引，除了nil
+D. 通过key访问table的两种方式[]和.，例如a["b"]和a.b相同
+
+ANS: A C D
+
+
+17. shape为C++绑定到lua的对象, 提供一个接口setPos设置shape的坐标信息.
+    setPos参数为x,y;现要设置shape的坐标x,y为(100,200)
+ 
+    local  fun1 = function( shape , x , y )
+	    ()
+    end 
+
+	()处应该填什么  
+
+A. shape.setPos(100, 200)
+B. shape:setPos(100, 200)
+C. shape->setPos(100, 200)
+D. shape.setPos(shape, 100, 200)
+
+ANS: B D
+
+18. 下列代码输出结果为
+
+    local i = 1
+    repeat 
+        if i > 5 then 
+            break
+        end 
+        print(i)
+        i = i + 1
+    until i > 10
+
+A. 1 2 3 4 5 6 7 8 9 10
+B. 1 2 3 4 5
+C. 1 2 3 4
+D. 1 1 1 1 1 1 1 1 1 1
+
+ANS: B
+
+19. 下列代码输出结果包含
+
+    function fun(x, y)
+        print(x, y)
+    end
+
+    fun(10)
+    fun(10, 100)
+    fun(10, 100, 10)
+
+A. 10 nil
+B. 10 100
+C. 10 100 nil
+D. 10 100 10
+
+ANS: A B 
+
+20. 下列代码输出结构为
+
+    a = 1
+    do 
+        a = 2
+        local a = 3
+        print(a)
+    end
+
+A. 1
+B. 2
+C. 3
+D. nil
+
+ANS: C
+
+21. 下列代码输出结果为
+
+    function getCounter(x)
+        return function() x = x + 1 return x end
+    end
+
+    c = getCounter(10)
+    print(c())
+    print(c())
+
+A. 1 2
+B. nil nil
+C. 11 11
+D. 11 12
+
+ANS: D
+
+----------------Write codes--------------------------
+
+1. 实现一个计算阶乘的非递归函数
+
+    function fac(n)
+        local ret = 1
+        for i = 2, n do
+            ret = ret * i
+        end
+        return ret
+    end
+
+2. 实现一个函数判断一个点是否在一个圆形范围内，函数参数包含圆心、圆半径、待判读
+   判断坐标点，若点在圆内函数返回true，否则返回false
+
+    function isInCircle(center, radius, pos)
+        return (pos.x - center.x)^2 + (pos.y - center.y)^2 <= radius^2
+    end
+
+3. LUA标准库中的string提供了很多查找、匹配的函数，甚至支持正则表达式匹配，例如
+   string.find/string.gmatch等。实现一个函数将类似"hello world from lua"的字符
+   串（以一个空格作为分隔符)拆分成一个单词列表返回。
+
+    function splitString(s)
+        local ret = {}
+        for w in string.gmatch(s, "%a+") do
+            ret[#ret+1] = w
+        end
+        return ret
+    end
+    或
+    function splitString(s)
+        local ret = {}
+        local SEP = ' '
+        local e, b = 0
+        repeat 
+            b = e + 1
+            e = string.find(s, SEP, b)
+            e = e or #s+1
+            ret[#ret+1] = string.sub(s, b, e-1)
+        until e == #s+1
+        return ret
+    end
 
