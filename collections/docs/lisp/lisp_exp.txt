@@ -1,4 +1,56 @@
 
+3.3.2011
+
+#
+
+You can create a property list with the same LIST function as you use to create
+other lists.
+
+    (list :a 1 :b 2 :c 3)
+    (getf (list :a 1 :b 2 :c 3) :c)
+
+#
+
+The asterisks(*) in the name are a Lisp naming convention for global variables.
+
+    (defvar *db* nil)
+
+#
+
+macro push, push item place, prepends item to the list that is stored in place,
+ stores the resulting list in place, and returns the list.
+
+#
+
+When FORMAT sees ~{ the next argument to be consumed must be a list. FORMAT
+  loops that list, processing the directives between the ~{ and ~}, consuming as
+many elements of the list as needed each time through the list.
+
+    (format t "~{~a~}" '(a b c))
+
+#
+
+The with-open-file macro opens a file,  binds the stream to a variable, executes
+a set of expressions, and then close the file.
+
+    (with-open-file (out filename
+                     :direction :output
+                     :if-exists :supersede)
+        (with-standard-io-syntax
+            (print *db* out)))
+
+#
+
+When we call a function which has keyword parameters, we must write :parameter,
+no more spaces between ':' and parameter.
+
+#
+
+    (defun testfn (&key (name "abc" name-p))
+        (values name name-p))
+
+If we pass name parameter, name-p will be T, otherwise it will be nil.
+
 2.28.2011
 
 #
