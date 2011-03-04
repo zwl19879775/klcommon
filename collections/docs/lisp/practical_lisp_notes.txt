@@ -1,0 +1,137 @@
+
+Chapter 14 (Files and File I/O)
+
+    (let ((in (open "/some/name.txt")))
+        (format t "~a~%" (read-line in))
+        (close in))
+
+read-char: reads a single character
+read-line: reads a line of text, returning it as a string with the end-of-line
+    character(s) removed
+read: reads a single s-expression, returning a Lisp object.
+read-byte: return an integer between 0 and 255 each time it's called.
+
+By default OPEN returns character streams, which translate the underlying bytes
+to characters according to a particular character-encoding scheme.
+
+To write data to a file, you need an output stream, which you obtain by calling
+OPEN with a :direction keyword argument of :output.
+    
+    (open "name.txt" :direction :output :if-exists :supersede)
+
+write-char:
+write-line: writes a string followed by a newline
+write-string: writes a string without adding any end-of-line characters
+terpri: (terminate print), unconditionally prints a newline character
+fresh-line: prints a newline character unless the stream is at the beginning of
+a line.
+print: prints s-expressions 
+prin1:
+pprint:
+princ: print Lisp objects, but in a way designed for human consumption.
+
+Common Lisp provides a macro, with-open-file, built on top of unwind-protect, to
+encapsulate this pattern (me: make sure the file will be closed)
+
+    (with-open-file (stream-var open-argument*)
+       body-form*)
+
+So far you've used strings to represent filenames. However, using strings as
+    filenams ties your code to a particular operating system and file system.
+
+TO avoid this kind of nonportability, Common Lisp provides another
+ representation of filenames: pathname objects.
+
+For instance, to translate a namestring to a pathname, you use the PATHNAME
+function. You can examine these individual components of a pathname with the
+functions PATHNAME-DIRECTORY, PATHNAME-NAME, and PATHNAME-TYPE.
+
+    (setf p (pathname "/foo/bar/barz.txt"))
+    (pathname-type p) => "txt"
+
+Three other functions PATHNAME-HOST, PATHNAME-DEVICE, and PATHNAME-VERSION allow
+you to get the other three pathname compoents.
+
+You can construct arbitrary pathnames using the MAKE-PATHNAME function.
+    
+    (make-pathname
+        :directory '(:absolute "foo" "bar")
+        :name "baz"
+        :type "txt")
+
+Rather than making names from scatch, you can build a new pathname based on an
+existing pathname with MAKE-PATHNAME's keyword parameter :defaults.
+
+    (make-pathname :directory '(:relative "backups") :defaults input-file)
+
+
+TODO: finish read this chapter
+
+
+Chapter 22 (Loop for Black Belts)
+
+The basic structure of a LOOP is a set of clauses, each of which begins with a
+loop keyword.
+
+Most of the so-called iteration control clauses start with the loop keyword for,
+ or its synonym as, followed by the name of a variable.
+
+A single loop can have multiple for clauses with each clause naming its own
+variable. When a loop has multiple for clauses, the loop terminates as soon as
+any for clause reaches its end condition.
+
+    (loop
+        for item in list
+        for i from 1 to 10
+        do (something))
+
+will iterate at most ten times but may stop sooner if list contains fewer than
+ten items.
+
+These clauses consist of from one to three of the following prepositional
+phrases after the for(or as) the from where phrase, the to where phrase, and the
+by how much phrase.
+
+    (loop for i from 0 upto 10 by 2 collect i)
+
+from where phrases: from downfrom upfrom
+to where phrases: upto below downto above
+
+The for clauses for iterating over lists are much simpler than the arithmetic
+clauses. They support only two prepositional phrases, in and on.
+
+    (loop for i in (list 10 20 30 40) collect i) => (10 20 30 40)
+    (loop for i on (list 10 20 30) collect i) => ((10 20 30) (20 30) (30))
+
+Looping over the elements of a vector is similar to looping over the elements of
+a list, except the preposition across is used instead of in.
+
+    (loop for x across "abcd" collect x) => (#\a#\b#\c#\d)
+
+If none of the other for clauses supports exactly the form of variable stepping
+you need, you can take complete control over stepping with an equals-then
+clause.
+
+    (loop for var = initial-value-form [ then step-form] ...)
+
+In each subsequent iteration, step-form is evaluated, and its value becomes the
+new value of var. With no then part to the clause, the initial-value-form is
+reevaluated on each iteration to provide the new value.
+
+The step-form can refer to other loop variables, including variables created by
+other for clauses later in the loop.
+
+    (loop repeat 5
+        for x = 0 then y
+        for y = 1 then (+ x y)
+        collect y) => (1 2 4 8 16)
+
+While the main variables needed within a loop are usually declared implicitly in
+for clauses, sometimes you'll need auxiliary variables, which you can declare
+with with clauses.
+
+    with var [=value-form]
+
+TODO: finish read this chapter
+
+

@@ -1,4 +1,17 @@
 
+3.4.2011
+
+#
+
+The ~:[fail~;pass~] part of the FORMAT directive causes FORMAT to print "fail" 
+if the first argument is false and "pass" otherwise.
+    
+    (format t "~:[fail~;pass~]" (< 1 2))
+
+#
+
+Whenever you want to treat code as data, that's a sure sign you need a macro.
+
 3.3.2011
 
 #
