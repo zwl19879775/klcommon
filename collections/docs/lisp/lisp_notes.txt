@@ -91,6 +91,19 @@ list as the first argument to make-array:
 
 Strings are vectors of characters.
 
+We denote a constant string as a series of characters surroundef by
+double-quteos, and an individual character as #\C.
+
+    (char-code #\A)
+    (code-char 65)
+
+In most implementations, the function char-code returns the number associated
+with a character, and code-char returns the character associated with a number.
+
+Use aref or char to retrieve an element of a string.
+
+    (char "abc" 1) => #\b
+
 In Common Lisp the type sequence includes both lists and vectors.
 
 A structure can be considered as a delux kind of vector. To define a structure,
@@ -166,6 +179,11 @@ When you want to compare a value against a series of constants, there is case.
 
 The basic iteration operator is do. (variable initial update)
 
+    (do ((i 1 (+ i 1)))
+        ((> i 5) 'done) ; end condition
+        (format t "loop")
+        (format t "still in loop"))
+         
 Besides do and do* there are several special-purpose iteration operators. To
 iterate over the elements of a list, we can use dolist:
 

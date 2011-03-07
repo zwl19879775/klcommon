@@ -1,4 +1,40 @@
 
+3.5.2011
+
+#
+
+Install asdf in clisp(http://common-lisp.net/project/asdf/asdf.lisp):
+
+    (load "xxx/asdf.lisp") 
+
+Install libraries defined by asdf:
+
+    (asdf:load-system :cl-ppcre)
+
+Add search path to asdf:
+
+    (push "path" asdf:*central-registry*)
+
+#
+
+Use ';' to place a line comment, '#|' and '|#' to place a block comemnt
+
+#
+
+subseq retrieve a sub string:
+
+    (setf s "class name")
+    (subseq s 1 3)
+
+(char string i) returns the ith character of string.
+
+#
+
+defconstant name inital-value
+
+define a constant variable.
+
+
 3.4.2011
 
 #
