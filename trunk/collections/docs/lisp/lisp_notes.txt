@@ -175,6 +175,11 @@ iterate over the elements of a list, we can use dolist:
 The third expression within the initial list will be evaluated and returned as
 the value of the dolist when iteration terminates.
 
+Similar in spirit is dotimes, which for some n iterates over the integers from 0
+to n-1:
+
+    (dotimes (x 5 x) (format t "~a " x)) => 0 1 2 3 4
+
 In Common Lisp, an expression can return zero or more values. The maximum number
 of return values is implementation-dependent, but it will be at least 19.
 
