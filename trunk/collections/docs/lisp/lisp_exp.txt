@@ -1,4 +1,18 @@
 
+3.8.2011
+
+#
+
+(defparameter *tmp-dir*
+              #+(or :win32 :mswindows :windows) "c:\\tmp\\"
+              #-(or :win32 :mswindows :windows) "/tmp/")
+
+#
+
+#+:allegro (require :osi)
+#+:sbcl (require :sb-executable)
+#+:sbcl (require :sb-posix)
+
 3.5.2011
 
 #

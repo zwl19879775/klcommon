@@ -1,0 +1,121 @@
+
+Block
+
+# let (let*)
+
+    (let ((var exp) (var exp))
+        (do-exp)
+        (do-exp))
+
+# progn
+
+    (progn 
+        (exp)
+        (exp)
+        (exp))
+
+# block
+
+    (block name
+        (exp)
+        (exp)
+        [(return-from name value)])
+
+    can place 'return-from' in it.
+
+Condition 
+
+# if
+    
+    (if exp (then-part) [(else-part)]) return the last expression value
+
+# when
+
+    (when exp 
+        (exp1)
+        (exp2)) execute when exp return true.
+
+# unless
+
+    similiar to 'when', but execute when exp is false.
+
+# cond
+
+    (cond 
+        ((cond-exp) (exp1) (exp2))     
+        ((cond-exp) (exp1) (exp2))     
+        ((cond-exp) (exp1) (exp2)))
+
+# case 
+
+    (case var
+        ((value1) (exp1) (exp2))
+        ((value2) (exp1) (exp2)))
+
+Loop
+
+# do (do*)
+
+    (do ((var init (update-exp))
+         (var init (update-exp)))
+        ((end-check-exp) (return-value))
+        (loop-body-exp1)
+        (loop-body-exp2))
+
+# dolist
+
+    (dolist (var list [result])
+        (exp1)
+        (exp2))
+
+# dotimes
+
+    (dotimes (var integer [result])
+        (exp1)
+        (exp2))
+
+    evaluates its body with var bound to successive integers from 0 to the value
+    of integer minue 1.
+
+Special Operators
+
+# if
+
+# quote (')
+
+# black quote (`)
+
+# lambda
+
+# #'
+
+Functions(Macros)
+
+# defun
+
+    (defun func-name (arg1 arg2)
+        (body-exp)
+        (body-exp))
+
+    The last expression value is the function return value.
+
+# defvar (define a global variable)
+
+    (defvar varname init) 
+
+# defconstant (define a constant value)
+
+    (defconstant varname init)
+
+# defmacro
+
+# defstruct
+
+    (defstruct name
+        field1
+        field2)
+
+    will automatically generate some functions including: 
+        make-name: make a struct object
+        name-field1: return the reference of field1
+
