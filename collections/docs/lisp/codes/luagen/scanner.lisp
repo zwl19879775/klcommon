@@ -110,6 +110,9 @@ symbol:
                         (unget-char ls))
                     'done))))
 
+(defmacro expand-check (var ch tk)
+    `((char= ,var ,ch) (make-token :tok ,tk)))
+
 (defun get-token (ls)
     (let ((c (get-char ls)))
         (cond 
@@ -117,10 +120,14 @@ symbol:
             ((space-p c) (progn
                 (skip-space ls)
                 (get-token ls)))
-            ((char= c #\() (make-token :tok tk-lb))
-            ((char= c #\)) (make-token :tok tk-rb))
-            ((char= c #\{) (make-token :tok tk-lob))
-            ((char= c #\}) (make-token :tok tk-rob))
+            ;((char= c #\() (make-token :tok tk-lb))
+            ;((char= c #\)) (make-token :tok tk-rb))
+            ;((char= c #\{) (make-token :tok tk-lob))
+            ;((char= c #\}) (make-token :tok tk-rob))
+            (expand-check c #\( tk-lb)
+            (expand-check c #\) tk-rb)
+            (expand-check c #\{ tk-lob)
+            (expand-check c #\} tk-rob)
             ((char= c #\,) (make-token :tok tk-comma))
             ((char= c #\;) (make-token :tok tk-sem))
             ((symbols-p c) (symbol-token ls c))

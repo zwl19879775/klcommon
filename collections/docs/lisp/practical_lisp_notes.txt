@@ -1,4 +1,38 @@
 
+Chapter 3 (Syntax and Semantics)
+
+Common Lisp defines a couple dozen so-called special operators. There are 25 in
+all, but only a small handful are used directly in day-to-day programming.
+
+When the first element of a list is a symbol naming a special operator, the rest
+of the expressions are evaluated accroding to the rule for that operator.
+
+The evaluation of a macro form proceeds in two phases: First, the elements of
+ the macro form are passed, unevaluated, to the macro function. Second, the form
+ returned by the macro function-called its expansion-is evaluated according to
+    the normal evlauation rules.
+
+The symbol nil is the only false value, and everything else is true.
+
+Finally, comments should be prefaced with one to four semicolons depending on
+ the scope of the comments as follows:
+
+;;;; Four semicolons are used for a file header comment.
+
+;;; A comment with three semicolons will usually be a paragraph
+;;; comment that applies to a large section of code that follows,
+
+(defun foo (x)
+  (dotimes (i x)
+    ;; Two semicolons indicate this comment applies to the code
+    ;; that follows. Note that this comment is indented the same
+    ;; as the code that follows.
+    (some-function-call)
+    (another i)              ; this comment applies to this line only
+    (and-another)            ; and this is for this line
+    (baz)))
+
+
 Chapter 14 (Files and File I/O)
 
     (let ((in (open "/some/name.txt")))
