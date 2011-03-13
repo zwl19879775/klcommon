@@ -101,6 +101,24 @@ existing pathname with MAKE-PATHNAME's keyword parameter :defaults.
 
 TODO: finish read this chapter
 
+Chapter 15
+
+To allow you to do so without totally destroying the portability of your code,
+ Common Lisp provides a mechanism, called read-time conditionalization, that
+ allows you to conditionally include code based on various features such as what
+ implementation it's being run in.
+
+The mechanism consists of a variable *FEATURES* and two extra bits of syntax
+understood by the Lisp reader.
+
+The reader uses feature expressions in conjunction with two bits of syntax, #+
+and #-. When a feature expression following a #+ is true, the reader reads the
+next expression normally. Otherwise it skips the next expression.
+
+	(defun foo()
+	 	#+allegro (do-one-thing)
+	 	#+sbcl (do-another-thing)
+		#-(or allegro sbcl) (error "Not implemented"))
 
 Chapter 22 (Loop for Black Belts)
 

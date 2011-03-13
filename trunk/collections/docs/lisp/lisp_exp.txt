@@ -1,4 +1,34 @@
 
+3.10.2011
+
+#
+
+Config SBCL (to has command history):
+1. Download quicklisp (http://beta.quicklisp.org/quicklisp.lisp)
+2. SBCL --load quicklisp.lisp (be sure SBCL can find quicklisp.lisp)
+3. (quicklisp-quickstart:install)
+4. (ql:add-to-init-file)  write config in ~/.sbclrc
+5. install OSICAT required by linedit (ql:quickload "osicat")
+6. install linedit (ql:quickload "linedit")
+7. add config to ~/.sbclrc:
+
+    (require :asdf)
+    (if (member "--no-linedit" sb-ext:*posix-argv* :test 'equal)
+      (setf sb-ext:*posix-argv* 
+            (remove "--no-linedit" sb-ext:*posix-argv* :test 'equal))
+      (when (interactive-stream-p *terminal-io*)
+        (require :osicat)
+        (require :sb-aclrepl)
+        (require :linedit)
+        (funcall (intern "INSTALL-REPL" :linedit) :wrap-current t)))
+
+
+#
+
+We can use type-of to retrieve a symbol type:
+
+    (type-of var)
+
 3.8.2011
 
 #
