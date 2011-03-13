@@ -23,6 +23,14 @@ Block
 
     can place 'return-from' in it.
 
+# labels (some similar with let, but used to define local functions)
+
+	(labels ((func (arg) func-body)
+			 (func (arg) func-body))
+	 	(exp-body))
+
+# flet (same as labels behave like let*)
+
 Condition 
 
 # if
@@ -102,6 +110,10 @@ Functions(Macros)
 # defvar (define a global variable)
 
     (defvar varname init) 
+
+# defparameter (same as defvar,  but will overwrite pre-defined variable)
+
+ 	(defparameter varname init)
 
 # defconstant (define a constant value)
 

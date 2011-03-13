@@ -144,4 +144,84 @@ write the program that will transform the first form into the second.
 If you redefine a function, other functions which call it will automatically get
 the new version. The same doesn't always hold for macros.
 
+Chapter 9 (Variable Capture) (me: macro name conflict)
+
+Variable capture occurs when macroexpansion causes a name clash: when some
+symbols ends up referring to a variable from another context.
+
+Instances of variable capture can be traced to one of two situations: macro
+argument capture and free symbol capture.
+
+There is one certain way to avoid macro argument capture: replacing capturable
+symbols with gensyms.
+
+Each call to gensym returns a unique, uninterned symbol.
+
+    (defmacro for ((var start stop) &body body)
+      (let ((gstop (gensym)))
+        `(do ((,var ,start (1+ ,var))
+              (,gstop ,stop))
+             ((> ,var ,gstop))
+            ,@body)))
+
+In writing macros like for, one must remember that the arguments to a macro are
+forms, not values.
+
+In Common Lisp function calls, arguments are evaluated left-ro-right.
+
+Incorrect for:
+
+    ; subject to multiple evaluations
+    (defmacro for ((var start stop) &body body)
+      `(do ((,var ,start (1+ ,var)))
+           ((> ,var ,stop))
+         ,@body))
+
+    ; incorrect order of evaluation
+    (defmacro for ((var start stop) &body body)
+      (let ((gstop (gensym)))
+        `(do ((,gstop ,stop)
+              (,var ,start (1+ ,var)))
+            ((> ,var ,gstop))
+           ,@body)))
+
+    (let ((x 1))
+      (for (i x (setq x 13)) (princ i)))
+
+    ; correct
+    (defmacro for ((var start stop) &body body)
+      (let ((gstop (gensym)))
+        `(do ((,var ,start (1+ ,var))
+              (,gstop ,stop))
+            ((> ,var ,gstop))
+           ,@body)))
+
+
+As a general rule, expander code shouldn't depend on anything except its
+arguments.
+
+Chapter 11 (Classic Macros)
+
+An operator which is to have a body of expressions must usually be defined as a
+macro.
+
+    (defmacro our-let (binds &body body)
+      `((lambda ,(mapcar #' (lambda (x)
+                               (if (consp x) (car x) x))
+                  binds)
+              ,@body)
+          ,@(mapcar #' (lambda (x)
+                          (if (consp x) (cadr x) nil))
+              binds)))
+
+The name of context-building macros often begin with with-. The most commonly
+used macro of this type is probably with-open-file.
+
+    (unwind-protect 
+      (progn (princ "What error?")
+             (error "this error."))
+      (setq x 'b))
+
+The purpose of unwind-protect is to ensure that certain expressions are
+evaluated even if execution is interrupted.
 

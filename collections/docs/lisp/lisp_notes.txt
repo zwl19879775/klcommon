@@ -201,6 +201,12 @@ to n-1:
 In Common Lisp, an expression can return zero or more values. The maximum number
 of return values is implementation-dependent, but it will be at least 19.
 
+The values function returns multiple values. To retrieve multiple values, we use
+multiple-value-bind.
+
+    (multiple-value-bind (x y z) (values 1 2 3) (list x y z))
+    => (1 2 3)
+
 If something is expeting only one value, all but the first will be discarded.
 
 Chapter 6 (Functions)
