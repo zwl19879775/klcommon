@@ -75,7 +75,27 @@ The reason Lisp has no pointers is that every value is conceptually a pointer.
 When you assign a value to a variable or store it in a data structure, what gets
 stored is actually a pointer to the value.
 
-...(some sections i have not read)
+The kind of lists can be built by calling list are more precisely known as
+ proper lists. A proper list is either nil, or a cons whose cdr is a proper
+ list.
+
+In dot notation, the car and cdr of each cons are shown separated by a period.
+
+    (cons 'a 'b) => (A . B)
+
+A cons that isn't a proper list is called a dotted list.
+
+A list of conses is called an assoc-list or alist. Assoc-lists are slow.
+
+    (setf trans '((+ . "add") (- . "sub")))
+    (assoc '+ trans) => (+ . "add")
+
+    (defun our-assoc (key alist)
+      (add (consp alist)
+           (let ((pair (car alist)))
+             (if (eql key (car pair))
+                 pair
+                 (our-assoc key (cdr alist))))))    
 
 Chapter 4 (me: array,string, structure, hash)
 
