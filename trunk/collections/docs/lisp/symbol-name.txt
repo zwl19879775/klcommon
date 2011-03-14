@@ -1,0 +1,74 @@
+
+FIGURE OUT WHAT A SYMBOL IS
+===========================
+
+Kevin Lynx
+3.13.2011
+
+<ANSI Common Lisp>
+------------------
+
+One potentially confusing thing about Lisp is that symbols are related to
+variables in two very different ways. 
+
+When a symbol is the name of a special variable(global variable), the value
+of the variable is stored in a field within the symbol. The symbol-value 
+function refers to that field.
+
+Pakcages are symbol-tables, mapping names to symbols.
+
+Functions and variables have symbols as their names.
+
+Symbols are real objects, and not just names. (it contains many fields like:
+ name, value, plist.)
+
+Symbols are created implicitly when we type their names.
+
+You can get the name of a symbol by calling symbol-name.
+
+<Successful Lisp>
+-----------------
+
+A Lisp symbol most commonly names a value or -- when used as the first element
+of a function call form -- a function.
+
+What's unusual about Lisp is that a symbol can have a value as a function and a
+variable at the same time.
+
+Lisp decides which of these values to use based on where the symbol appears.
+When the evaluation rule requires a value, Lisp looks for the variable value of
+the symbol. When a function is called for, Lisp looks for the symbol's function.
+
+
+Summarize
+----------
+
+    (setq first 'val) ; first is a cons related function actually
+    (first '(a b c)) => a
+    (symbol-function 'first) => retrieve the function field of symbol first
+    (symbol-value 'first) => VAL, retrieve the value field of symbol first
+    (symbol-function first) => first, evaluate first => val, second, apply 
+                            symbol-funciton on val
+
+    (symbol-name 'first) => retrieve the print name field of symbol first
+
+    (type-of first) => retrieve the type of the value of symbol first.
+    (type-of 'first) => retrieve the first self type, of course it's a symbol
+
+
+    (defun testfn () ()) 
+    =>
+    What this actually do is to define a symbol, and set the function field of
+    the symbol 'testfn to this new function. So:
+
+    (symbol-function 'testfn) => will get this function
+    (symbol-value 'testfn) => no value right now
+
+
+In conclusion, i suppose there is NOT variable and function theory in Lisp, only
+symbol. And variable and function is a field of a symbol, which is actually a
+real object.
+
+        
+
+
