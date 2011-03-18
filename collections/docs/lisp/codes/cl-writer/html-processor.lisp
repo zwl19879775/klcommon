@@ -20,7 +20,10 @@
   ;; attr-preprocess-fn
   focus-p-fn 
   dir
-  title)
+  title
+  ;; 3.17.2011 update, and now i will filter these texts only in <body> flag,
+  ;; so i add a flag when travers an html file.
+  (ignore-p t))
 
 (defun default-focus-p (name)
   (declare (ignore name))
@@ -43,30 +46,38 @@
             attributes)))
 
 (defun trace-xml-new-element-hook (arg name attributes seed)
-  (let ((new-seed (cons (1+ (car seed)) (1+ (cdr seed))))
-        (focus-fn (process-arg-focus-p-fn arg))
+  ;; ready to read title
+  (when (string-equal name "title")
+    (setf (process-arg-title arg) nil))
+  (when (process-arg-ignore-p arg)
+    (when (string-equal name "body")
+      (setf (process-arg-ignore-p arg) nil))
+    ;; when ignore, we always return
+    (return-from trace-xml-new-element-hook seed))
+  (let ((focus-fn (process-arg-focus-p-fn arg))
         (stream (process-arg-stream arg)))
     (format stream "<~a" name)
     (output-attributes arg attributes (funcall focus-fn name))
     (princ ">" stream)
-    ;; ready to read title
-    (when (string-equal name "title")
-      (setf (process-arg-title arg) nil))
-    new-seed))
+    seed))
 
 (defun trace-xml-finish-element-hook (arg name attributes parent-seed seed)
   (declare (ignore parent-seed attributes))
-  (let ((new-seed (cons (1- (car seed)) (1+ (cdr seed)))))
-    (format (process-arg-stream arg) "</~a>" name)
-    new-seed))
+  (unless (process-arg-ignore-p arg)
+    (if (string-equal name "body")
+      (setf (process-arg-ignore-p arg) t) ; body ends.
+      (format (process-arg-stream arg) "</~a>" name)))
+  seed)
 
 (defun trace-xml-text-hook (arg string seed)
-  (let ((new-seed (cons (car seed) (1+ (cdr seed)))))
-    (format (process-arg-stream arg) string)
-    ;; set title
-    (when (null (process-arg-title arg))
-      (setf (process-arg-title arg) string))
-    new-seed))
+  (unless (process-arg-ignore-p arg)
+    ;; because s-xml will translate these special characters like: &quot, so
+    ;; here i translate them back.
+    (s-xml:print-string-xml string (process-arg-stream arg)))
+  ;; set title
+  (when (null (process-arg-title arg))
+    (setf (process-arg-title arg) string))
+  seed)
 
 (defmacro def-hook-fn (fn arg &rest args)
   `(lambda (,@args) (funcall ,fn ,arg ,@args)))

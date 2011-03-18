@@ -120,6 +120,77 @@ next expression normally. Otherwise it skips the next expression.
 	 	#+sbcl (do-another-thing)
 		#-(or allegro sbcl) (error "Not implemented"))
 
+Chapter 19 (Beyond Exception Handling: Conditions and Restarts)
+
+One of Lisp's great features is its condition system. It servers a similar
+purpose to the exception handling systems in Java, Python, and C++ but is more
+flexible.
+
+The condition system splits the responsibilities into three parts--signaling a
+condition, handling it, and restarting.
+
+A condition is an object whose class indicates the general nature of the
+condition and whose instance data carries information about the details of the
+particular circumstances that lead to the condition being signaled.
+
+Condition classes are defined with the DEFINE-CONDITION macro, which works
+essentially the same as DEFCLASS except that the default superclass of classes
+defined with DEFINE-CONDITION is CONDITION rather than STANDARD_OBJECT.
+
+New condition objects are created with MAKE-CONDITION rather than MAKE-INSTANCE.
+
+When using the condition system for error handling, you should define your
+conditions as subclasses of ERROR, a subclass of CONDITION.
+
+    (define-condition malformed-log-entry-error (error)
+      ((text :initarg :text :reader text)))
+
+You signal errors with the function ERROR, which calls the lower-level function
+SIGNAL and drops into the debugger if the condition isn't handled.
+
+    (error 'malformed-log-entry-error :text text)
+
+When a condition is signaled, the signaling machinery finds the most recently
+setablished handler whose type specifier is compatiable with the condition being
+signaled and calls its function, passing it the condition object.
+
+The macro HANDLER-CASE establishes this kind of condition handler. The basic
+form of a HANDLER-CASE is as follows:
+
+    (handler-case expression
+      error-clause*)
+
+where each error-clause is of the following form:
+
+    (condition-type ([var]) code)
+
+i.e:
+
+    (handler-case (parse-log-entry text)
+      (malformed-log-entry-error () nil))
+
+To change parse-log-file so it establishes a restart instead of a condition
+handler, you can change the HANDLER-CASE to a RESTART-CASE.
+
+    (handler-bind (binding*) form*)
+
+where each binding is a list of a condition type and a handler function of one
+argument.
+
+A more important difference between HANDLER-BIND and HANDLER-CASE is that the
+handler function bound by HANDLER-BIND will be run without unwinding the
+stack--the flow of control will still be in the call to parse-log-entry when
+this function is called.
+
+The call to INVOKE_RESTART will find and invoke the most recently bound restart
+with the given name.
+
+    (handler-bind ((malformed-log-entry-error 
+                    #'(lambda (c)
+                        (invoke-restart 'skip-log-entry)))))
+
+(another tutorial: http://chaitanyagupta.com/lisp/restarts.html)
+
 Chapter 22 (Loop for Black Belts)
 
 The basic structure of a LOOP is a set of clauses, each of which begins with a

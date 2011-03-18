@@ -22,17 +22,6 @@ void yyerror(char *s)
 	string sval;
 	A_var var;
 	A_exp exp;
-	A_expList exps;
-	A_efield efield;
-	A_efieldList efields;
-	A_fieldList fields;
-	A_fundec funcdec;
-	A_fundecList funcdecs;
-	A_dec dec;
-	A_decList decs;
-	A_ty ty;
-	A_namety namety;
-	A_nametyList nameties;
 	/* et cetera */
 	}
 
@@ -48,195 +37,17 @@ void yyerror(char *s)
   BREAK NIL
   FUNCTION VAR TYPE 
 
-%type <exp> Exp Program CallExp OpExp RecordExp IfExp WhileExp ForExp LetExp ArrayExp
-%type <exp> NilExp BreakExp LogicExp SeqExp AssignExp
-%type <exp> LogicAndExp
-%type <exps> ArgList ExpList
-%type <efield> EField
-%type <efields> EFieldList
-%type <var> Var
-%type <funcdec> FuncDecl
-%type <funcdecs> FuncDeclList
-%type <dec> FunctionDecl
-%type <dec> VarDecl
-%type <fields> FieldList
-%type <ty> Ty
-%type <namety> NameTy
-%type <nameties> NameTyList
-%type <dec> TypeDecl
-%type <dec> Decl
-%type <decs> DeclList
-%type <funcdecs> FuncDeclList
-
+%type <exp> exp program
 /* et cetera */
 
-%nonassoc EQ NEQ LT LE GT GE
-%left PLUS MINUS
-%left TIMES DIVIDE
-%nonassoc UMINUS
-%nonassoc IFX
-%nonassoc ELSE
-%nonassoc FuncPrec
-%nonassoc FUNCTION
-%nonassoc LogicPrec
-%nonassoc OR AND 
-
-%start Program
+%start program
 
 %%
 
-Program: Exp { absyn_root = $1; }
-	;
+program:   exp    {absyn_root=$1;}
 
-Exp: Var { $$ = A_VarExp( EM_tokPos, $1 ); }
-	| INT { $$ = A_IntExp( EM_tokPos, $1 ); }
-	| STRING { $$ = A_StringExp( EM_tokPos, $1 ); }
-	| CallExp
-	| OpExp
-	| RecordExp
-	| SeqExp
-	| AssignExp
-	| IfExp
-	| WhileExp 
-	| ForExp 
-	| LetExp 
-	| ArrayExp
-	| NilExp
-	| BreakExp 
-	| LogicExp %prec LogicPrec
-	;
+exp:   ID         {$$=A_VarExp(EM_tokPos,A_SimpleVar(EM_tokPos,S_Symbol($1)));}
 
-Var: ID { $$ = A_SimpleVar( EM_tokPos, S_Symbol( $1 ) ) ; }
-	| Var DOT ID { $$ = A_FieldVar( EM_tokPos, $1, S_Symbol( $3 ) ); }
-	| Var LBRACK Exp RBRACK %prec lValPrec { $$ = A_SubscriptVar( EM_tokPos, $1, $3 ); }
-	;
 
-CallExp: ID LPAREN ArgList RPAREN { $$ = A_CallExp( EM_tokPos, S_Symbol( $1 ), $3 ); }
-	;
 
-ArgList: ArgList COMMA Exp { $$ = A_ExpList( $3, $1 ); }
-	| Exp  { $$ = A_ExpList( $1, 0 ); }
-	| Null { $$ = 0; }
-	;
-
-Null: ;
-
-OpExp: Exp PLUS Exp { $$ = A_OpExp( EM_tokPos, A_plusOp, $1, $3 ); }
-	| Exp MINUS Exp { $$ = A_OpExp( EM_tokPos, A_minusOp, $1, $3 ); }
-	| Exp TIMES Exp { $$ = A_OpExp( EM_tokPos, A_timesOp, $1, $3 ); }
-	| Exp DIVIDE Exp { $$ = A_OpExp( EM_tokPos, A_divideOp, $1, $3 ); }
-	| Exp EQ Exp { $$ = A_OpExp( EM_tokPos, A_eqOp, $1, $3 ); }
-	| Exp NEQ Exp { $$ = A_OpExp( EM_tokPos, A_neqOp, $1, $3 ); }
-	| Exp LT Exp { $$ = A_OpExp( EM_tokPos, A_ltOp, $1, $3 ); }
-	| Exp LE Exp { $$ = A_OpExp( EM_tokPos, A_leOp, $1, $3 ); }
-	| Exp GT Exp { $$ = A_OpExp( EM_tokPos, A_gtOp, $1, $3 ); }
-	| Exp GE Exp { $$ = A_OpExp( EM_tokPos, A_geOp, $1, $3 ); }
-	| MINUS Exp %prec UMINUS { $$ = A_OpExp( EM_tokPos, A_minusOp, 
-			A_IntExp( EM_tokPos, 0 ), $2 ); }
-	;
-
-RecordExp: ID LBRACE EFieldList RBRACE { $$ = A_RecordExp( EM_tokPos, S_Symbol( $1 ),
-				   $3 ); }
-	;
-
-EFieldList: EFieldList COMMA EField { $$ = A_EfieldList( $3, $1 ); }
-	| EField  { $$ = A_EfieldList( $1, 0 ); }
-	| Null { $$ = 0; }
-	;
-
-EField: ID EQ Exp { $$ = A_Efield( S_Symbol( $1 ), $3 ); }
-	;
-
-SeqExp: LPAREN ExpList RPAREN { $$ = A_SeqExp( EM_tokPos, $2 ); }
-	;
-
-ExpList: ExpList SEMICOLON Exp { $$ = A_ExpList( $3, $1 ); }
-	| Exp { $$ = A_ExpList( $1, 0 ); }
-	| Null { $$ = 0; }
-	;
-
-AssignExp: Var ASSIGN Exp { $$ = A_AssignExp( EM_tokPos, $1, $3 ); }
-	;
-
-IfExp: IF Exp THEN Exp %prec IFX { $$ = A_IfExp( EM_tokPos, $2, $4, 0 ); }
-	| IF Exp THEN Exp ELSE Exp { $$ = A_IfExp( EM_tokPos, $2, $4, $6 ); }
-	;
-
-WhileExp: WHILE Exp DO Exp { $$ = A_WhileExp( EM_tokPos, $2, $4 ); }
-	;
-
-ForExp: FOR ID ASSIGN Exp TO Exp DO Exp { $$ = A_ForExp( EM_tokPos, S_Symbol( $2 ),
-				$4, $6, $8 ); }
-	;
-
-ArrayExp: ID LBRACK Exp RBRACK OF Exp { $$ = A_ArrayExp( EM_tokPos, S_Symbol( $1 ),
-				  $3, $6 ); }
-	;
-
-NilExp: NIL { $$ = A_NilExp( EM_tokPos ); }
-	;
-
-BreakExp: BREAK { $$ = A_BreakExp( EM_tokPos ); }
-	;
-
-LogicExp: LogicExp OR LogicAndExp { $$ = A_IfExp( EM_tokPos, $1, 
-				  A_IntExp( EM_tokPos, 1 ), $3 ); }
-	;
-
-LogicAndExp: LogicAndExp AND Exp { $$ = A_IfExp( EM_tokPos, $1, $3, A_IntExp( EM_tokPos, 0 ) ); }
-	| Exp { $$ = $1; }
-	;
-
-LetExp: LET DeclList IN ExpList END { $$ = A_LetExp( EM_tokPos, $2, 
-				A_SeqExp( EM_tokPos, $4 ) ); }
-	;
-
-DeclList: DeclList Decl { $$ = A_DecList( $2, $1 ); }
-	| Null { $$ = 0; }
-	;
-
-Decl: TypeDecl
-	| VarDecl
-	| FunctionDecl 
-	;
-
-TypeDecl: TYPE NameTyList { $$ = A_TypeDec( EM_tokPos, $2 ); }
-	;
-
-NameTyList: NameTyList COMMA NameTy { $$ = A_NametyList( $3, $1 ); }
-	| NameTy { $$ = A_NametyList( $1, 0 ); }
-	;
-
-NameTy: ID EQ Ty { $$ = A_Namety( S_Symbol( $1 ), $3 ); }
-	;
-
-Ty: ID { $$ = A_NameTy( EM_tokPos, S_Symbol( $1 ) ); }
-	| LBRACE FieldList RBRACE { $$ = A_RecordTy( EM_tokPos, $2 ); }
-	| ARRAY OF ID { $$ = A_ArrayTy( EM_tokPos, S_Symbol( $3 ) ); }
-	;
-
-FieldList: FieldList COMMA ID COLON ID { $$ = A_FieldList( 
-				   A_Field( EM_tokPos, S_Symbol( $3 ), S_Symbol( $5 ) ), $1 ); }
-	| ID COLON ID { $$ = A_FieldList( 
-			A_Field( EM_tokPos, S_Symbol( $1 ), S_Symbol( $3 ) ), 0 ); }
-	| Null { $$ = 0; }
-	;
-
-VarDecl: VAR ID ASSIGN Exp { $$ = A_VarDec( EM_tokPos, S_Symbol( $2 ), 0, $4 ); }
-	| VAR ID COLON ID ASSIGN Exp { $$ = A_VarDec( EM_tokPos, 
-			S_Symbol( $2 ), S_Symbol( $4 ), $6 ); }
-	;
-
-FunctionDecl: FuncDeclList %prec FuncPrec { $$ = A_FunctionDec( EM_tokPos, $1 ); }
-	;
-
-FuncDeclList: FuncDeclList FuncDecl { $$ = A_FundecList( $2, $1 ); }
-	| FuncDecl { $$ = A_FundecList( $1, 0 ); }
-	;
-
-FuncDecl: FUNCTION ID LPAREN FieldList RPAREN EQ Exp { $$ = A_Fundec( EM_tokPos,
-			  S_Symbol( $2 ), $4, 0, $7 ); }
-	| FUNCTION ID LPAREN FieldList RPAREN COLON ID EQ Exp { $$ = A_Fundec( EM_tokPos,
-		S_Symbol( $2 ), $4, S_Symbol( $7 ), $9 ); }
-	;
-
+	
