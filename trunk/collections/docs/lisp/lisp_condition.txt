@@ -1,0 +1,16 @@
+Condition Handling in the Lisp Language Family
+==============================================
+
+The Common Lisp community typically prefers to speak about its condition system
+rather than its error system to emphasize that there are not just fatal but also
+not-fatal situations in which the capabilities provided by this system are
+useful.
+
+A situation that is represented within the language is refered to in Common Lisp
+as a condition, an object of class CONDITION is used to represent such a
+situation.
+
+With the language the class CONDITION is a superclass of another class ERROR,
+ which represents situations that would be fatal if not appropriately managed.
+
+

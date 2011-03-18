@@ -540,4 +540,16 @@ Lists can be car-or cdr-circular. Lisp can represent circular and shared
 structure.
 
 
+Chapter 14 (Advanced Topics)
+
+In Common Lisp, conditions include errors and other situations that can raise at
+run-time. When a condition is signalled, the corresponding handler is invoked.
+
+Common Lisp has serveral operators for signalling errors. The most basic is
+error.
+
+    (error "this is an error")
+
+More abstract operators for signalling errors include ecase, check-type and
+assert.
 

@@ -18,7 +18,8 @@
 ;; i.e: (setf *default-user* (make-user-info :name "kevinynx"
 ;;                      :password "123" :host "www.cppblog.com"
 ;;                      :url "/kevinlynx/services/metaweblog.aspx"))
-(load (get-config-name))
+(unless (load (get-config-name) :if-does-not-exist nil)
+  (format t "Load config file (~a) failed.~%" (get-config-name)))
 
 (defun get-default-user ()
   *default-user*)

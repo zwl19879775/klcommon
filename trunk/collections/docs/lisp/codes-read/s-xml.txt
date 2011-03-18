@@ -1,0 +1,85 @@
+
+..Author: Kevin Lynx
+..Date: 3.15.2011
+
+HINT:
+
+    condition大概是一种类似C++的异常处理机制，需要定义一个具体的condition，然后
+  然后在需要抛出异常的地方创建一个condition:
+    (define-condition xxx)
+    (make-condition xxx)
+    (error (make-condition xxx))
+
+HINT:
+
+    peek-char &optional kind stream eof-error eof-value recursive
+
+    Returns a character from stream without removing it from the stream.
+
+skip-comment函数似乎写得不妥，在遇到连续的两个"-"符号后，则认为是遇到了注释尾。
+
+start-parse-xml是解析xml的入口函数，该函数先是处理到无关字符，然后遇到第一个节点
+时，则调用parse-xml-element函数进行递归解析。该函数最后返回seed。
+
+HINT:
+
+    copy-seq proseq
+
+    Returns a new sequence of the same type as proseq and with the same elements
+
+HINT:
+
+    vector-push-extend object vector &optional i
+
+    Replaces the element of the vector to which its fill pointer points with
+    objects, then increments the fill pointer and returns its old value.
+
+
+HINT:
+
+    (loop (exp1) (exp2)) will loop infinite until explicit return.
+
+parse-xml-element-attributes解析一个tag的属性列表，返回的列表是一个assoc list，
+即：
+    ((key "value") (key "value"))
+
+parse-identifier解析出一个合法的标示符，例如:a="abc"中的a，或者<tag>中的tag。
+一般调用该函数时都会传入get-mini-buffer state，并写入内容：
+
+    (parse-identifier stream (get-mini-buffer state))
+
+parse-string解析出引号内的字符串。
+
+    (parse-string stream state (get-buffer state))
+
+resolve-entity像是处理字符串中的一些转义字符，例如："&gt"会被展开为">"，也就是加
+入xml中的保留字符。这些保留字符都保留在(get-entities state)里。
+
+HINT:
+
+    (loop for (key value) in '((a b) (c d)) 
+      do (princ key)
+         (princ value))
+
+HINT:
+
+    position object proseq &key key test test-not from-end start end
+
+    returns the position (zero-indexed) of the first element in proseq that
+    matches object.
+
+split-identifier用于将诸如xmlns:name中的name返回。
+
+HINT:
+
+    find object proseq &key key test test-not from-end start end
+
+    returns the first element in proseq that matches object.    
+
+extend-namespaces用于处理XML名字空间问题，针对xmlns="xxx"和xmlns:xxx="xxx"进行处
+处理。该函数还会对全局变量*namespaces*改写。
+
+
+整个XML的解析实现还是比较传统，逐个字符地解析，然后递归解析节点。
+
+

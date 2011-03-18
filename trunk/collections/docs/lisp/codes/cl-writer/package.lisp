@@ -25,6 +25,8 @@
     #:make-cppblog-user
     #:make-user-info
 
+    #:insert-imglist-table 
+
     #:get-all-category-title 
     #:writer-edit-post
     #:writer-post-new)

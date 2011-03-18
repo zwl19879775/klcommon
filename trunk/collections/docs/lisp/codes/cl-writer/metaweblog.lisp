@@ -152,6 +152,7 @@
   (rpc-call 
     u
     "blogger.deletePost"
+    ""
     postid
     (user-info-name u)
     (user-info-password u)

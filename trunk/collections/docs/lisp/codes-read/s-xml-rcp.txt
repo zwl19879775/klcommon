@@ -1,0 +1,78 @@
+
+..Author: Kevin Lynx
+..Date: 3.14.2011
+
+xml-rpc.lisp是该库的核心功能代码：
+
+with-open-socket-stream封装了操作socket的跨编译器代码，将socket作为流处理。
+
+HINT:
+
+    (format-header connection `(("POST ~a HTTP/1.0" ,uri) 
+                                ("User-Agent: ~a" ,agent)
+                                ...)
+     这里传入一个list，构造list的时候对uri等参数进行求值。
+
+HINT:
+
+    finish-output &optional output-stream
+
+    attempts to ensure that any buffered output sent to output-stream has
+    reached its detination, and then returns.
+
+HINT:
+
+    make-echo-stream input-stream output-stream
+
+    returns a new echo stream that gets input from input-stream and sends output
+    to output-stream.
+
+xml-rpc-call函数非常简单，先是向服务器发出HTTP请求，然后直接读取回应，将回应结果
+交给decode-xml-rpc函数处理。
+
+decode-xml-rpc函数则使用s-xml库进行解析，主要解析逻辑分布于三个xml解析回调函数中
+:decode-xml-rpc-new-element/decode-xml-rpc-finish-element/decode-xml-rpc-text。
+
+这三个回调函数通过cons各个seed组成最后的结果。
+
+call-xml-rpc-server是一个辅助函数，将xml-rpc-call和encode-xml-rpc-call封装在一起
+，实现比较精巧：
+
+    (defun call-xml-rpc-server (server-keywords name &rest args)
+      (apply #' xml-rpc-call
+        (cons (apply #'encode-xml-rpc-call (cons name args))
+              server-keywords)))
+
+describe-server是一个获取服务器提供接口信息的函数。通过调用
+system.listMethods/system.methodSignature/system.methodHelp几个远程接口即可获取
+。这几个接口更像是s-xml-rpc自己实现的服务器端的几个rpc接口。
+
+HINT:
+
+    encode-xml-rpc-call(name &rest args)
+    => encode-xml-rpc-arg(args stream) 该函数参数args实际上是一个不定长度的list
+    。
+
+    (dolist (arg args) (exps))
+
+整个xml-rpc.lisp主要包括：XML编解码、客户端API、服务器端API。比较清晰简单。
+
+s-xml-rpc自己实现的服务器端中，所有位于s-xml-rpc-exports包中的接口都作为客户端可
+调用的rpc接口。
+
+sysdeps.lisp包含编译器实现相关的接口，主要涉及到网络接口。
+
+define-xmlrpc-method.lisp文件只包含一个宏，该宏可用于抽象一个RPC接口。
+
+    (define-xmlrpc-method get-state-name (state)
+      :url #u"http://...."
+      :method "examples.getStateName")
+
+aserve.lisp与核心逻辑无关，貌似是基于AllegroServe服务器的扩展。
+
+extensions.lisp实现了之前提到的几个服务器上预定义的RPC接口。
+
+validator1-server.lisp validator1-client.lisp像是功能测试代码。
+
+
+

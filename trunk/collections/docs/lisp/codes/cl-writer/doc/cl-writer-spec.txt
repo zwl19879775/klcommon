@@ -91,3 +91,39 @@ TODO
     1. retrieve the post
     2. retrieve text from html
 * FIX bug when there are more than one image files with the same name
+* filter html body only
+* fix absloute image path handle bug
+* save an image url table, so that we can edit a post
+
+HISTORY
+---------
+
+3.17.2011
+
+The strange thing is, when i post a simple test blog to cppblog.com, the whole
+html file except these title headers removed, the css exists. But the css style
+has been removed in my real post something talked about Lisp.
+
+Whatever, i decide to post only <body> texts to cppblog.com.
+
+To remove other texts except these in <body> tag has another good behavior: the
+page will look more nice on the other places such as cppblog main page.
+
+XML file in a literal text does not work yet. Any '<' string in a plain text
+will be handled as an html tag.
+
+And this problem probaly because of xml parser, handle these special character:
+
+    &lt;?xml version='1.0'?&gt;
+=>
+    <?xml version='1.0'?>
+
+s-xml will translate these special characters when parsing a string:
+    
+    xml.lisp 412 parse-string
+
+And the solution is, when parse an xml string in cl-writer, it will translate it
+back to these special characters.
+
+Actually, s-xml already provide this function: s-xml:print-string-xml.
+

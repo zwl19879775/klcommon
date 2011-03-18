@@ -43,3 +43,22 @@ Here is a test picture.
 
 End of test picture.
 
+Test xml file::
+    
+    <?xml version='1.0'?>
+    <methodResponse>
+        <params>
+            <param>
+                <value><string>Welcome to Zope.org</string></value>
+        </param>
+        </params>
+    </methodResponse>
+
+And test some plain text::
+
+    (defun testfn (x)
+      (format t "testfn")
+      x)
+
+EOF
+

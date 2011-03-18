@@ -1,4 +1,39 @@
 
+3.15.2011
+
+#
+
+To trace a function call:
+    (trace foo)
+    (untrace foo)
+    
+To print the backtrace(call stack):
+    :backtrace (typed when error occured)
+
+#
+
+    (defun testfn (arg) 
+      (declare (ignore arg))
+      ())
+
+declare this function will ignore the argument 'arg', to avoid compiler
+warnings.
+
+#
+
+    (loop (exp1) (exp2)) will loop infinite until explicit return.
+    (let ((a 0))
+      (loop
+         (princ a)
+         (incf a)
+         (if (> a 5) return)))
+    
+#
+
+    (loop for (key value) in '((a b) (c d)) 
+      do (princ key)
+         (princ value))
+
 3.10.2011
 
 #
