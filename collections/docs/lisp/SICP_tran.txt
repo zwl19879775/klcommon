@@ -1,0 +1,204 @@
+
+Chapter 1. Building Abstractions with Procedures
+=============================================
+
+Programming in Lisp
+
+我们需要一个合适的语言去描述程序(processes)。正如我们每天使用的自然语言一样，我
+们将使用Lisp去描述我们的procedural thoughts。Lisp创建于1950年末，作为一种称为递
+归等式(recursion equations)的逻辑表达式的形式化描述。 Lisp由John McCarthy基于他
+的论文<Recursive Functions of Symbolic Expressions and Their Computation by
+Machine>被构思。
+
+尽管Lisp最早被用于数学形式化描述，但它现在已然是一门实用语言。Lisp解释器是一个执
+行Lisp过程的机器。最早的Lisp解释器由McCarthy和他在MIT实验室的学生实现。Lisp正如
+其名字一样，缩写于LISt Processing，被用于符号表处理。It included for this
+purpose new data objects known as atoms and lists, which most strikingly set it
+apart from all other languages of the period.
+
+The dialect of Lisp used in this book is called Scheme.
+
+由于最开始Lisp被用作符号处理，所以在数字处理方面，相对于同时期的Fortran并不高效
+。但是经过这么过年，Lisp编译器已经可以将Lisp代码处理为机器码，效率不是问题。
+Lisp如今被用于很多并不太关注效率的领域，例如OS的Shell、各种应用程序的脚本扩展。
+
+如果Lisp并非主流，我们为什么要使用它作为本书各种讨论的语言？因为它提供了很多独一
+无二的语言特性，使其用于学习一些重要的数据结构、程序构造方面尤为优秀。其中最为重
+要的是对于processes的描述，Lisp中称为procedures，可以直接作为Lisp的数据。将函数
+视为数据，是Lisp最为灵活的一种特性。
+
+1.1 The Elements of Programming
+------------------------------------
+
+A powerful programming language is more than just a means for instructing a
+computer to perform tasks. The language also serves as a framework within which
+we organize our ideas about processes.
+
+Every powerful language has three mechanisms for accomplishing this:
+
+* primitive expressions
+* means of combination
+* means of abstraction
+
+Expressions such as these, formed by delimiting a list of expressions within
+parentheses in order to denote procedure application, are called combinations.
+
+Prefix notation has several advantages, however. One of them is that it can
+accommodate procedures that may take an arbitrary number of arguments:
+
+    (+ 2 3 4 5)
+
+A critical aspect of a programming language is the means it provides for using
+names to refer to computational objects. We say that the name identifies a
+variable whose value is the object.
+
+Such exceptions to the general evaluation rule are called special forms.
+
+For compound procedures, the application processs is as follows:
+
+    To apply a compound procedure to arguments, evaluate the body of the
+    procedure with each formal parameter replaced by the corresponding argument.
+
+
+The process we have just described is called the substitution model for
+procedure application.
+
+该书会建立各种各样的模型，这些模型旨在帮助读者理解解释器是如何工作的。并且这些模
+型会随着内容的增加而变得更复杂和准确。上面提到的substitution model即是这样一种模
+型。
+
+An alternative evaluation model would not evaluate the operands until their
+values were needed.即惰性求值，参数并不在进入函数之前被求值。
+
+This alternative ``full expand and then reduce'' evaluation method is known as
+normal-order evaluation, in contrast to the ``evaluate the arguments and then
+apply'' method that the interpreter actually uses, which is called
+applicative-order evaluation.
+
+Lisp uses applicative-order evaluation.
+
+The word predicate is used for procedures that return true or false, as well as
+for expressions that evaluate to true or false.
+
+Notice that and and or are special forms, not procedures, because the sub 
+expressions are not necessarily all evaluated. Not is an ordinary procedure.
+
+So a procedure definition should be able to suppress detail.
+
+Such a name is called a bound variable, and we say that the procedure definition
+binds its formal parameters. If a variable is not bound, we say that it is free.
+
+1.2 Procedures and the Processes They Generate
+----------------------------------------------------
+
+上一节中讲述了elements of programming，包括一些基本的数学操作符，以及如何组合使
+用它们，然后如何定义组合操作来包装它们。
+
+But that is not enough to enable us to say that we know how to program.
+
+The ability to visualize the consequences of the actions under consideration is
+crucial to becoming an expert programmer, just as it is in any synthetic,
+creative activity.
+
+A procedure is a pattern for the local evolution of a computational process. It
+specifies how each stage of the process is built upon the previous stage.
+
+Linear recursive process and linear iterative process.
+
+Another common pattern of computation is called tree recursion.
+
+    (defun fib (n)
+      (cond ((= n 0) 0)
+            ((= n 1) 1)
+            (t (+ (fib (- n 1))
+                  (fib (- n 2))))))
+
+
+The process uses a number of steps that grows exponentially with the input. On
+the other hand, the space required grows only linearly with the input.
+
+We can also formulate an iterative process for computing the Fibonacci numbers.
+
+    (defun fib (n)
+      (fib-iter 1 0 n))
+
+    (defun fib-iter (a b count)
+      (if (= count 0)
+          b
+          (fib-iter (+ a b) a (- count 1))))
+
+本节接下来讲述了递归函数执行所带来的空间和时间消耗，若干例子。
+
+1.3 Formulating Abstractions with Hight-Order Procedures
+---------------------------------------------------------
+
+One of the things we should demand from a powerful programming language is the
+ability to build abstractions by assigning names to common patterns and then to
+work in terms of the abstractions directly. Procedures provide this ability.
+
+Procedures that manipulate procedures are called higher-order procedures.
+
+本节介绍高阶函数如何能提高这里所说的抽象程度。
+
+A let expression is simply syntactic sugar for the underlying lambda
+application.
+
+Elements with the fewest restrictions are said to have first-class status. Some
+of the ``rights and privileges'' of first-class elements are:
+    They may be named by variables.
+    They may be passed as arguments to procedures.
+    They may be returned as the results of procedures.
+    They may be included in data structures.
+
+Lisp, unlike other common programming languages, awards procedures full
+first-class status. 
+
+Chapter 2. Building Abstractions with Data
+============================================
+
+We turn in this chapter to another key aspect of any programming language: the
+means it provides for building abstractions by combining data objects to from
+compound data.
+
+The ability to construct compound data objects enables us to deal with data at a
+higher conceptual level than that of the primitive data objects of the language.
+
+The general technique of isolating the parts of a program that deal with how
+data objects are represented from the parts of a program that deal with how data
+objects are used is a powerful design methodology called data abstraction.
+
+The basic idea of data abstraction is to structure the programs that are to use
+compound data objects so that they operate on ``abstract data''.
+
+2.1 Introduction to Data Abstraction
+---------------------------------------
+
+本节主要描述构建复杂数据结构时，也就是进行数据抽象时，建立每一层数据对应的操作接
+口，颇有好处。
+
+One advantage is that it makes programs much easier to maintain and to modify.
+
+Constraining the dependence on the representation to a few interface procedures
+helps us design programs as well as modify them.
+
+Procedural representations of data will play a central role in our programing
+repertoire. This style of programming is often called message passing.
+
+2.2 Hierarchical Data and the Closure Property
+-----------------------------------------------
+
+The ability to create pairs whose elements are pairs is the essence of list
+structure's importance as a representational too. We refer to this ability as
+the closure property of cons.
+
+Such a sequence of pairs, formed by nested conses, is called a list.
+
+Another way to think of sequences whose elements are sequences is as trees.
+
+We introduce another powerful design principle for working with data structures
+--the use of conventional interfaces.
+
+2.3 Symbolic Data
+---------------------
+
+
