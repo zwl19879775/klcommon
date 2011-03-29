@@ -1,0 +1,34 @@
+
+(setq hunchentoot:*dispatch-table*
+  (list (hunchentoot:create-prefix-dispatcher "/" 'generate-index-page)))
+(defvar *ht-server* (hunchentoot:start-server :port 8080))
+
+The web server uses the *dispatch-table* to map URLs to functions. In this
+example we simply create mapping from the root to our function.
+
+Each of these functions accepts the request object as its only arguments and
+either returns a request handler to handle the requests or NIL which means that
+the next dispatcher in the list will be tried.
+
+In the example above, actually the function generate-index-page has no
+parameters and returns a string which will be send to the client.
+
+hunchentoot在处理客户端请求时，默认情况下会经过如下环节：
+
+    acceptor => request-dispatcher => request-handler
+
+dispatcher函数唯一的参数是一个request对象，该函数要么返回一个request-handler，要
+么返回nil。
+
+默认情况下，*dispatch-table*里保存了若干dispatcher函数。有很多函数可以创建出
+dispatcher，例如create-prefix-dispatcher。一般应用情况下，只需要针对这些创建
+dispatcher的函数，写对应的request-handler函数即可。
+
+request-handler函数无参数，返回值是字符串或者二进制数据，这些数据将被返回给客户
+端。
+
+每次客户端请求都会对应一个request对象，很多函数都要求传入request对象，但
+hunchentoot也有全局*request*对象作为默认值，这个全局变量 应该标示当前处理的
+request，所以也可不传入参数，直接使用该默认值。
+
+

@@ -1,4 +1,79 @@
 
+3.29.2011
+
+#
+
+    (format nil "~2d" 1) => " 1"
+    (format nil "~2,'0d" 1) => "01"
+
+The first prefix parameter (i.e, 2) can specify a minimum width for the output,
+ and the second parameter (i.e, ",'0") can specify a padding character to use.
+
+3.28.2011
+
+#
+
+Some UTF-8 file starts a mark string: EF BB BF. But not all UTF-8 file contain
+this. And Lisp read-char/peek-char can detect this automatically.
+
+    (peek-char nil stream nil nil) => #\ZERO_WIDTH_NO-BREAK_SPACE
+
+#
+
+Common Lisp use '#x' or '#16r' to indicate a hex number, i.e:
+
+    #xFF => 255
+    #16rFF => 255
+
+
+#
+
+position/position-if/position-if-not returns the index within sequence of the
+leftmost(if from-end is true) or rightmost(if from-end is false) position.
+
+    (position #\a "baobab") => 1
+    (position #\a "baobab" :from-end t) => 4
+
+3.27.2011
+
+#
+
+The difference between :|title| and :title is, symbols defined in '|' character
+keep its original, i mean:
+
+    (symbol-name :|title|) => "title"
+    (symbol-name :title) => "TITLE"
+
+
+3.25.2011
+
+#
+
+Install hunchentoot http server is not very hard actully, follow the
+hunchentoot.asd depends, use quicklisp to install these dependent libraries like 
+
+    (ql:quickload :chunga)
+
+And then:
+
+    (asdf:load-system :hunchentoot)
+
+DONE.
+
+#
+
+To get started with hunchentoot, there're some tutorials like:
+
+    <Implement a blog in Common Lisp>:
+        http://roeim.net/vetle/docs/cl-webapp-intro/
+
+3.23.2011
+
+#
+
+    (cons (list 1 2) (list 3 4)) => ((1 2) 3 4)
+    (length (cons (list 1 2) (list 3 4))) => 3
+
 3.15.2011
 
 #

@@ -40,6 +40,34 @@ When the evaluation rule requires a value, Lisp looks for the variable value of
 the symbol. When a function is called for, Lisp looks for the symbol's function.
 
 
+<The Common Lisp Cookbook>
+---------------------------
+
+To simplify a bit, you can think of each symbol in CL having(at least) two
+"cells" in which information is stored. One cell-sometimes referred to as its
+value cell-can hold a value that is bound to this symbol.
+
+Now, if a symbol is evaluated, it is treated as a variable in that it's value
+cell is returned. It a compound form, i.e. a cons, is evaluated and its car is a
+symbol, then the function cell of this symbol is used.
+
+
+<CLHS>
+--------
+
+If a form is a symbol that is not a symbol macro, then it is the name of a
+variable, and the value of that variable is returned.
+
+Environment is a set of bindings.
+
+A binding is an association between a name and that which the name denotes.
+Bindings are established in a lexical environment or a dynamic environment by
+particular special operators.
+
+Bindings in an environment are partitioned into namespaces.
+
+A cons that is used as a form is called a compound form.
+
 Summarize
 ----------
 

@@ -191,6 +191,43 @@ with the given name.
 
 (another tutorial: http://chaitanyagupta.com/lisp/restarts.html)
 
+Chapter 21 (Packages and Symbols)
+
+Most names you use are unqualified, names that contain no colons. When the
+ reader reads such a name, it translates it to a symbol by converting any 
+unescaped letters to uppercase and passing the resulting string to INTERN.
+
+A name containing only a single colon must refer to an external symbol--one the
+package exports for public use. A double-colon name can refer to any symbol from
+the named package.
+
+Keyword symbols are written with names starting with a colon. Such symbols are
+interned in the package named KEYWORD and automatically exported. When the
+reader interns a symbol in the KEYWROD, it also defines a constant variable with
+the symbol as both its name and value. 
+
+    (eql ':foo :foo) => T
+
+    (defpackage :com.gigamonkeys.email-db
+      (:use :common-lisp))
+
+This defines a package, named COM.GIGAMONKEYS.EMAIL-DB, that inherits all the
+ symbols exported by the COMMON-LISP package.
+
+ A string designator is either a string, which designates itself; a symbol,
+ which designates its name; or a character, which designates a one-character
+ string containing just the character.
+
+    (:import-from :pkgname :symbolname)
+
+We can ignore some symbols in a package by using :shadow clause:
+
+    (:shadow :symbolname)
+
+We can use use-package in REPL to import a package:
+
+    (use-package :foolib)
+
 Chapter 22 (Loop for Black Belts)
 
 The basic structure of a LOOP is a set of clauses, each of which begins with a
