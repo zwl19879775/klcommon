@@ -12,6 +12,9 @@
   (make-pathname :name ".cl-writer" :type "lisp"
                  :defaults (user-homedir-pathname)))
 
+(defun get-default-user ()
+  *default-user*)
+
 ;;
 ;; in config file, must create a new user and set as *default-user*.
 ;; i.e: (setf *default-user* (make-cppblog-user "kevinlynx" "password"))
@@ -20,7 +23,4 @@
 ;;                      :url "/kevinlynx/services/metaweblog.aspx"))
 (unless (load (get-config-name) :if-does-not-exist nil)
   (format t "Load config file (~a) failed.~%" (get-config-name)))
-
-(defun get-default-user ()
-  *default-user*)
 
