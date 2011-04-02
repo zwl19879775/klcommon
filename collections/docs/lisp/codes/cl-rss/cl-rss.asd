@@ -19,6 +19,12 @@
                (:file "parse-date" :depends-on ("package"))
                (:file "rss-output" :depends-on ("rss-parser") 
                       :depends-on ("parse-date"))
-               (:file "rss-http" :depends-on ("rss-parser")))
-  :depends-on (:net-telent-date :s-xml))
+               (:file "rss-http" :depends-on ("rss-parser"))
+               (:file "pstore" :depends-on ("rss-parser"))
+               (:file "cl-rss" :depends-on ("rss-http")
+                      :depends-on ("pstore")
+                      :depends-on ("rss-output"))
+               (:file "web-adapter" :depends-on ("cl-rss")))
+
+  :depends-on (:net-telent-date :s-xml :elephant :hunchentoot))
 

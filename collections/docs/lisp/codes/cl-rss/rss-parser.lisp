@@ -18,6 +18,7 @@
 
 (defclass channel ()
   ((plist :accessor channel-plist
+          :initarg :plist
           :initform nil)
    (items :accessor channel-items
           :initform nil))
@@ -28,6 +29,7 @@
 
 (defclass item ()
   ((plist :accessor item-plist
+          :initarg :plist
           :initform nil))
   (:documentation "An item is an object only contains some properties."))
 
@@ -83,22 +85,24 @@
 (defun decode-rss (stream)
   "Decode a rss feed from a stream."
   (skip-unicode-bom stream)
-  (s-xml:start-parse-xml 
-    stream
-    (make-instance 's-xml:xml-parser-state
-                   :new-element-hook #'decode-rss-new-element
-                   :finish-element-hook #'decode-rss-finish-element
-                   :text-hook #'decode-rss-text)))
+  (let ((rss
+          (s-xml:start-parse-xml 
+            stream
+            (make-instance 's-xml:xml-parser-state
+                           :new-element-hook #'decode-rss-new-element
+                           :finish-element-hook #'decode-rss-finish-element
+                           :text-hook #'decode-rss-text))))
+   (rss-channel rss)))
 
 (defun decode-rss-file (file)
   "Decode a rss feed from a file."
   (with-open-file (stream file)
     (decode-rss stream)))
 
-(defun map-items (rss fn)
+(defun map-items (channel fn)
   "Travers all the rss items in a rss object."
   (mapc #'(lambda (item) (funcall fn item))
-        (channel-items (rss-channel rss))))
+        (channel-items channel)))
 
 ;;; TEST utils
 (defun print-item (item)

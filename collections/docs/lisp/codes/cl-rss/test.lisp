@@ -7,9 +7,11 @@
 ;;;; 3.29.2011
 ;;;;
 (defpackage :cl-rss-test
- (:use :common-lisp :cl-rss)
+ (:use :common-lisp :cl-rss :elephant)
  (:export test-rss-http
-          test-rss-file))
+          test-rss-file
+          print-all-stores
+          test-get-rss))
 
 (in-package :cl-rss-test)
 
@@ -28,11 +30,18 @@ coolshell.cn            /?feed=rss2 (support redirect now)
                       (uri "/kevinlynx/rss.aspx"))
   (write-string-file "output.html" 
                      (output-simple-html 
-                       (decode-rss-from-http uri
-                                             host))))
+                       (decode-rss-from-http (create-url uri host)))))
 
 (defun test-rss-file (file)
   (write-string-file "output.html" 
                      (output-simple-html 
                        (decode-rss-file file))))
+
+(defun test-get-rss (&key (host "www.cppblog.com")
+                          (uri "/kevinlynx/rss.aspx"))
+  (decode-rss-from-http (create-url host uri)))
+
+(defun print-all-stores ()
+  (map-root #'(lambda (k v)
+                (format t "~a -> ~a~%" k v))))
 

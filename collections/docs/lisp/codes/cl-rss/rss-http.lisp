@@ -83,6 +83,9 @@
     (values (subseq url hp up)
             (subseq url up))))
 
+(defun create-url (host uri)
+  (concatenate 'string "http://" host uri))
+
 (defun split-key-value (string)
   "Split key-value string like `Location: url`"
   (let* ((fn #'(lambda (c) (or (char= c #\space) (char= c #\:) 
@@ -105,10 +108,9 @@
      
 (defun decode-redirect-rss (stream)
   "Redirect to a new url encoded in stream to decode rss feed."
-  (multiple-value-bind (host uri)
-    (find-redirect-url stream)
-    (format t "Redirect to ~a (~a)~%" host uri)
-    (decode-rss-from-http uri host)))
+  (let ((url (find-redirect-url stream)))
+    (format t "Redirect to ~a~%" url)
+    (decode-rss-from-http url)))
 
 (defun process-http-header (stream status-header)
   "Handle response http headers."
@@ -122,16 +124,24 @@
          (print-http-stream stream)
          (error "http-error: ~a~%" status-header)))))
 
-(defun decode-rss-from-http (uri host &optional (port 80))
+(defun decode-rss-from-http (url &optional (port 80))
   "Decode a rss feed from a http server response."
-  (with-open-socket-stream (stream host port)
-    (format-header stream `(("GET ~a HTTP/1.0" ,uri)
-                            ("User-Agent: cl-rss")
-                            ("Host: ~a" ,host)))
-    (finish-output stream)
-    (let ((header (read-line stream nil nil)))
-      (when (null header) (error "no response from server"))
-      (if (process-http-header stream header)
-        (decode-rss stream)
-        (decode-redirect-rss stream)))))
+  (multiple-value-bind (host uri)
+    (parse-host-uri url)
+    (with-open-socket-stream 
+      (stream host port)
+      (format-header stream `(("GET ~a HTTP/1.0" ,uri)
+                              ("User-Agent: cl-rss")
+                              ("Host: ~a" ,host)))
+      (finish-output stream)
+      (let ((header (read-line stream nil nil))
+            (channel))
+        (when (null header) (error "no response from server"))
+        (if (process-http-header stream header)
+          (setf channel (decode-rss stream))
+          (setf channel (decode-redirect-rss stream)))
+        ;; append the rss url
+        (push-property channel :|rssurl| url)
+        channel))))
+
 
