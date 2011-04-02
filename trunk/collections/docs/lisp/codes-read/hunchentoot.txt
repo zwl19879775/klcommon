@@ -1,0 +1,67 @@
+
+HINT:
+
+    (defgeneric)
+Question: (let ((*var*  ; what will happen to this?
+
+
+acceptor.lisp主要描述acceptor的相关操作，acceptor相当于一个listen socket。主要用
+于接收新连接等。
+
+start函数用于开启一个网络服务，start-listening用于建立socket监听，然后调用
+execute-acceptor开始。
+
+execute-acceptor针对不同的taskmaster会有不同的实现。taskmaster is responsible
+for distributing the work of handling requests for its acceptor.
+
+在single-threaded-taskmaster的实现中，execute-acceptor直接调用accept-connections.
+
+taskmaster.lisp描述了taskmaster类的简单实现。主要包括：execute-acceptor
+handle-incoming-connection函数实现。
+
+accept-connections在usocket实现中，似乎是有一个死循环，一直accept新的客户端。
+accept后就调用handle-incoming-connection函数进行逻辑处理。
+
+set-timeouts.lisp只包含一个函数set-timeouts，用于对接收到的客户端socket进行超时
+设置。因为不同平台对超时的支持不一致所以这里需要特殊处理。
+
+handle-incomming-connection单线程模式下直接调用process-connection函数。总结整个
+服务器模型如下：
+
+    start(acceptor) -> execute-acceptor(taskmaster) -> accept-connections ->
+        loop
+            -> handle-incoming-connection
+                -> process-connection
+
+process-connection函数包含对客户端请求的直接处理。
+
+headers.lisp包含HTTP头相关的处理函数。
+
+get-request-data将客户端发来的HTTP请求拆分。
+
+handle-request用于真正地处理request。该函数主要调用acceptor-request-dispatcher处
+理。默认情况下，其为list-request-dispatcher。
+
+(defun list-request-dispatcher (request)
+  "The default request dispatcher which selects a request handler
+based on a list of individual request dispatchers all of which can
+either return a handler or neglect by returning NIL."
+  (loop for dispatcher in *dispatch-table*  ; 遍历*dispatch-table*列表
+        ; 每个元素都是一个函数，这些函数接收request对象并返回另一个函数
+        for action = (funcall dispatcher request) 
+        ; 调用该函数，其返回值作为回应客户端的内容
+        when action return (funcall action)
+        finally (setf (return-code *reply*) +http-not-found+)))
+
+*dispatch-table*默认有两个函数：dispatch-easy-handlers default-dispatcher。
+
+default-dispatcher函数直接返回*default-handler*作为request handler。而
+*default-handler*默认值保存的是函数default-handler。该函数返回一段默认网页信息给
+客户端。
+
+
+
+
+
+
+

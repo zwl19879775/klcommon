@@ -1,4 +1,7 @@
 
+To simply start the server:
+    (hunchentoot:start (make-instance 'hunchentoot:acceptor :port 8080))
+
 (setq hunchentoot:*dispatch-table*
   (list (hunchentoot:create-prefix-dispatcher "/" 'generate-index-page)))
 (defvar *ht-server* (hunchentoot:start-server :port 8080))
@@ -31,4 +34,8 @@ request-handler函数无参数，返回值是字符串或者二进制数据，�
 hunchentoot也有全局*request*对象作为默认值，这个全局变量 应该标示当前处理的
 request，所以也可不传入参数，直接使用该默认值。
 
+返回给客户端的字符串，如果包含中文，最好将hunchent设置为utf8:
+
+    (setf *hunchentoot-default-external-format* 
+          (flex:make-external-format :utf8 :eol-style :lf))
 

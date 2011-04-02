@@ -1,0 +1,71 @@
+
+3.30.2011
+
+Install `Elephant' using quick lisp:
+
+    (ql:quickload :elephant)
+
+If want to use sqlite as the backend, we should install cl-sql:
+
+    (ql:quickload :cl-sql)
+
+If want to use sqlite3, because cl-sql use FFI to implement this, and it will
+use /usr/lib/libsqlite3.so, so be sure that file exists, if not, in shell:
+
+    ln -s libsqlite3.so.0 libsqlite3.so
+
+And now it works:
+
+    (use-package :elephant)
+    (open-store '(:clsql (:sqlite3 "test.db")))
+    (add-to-root "key" "value") => "value"
+    (get-from-root "key") => "value"
+
+Usages:
+
+* The elephant has some key-value access functions like: 
+    add-to-root
+    get-from-root
+  And the value can be most of Lisp values, i.e:
+
+    (add-to-root "key" (list 1 2 3))
+    (get-from-root "key) => (1 2 3)
+
+* We can define a class which can be serialize to add-to-root by using:
+
+    (defpclass persistent-class ()
+      ((slot1 :accessor slot1)
+       (slot2 :accessor slot2)))
+
+    (add-to-root "obj" (make-instance 'persistent-class))
+
+* We can traverse the root store of elephant by:
+
+    (map-root #'(lambda (k v)
+                  (format t "key: ~a value: ~a~%" k v)))
+
+* If we want collections that are persistent, we have to use classes provide by
+  Elephant. Tow classes are provided: pset which provides a persistent and
+  unordered collection of objects, and btree which provides persistent
+  collection of key-value pairs.
+
+    (make-pset)
+    (insert-item item pset)
+    (remove-item item pset) ; remove all the same items in pset
+    (map-pset fn pset)
+    (pset-list pset) ; convert pset to a normal list (not sure)
+
+* btree, store objects in order, sorted by value.
+    
+    (make-btree)
+    (setf (get-value "key" btree) val)
+    (map-btree fn btree) ; fn (key value)
+
+* open-store
+  close-store
+
+* Elephant support this list:
+
+    (add-to-root "lst" (list (cons :name "kev") (cons :age "24")))
+    (get-from-root "lst") 
+

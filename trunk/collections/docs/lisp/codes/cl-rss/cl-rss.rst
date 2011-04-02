@@ -102,6 +102,18 @@ HISTORY
 2. About http redirect problem, it seems a bit difficult to solve. Http redirect
    problem includes 301 and 302 response from server.
 
+3. 3.30.2011
+   The simple demo has been done. And now i want to write more codes to put the
+   rss reader on a web server like ``hunchentoot``. And i need to store data in
+   database, using third-party library like ``Elephant``.
+
+4. 3.31.2011
+   The item cache has been DONE. And now it can generate an index page to index
+   these stored channles. Also, it can `add new rss`, `remove a rss`, `refresh a
+   rss`.
+   What left is, embedded into the web server. On the other hand, should i add
+   an automatically refresh?
+
 TODO
 -----------
 

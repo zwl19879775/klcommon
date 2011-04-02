@@ -1,4 +1,19 @@
 
+4.1.2011
+
+#
+
+    (defgeneric )
+
+#
+
+As make-instance accept a symbol to create an object, so we can create an object
+dynamicaly:
+
+    (make-instance (get-class-name))
+    (defun get-class-name () 'class)
+
+
 3.29.2011
 
 #
