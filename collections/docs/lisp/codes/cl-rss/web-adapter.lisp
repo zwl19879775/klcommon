@@ -29,13 +29,12 @@
 
 (defun generate-index-page ()
   (setf (hunchentoot:content-type*) "text/html; charset=utf-8")
-  (with-html-body stream "All RSS"
+  (with-html-body (stream "All RSS")
     (princ (format-url "/new/" "Add new RSS") stream)
     (mapcar #'(lambda (c)
                (format stream "<h3>~a</h3>~a"
                 (format-url (get-channel-view-name c)
-                            (get-property c :|title|))
-                (format-operate-string c)))
+                            (get-property c :|title|)) (format-operate-string c)))
             (load-all-channels))))
 
 (defun generate-channel-page ()
@@ -49,7 +48,7 @@
 (defun generate-add-new-page ()
   (cond 
     ((eq (hunchentoot:request-method*) :GET)
-     (with-html-body stream "Add new"
+     (with-html-body (stream "Add new")
                      (format stream "<form action=\"?add\" method=\"POST\">
                              <input style=\"width: 20em;\" type=\"text\" name=\"rssurl\"/>
                              <input style=\"display: block\" type=\"submit\" value=\"Add\"/>
@@ -87,11 +86,11 @@
           (flex:make-external-format :utf8 :eol-style :lf))
   (setf *web-acceptor* (make-instance 'hunchentoot:acceptor :port port))
   (open-storage)
-  (start-update)
+  ;(start-update) ; the timer seems has some bugs
   (hunchentoot:start *web-acceptor*))
 
 (defun stop-server (&optional (acceptor *web-acceptor*))
-  (stop-update)
+  ;(stop-update)
   (close-storage)
   (hunchentoot:stop acceptor))
 
