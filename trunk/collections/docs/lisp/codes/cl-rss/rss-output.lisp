@@ -10,7 +10,7 @@
  (with-output-to-string (stream)
    (format stream "<a href=\"~a\"/>~a</a>" url desc)))
 
-(defmacro with-html-body (stream title &body body)
+(defmacro with-html-body ((stream title) &body body)
   `(with-output-to-string (,stream)
       (format ,stream "<html><head><title>~a</title></head><body>" ,title)
       ,@body
@@ -27,7 +27,7 @@
 
 (defun output-simple-html (channel)
   "Output a rss to a simple html format and return the result as a string."
-  (with-html-body stream (get-property channel :|title|)
+  (with-html-body (stream (get-property channel :|title|))
      (format stream "<h2>~a</h2><h3>~a</h3>" 
              (format-url (get-property channel :|link|)
                          (get-property channel :|title|))
@@ -61,7 +61,7 @@
 
 (defun generate-channels-link-page (channels)
   "Generate an index page indexed to all channels."
-  (with-html-body stream "All RSS"
+  (with-html-body (stream "All RSS")
     (mapcar #'(lambda (c)
                (format stream "<h3>~a</h3>"
                 (format-url (get-channel-html-name c)
