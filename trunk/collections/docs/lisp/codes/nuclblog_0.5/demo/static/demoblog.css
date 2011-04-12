@@ -1,0 +1,114 @@
+
+@import url("/nuclblog-css/nuclblog.css");
+@import url("/static/white.css");
+@import url("/static/rststyle.css");
+
+html {
+    font-family: helvetica,arial,clean,sans-serif;
+    font-size: medium;
+    padding: 40px;
+    padding-top: 10px;
+    margin: 0px;  
+}
+
+body {
+    background: #909090;
+}
+
+div#nuclblog-banner {
+    top: 0px;
+    text-align: left;
+    background: #123456;
+    color: white;
+    padding: 18px 18px 6px 18px;
+    -moz-border-radius: 6px 6px 6px 6px;
+    border-radius: 6px 6px 0px 0px;
+}
+
+div#nuclblog-bannertext h1 {
+    padding: 0px;
+    margin: 0px;
+    font-family: monospace;
+    font-size: 24px;
+    font-weight: 400;
+    font-style: roman;
+}
+
+div#nuclblog-bannertext h2 {
+    padding: 0px;
+    margin: 0px;
+    font-size: 16px;
+}
+
+div.nuclblog-box {
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    padding: 4px;
+    background: #F8F8F8;
+    border-top: 1px solid #BBB;
+    border-left: 1px solid #BBB;
+    border-bottom: 2px solid #999;
+    border-right: 2px solid #888;
+}
+
+div#nuclblog-main {
+    background: white;
+    min-height: 800px;
+    padding: 6px;
+    -moz-border-radius: 0px 0px 6px 6px;
+    border-radius: 0px 0px 6px 6px;
+}
+
+div.nuclblog-entry {
+    background: #F8F8F8;
+    border-top: 1px solid #BBB;
+    border-left: 1px solid #BBB;
+    border-bottom: 2px solid #999;
+    border-right: 2px solid #888;
+    padding: 10px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+div.nuclblog-box-head h2 {
+    padding: 0px;
+    margin: 0px;
+    font-size: 15px;
+}
+
+div.nuclblog-entry-title h1 {
+    padding: 0px;
+    margin: 0px;
+    font-size: 16px;
+    font-style: italic;
+}
+
+div.nuclblog-entry-date h2 {
+    padding: 0px;
+    margin: 0px;
+    padding-left: 6px;
+    font-size: 12px;
+}
+
+div.nuclblog-entry-user h3 {
+    padding: 0px;
+    margin: 0px;
+    margin-bottom: 8px;
+    padding-left: 6px;
+    font-size: 12px;
+}
+
+div.nuclblog-box-body ul {
+    padding-left: 6px;
+}
+
+div.nuclblog-box-body li {
+    padding-left: 6px;
+    font-family: sans-serif;
+    font-size: 10pt;
+}
+
+div.entry {
+    padding: 4px;
+}
+
