@@ -1,0 +1,57 @@
+
+1. Install SBCL (1.0.29.11)
+
+    sudo apt-get install sbcl  
+
+2. Install quick lisp
+
+    wget http://beta.quicklisp.org/quicklisp.lisp
+    sbcl --load quicklisp.lisp 
+    (quicklisp-quickstart:install)
+    (ql:add-to-init-file)
+
+3. Install hunchentoot (the web server), in sbcl:
+
+    (ql:quickload :hunchentoot)
+
+4. Install nuclblog (the blog system), in sbcl:
+
+    (ql:quickload :nuclblog)
+
+5. Get ch-asdf (nuclblog-demo depends on this), download ch-asdf from cliki:
+
+    wget http://cyrusharmon.org/static/releases/ch-asdf_0.2.14.tar.gz
+    tar xvf ch-asdf_0.2.14.tar.gz
+
+6. Install libraries depended by ch-asdf:
+
+   (ql:quickload :puri)
+   (ql:quickload :ch-util)
+
+7. Run nuclblog-demo, start SBCL from nuclblog path, i.e
+
+    cd ~/quicklisp/dists/quicklisp/software/nuclblog-20110219-git/
+
+    In shell:
+
+    cd demo/ssl
+    openssl genrsa -out key.pem 1024      
+    openssl req -config openssl.config -new -key key.pem -out request.pem
+    openssl req -x509 -days 365 -key key.pem -in request.pem -out certificate.pem
+    
+    In SBCL, add the library search path for ch-asdf:
+
+    (push #P"~/prjs/ch-asdf_0.2.14/" asdf:*central-registry*)
+    (asdf:oos 'asdf:load-op :nuclblog-demo)
+    (nuclblog-demo:start-services)
+
+    Add a blog user:
+
+    (nuclblog::add-user nuclblog-demo::*blog* "user" "password")
+
+    In brower:
+
+    http://127.0.0.1:4242/blog
+
+END.
+

@@ -137,6 +137,8 @@
           message-log-path))
   
   (let ((blog *blog*))
+    (setf hunchentoot:*hunchentoot-default-external-format*
+          (flex:make-external-format :utf8 :eol-style :lf))
     (let ((acceptor (make-instance 'hunchentoot:acceptor :port port)))
       (hunchentoot:start acceptor)
       (initialize-server acceptor)

@@ -201,4 +201,13 @@ We introduce another powerful design principle for working with data structures
 2.3 Symbolic Data
 ---------------------
 
+2.4 Multiple Representations for Abstract Data
+-------------------------------------------------
+
+These data-abstraction barries are powerful tools for controlling complexity. By
+isolating the underlying representations of data objects, we can divide the task
+of designing a large program into smaller tasks that can be performed
+separately.
+
+
 

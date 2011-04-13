@@ -1,4 +1,56 @@
 
+4.12.2011
+
+#
+
+    We can use an external symbol by a single package marker while the name of
+    an internal symbol is separated from the package name by a double package
+    marker.
+
+    (defpackage xxx (:export funca))
+    (in-package xxx)
+    (defun funcb () ())
+    ; funca is external symbol while funcb is internal symbol:
+    (xxx:funca) 
+    (xxx::funb)
+
+4.8.2011
+
+#
+
+    (destructuring-bind (parameter*) list
+      body-form*)
+
+The list form is evaluated once and should return a list, which is then 
+destructured and the appropriate values are bound to the variables in the 
+parameter list. Then the body-forms are evaluated in order with those bingdings
+in effect.
+
+    (destructuring-bind (x (y1 &optional y2) z) (list 1 (list 2 20) 3)
+      (list :x x :y1 y1 :y2 y2 :z z)) => (:X 1 :Y1 2 :Y2 20 :Z 3)
+
+4.7.2011
+
+#
+
+    eval-when (situation*) form* => result*
+
+    (eval-when (:compile-toplevel :execute)
+     (defun testfun () ()))
+
+4.3.2011
+
+#
+    
+    (defmacro with-html-body ((stream title) &body body)
+      `(with-output-to-string (,stream)
+          (format ,stream "<html><head><title>~a</title></head><body>" ,title)
+          ,@body
+          (princ "</body></html>" ,stream)))
+
+    If (stream title &boyd body) instead ((streamm title) &body body), it will
+    be wrong.
+
 4.1.2011
 
 #
