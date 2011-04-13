@@ -12,13 +12,15 @@
   name
   password
   host
+  (port 80)
   url)
 
 ;; generate a xml-rpc call
 (defmacro rpc-call (u m &rest args)
    `(s-xml-rpc:xml-rpc-call (s-xml-rpc:encode-xml-rpc-call ,m ,@args)
                             :url (user-info-url ,u)
-                            :host (user-info-host ,u)))
+                            :host (user-info-host ,u)
+                            :port (user-info-port ,u)))
 
 ;;
 ;; metaWeblog.getRecentPosts returns a cons of a structure.
