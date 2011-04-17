@@ -62,7 +62,7 @@
   (let* ((name (get-xml-rpc-struct-member media-obj :|name|))
          (path (merge-pathnames name 
                                 (ch-asdf:asdf-lookup-path 
-                                  "asdf:/nuclblog-demo/demo/static"))))
+                                  "asdf:/ext-blog/ext-blog/static"))))
     (format t "save media file: ~a~%" path)
     (ensure-directories-exist path)
     (with-open-file (file path :element-type '(unsigned-byte 8)

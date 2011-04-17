@@ -1,34 +1,9 @@
-;;; file: nuclblog-demo.lisp
 ;;;
-;;; Copyright (c) 2007 Cyrus Harmon (ch-lisp@bobobeach.com)
-;;; All rights reserved.
+;;; ext-blog.lisp
+;;; Kevin Lynx
+;;; 4.16.2011
 ;;;
-;;; Redistribution and use in source and binary forms, with or without
-;;; modification, are permitted provided that the following conditions
-;;; are met:
-;;;
-;;;   * Redistributions of source code must retain the above copyright
-;;;     notice, this list of conditions and the following disclaimer.
-;;;
-;;;   * Redistributions in binary form must reproduce the above
-;;;     copyright notice, this list of conditions and the following
-;;;     disclaimer in the documentation and/or other materials
-;;;     provided with the distribution.
-;;;
-;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
-;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-;;;
-
-(in-package :nuclblog-demo)
+(in-package :ext-blog)
 
 ;;;
 ;;; for debugging hunchentoot errors
@@ -37,37 +12,49 @@
   (setf hunchentoot::*show-lisp-backtraces-p* t)
   (setf hunchentoot::*show-lisp-errors-p* t))
 
+(defun read-whole-file-string (name)
+  (with-open-file (in name)
+    (let ((ret (make-sequence 'string (file-length in))))
+      (read-sequence ret in)
+      ret)))
+
 (defparameter *blog*
-  (make-instance 'blog:blog
-                 :short-name "nuclblog demo"
-                 :title "a demo blog for nuclblog"
-                 :subtitle "witness the awesome power of this fully operational hunchentoot!"
+  (make-instance 'blog::ext-blog
+                 :owner (cfg-owner-name)
+                 :short-name (cfg-short-name)
+                 :title (cfg-title)
+                 :subtitle (cfg-sub-title)
+                 :blog-links (cfg-blog-links)
+                 :about-content (read-whole-file-string 
+                                  (merge-pathnames "about.html"
+                                                  (cfg-rel-path "/static")))
                  :logo-img-url "/images/blog-logo.png"
-                 :owner-email "your_name_here@localhost"
-                 :page-css (list (cons "demoblog" "/static/demoblog.css"))
-                 :categories (list "Lisp"
-                                   "Music"
-                                   "Food"
-                                   "Wine"
-                                   "General")
+                 :owner-email (cfg-mail)
+                 :page-css (list (cons "ext-blog" "/static/ext-blog.css"))
+                 :categories (cfg-categories)
+                 :ext-links (cfg-ext-links)
+                 :ext-html (cfg-ext-html)
                  :url-root "/blog"
                  :entry-storage-path
                  (merge-pathnames
-                  "entries.store"
-                  (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo-data/demo/storage"))
+                   "entries.store"
+                   (cfg-storage-path))
                  :realm
                  (make-instance 'hunchentoot-auth:realm
                                 :user-storage-path
                                 (merge-pathnames
                                  "user.store"
-                                 (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo-data/demo/storage"))
+                                 (cfg-storage-path))
                                 :group-storage-path
                                 (merge-pathnames
                                  "group.store"
-                                 (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo-data/demo/storage")))
-                 :buttons '((:href-url "http://weitz.de/hunchentoot/"
+                                 (cfg-storage-path)))
+                 :buttons '((:href-url "https://cyrusharmon.org/projects?project=nuclblog"
+                             :id "nuclblog"
+                             :alt "nuclblog")
+                            (:href-url "http://weitz.de/hunchentoot/"
                              :id "hunchentoot-button"
-                             :img-url "/static/hunchentoot10.png"
+                             :img-url "/static/hunchentoot-button.png"
                              :alt "hunchentoot")
                             (:href-url "http://www.sbcl.org/"
                              :id "sbclbutton"
@@ -82,6 +69,7 @@
                                          "127.0.0.1")))
 
 (defun initialize-blog (blog host)
+  (nuclblog-ext:set-metaweblog-handler *blog*)
   (pushnew (lambda (request)
              (setf (hunchentoot:content-type*) "text/html; charset=utf-8")
              (nuclblog::blog-dispatch request blog))
@@ -104,13 +92,13 @@
 
   (pushnew (hunchentoot::create-folder-dispatcher-and-handler
             "/static/"
-            (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo/demo/static"))
+            (cfg-rel-path "/static"))
            (hunchentoot-vhost::virtual-host-dispatch-table *localhost-host*) :test #'equal))
 
 
 (defun start-ssl-services (blog &key (port 4243))
-  (let ((key-file (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo-data/demo/ssl/key-pem"))
-        (cert-file (ch-asdf:asdf-lookup-path "asdf:/nuclblog-demo-data/demo/ssl/certificate-pem")))
+  (let ((key-file (cfg-rel-data-path "/ssl/key-pem"))
+        (cert-file (cfg-rel-data-path"/ssl/certificate-pem")))
     (print (list port key-file cert-file))
     (let ((ssl-acceptor (make-instance 'hunchentoot:ssl-acceptor
                                      :ssl-privatekey-file key-file
@@ -125,13 +113,11 @@
                        (port 4242)
                        (use-ssl t)
                        ssl-port)
-  (let ((access-log-path (ch-asdf:asdf-lookup-path
-                   "asdf:/nuclblog-demo-data/demo/log/nuclblog-demo-access-log")))
+  (let ((access-log-path (cfg-rel-data-path "/log/ext-blog-access-log")))
     (ensure-directories-exist access-log-path)
     (setf hunchentoot:*access-log-pathname*
           access-log-path))
-  (let ((message-log-path (ch-asdf:asdf-lookup-path
-                          "asdf:/nuclblog-demo-data/demo/log/nuclblog-demo-message-log")))
+  (let ((message-log-path (cfg-rel-data-path "/log/ext-blog-message-log")))
     (ensure-directories-exist message-log-path)
     (setf hunchentoot:*message-log-pathname*
           message-log-path))
@@ -150,4 +136,5 @@
                                        `(:port ,ssl-port)))))
               (values acceptor ssl-acceptor)))
           acceptor))))
+
 
