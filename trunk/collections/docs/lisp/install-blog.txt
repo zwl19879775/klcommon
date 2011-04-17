@@ -1,4 +1,39 @@
 
+4.15.2011
+
+Run hunchentoot behind nginx:
+
+http://blog.kadirpekel.com/2009/01/04/configure-hunchentoot-behind-nginx/
+http://blog.ponto-dot.com/2009/08/18/hunchentoot-behind-proxy-server/
+http://zaries.wordpress.com/2010/11/09/lisp-web-server-from-scratch-using-hunchentoot-and-nginx/
+http://zaries.wordpress.com/2009/08/05/hunchentoot-virtual-hosts-with-nginx/
+
+Install nginx, compile from source codes:
+
+./configure --prefx=$HOME/nginx
+make
+sudo make install
+
+You may need install some dependent library first.
+NOTE: md5 needs libcurl3-dev.
+
+Test nginx, enter $HOME/nginx(specified in --prefix option), and:
+    sudo ./nginx
+and in brower, 127.0.0.1 can get a nginx page.
+
+To stop nginx: sudo pkill nginx
+
+Configu a virtual host, edit conf/nginx.conf file, and replace 'localtion' like
+below:
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set-header X-Real-IP $remote_addr;
+    }
+
+And all requests will be send to hunchentoot which listen on 8080.
+
+-------------------------------------------------------------------------------
 1. Install SBCL (1.0.29.11)
 
     sudo apt-get install sbcl  
@@ -54,4 +89,13 @@
     http://127.0.0.1:4242/blog
 
 END.
+
+-------------------------------------------------------------------------------
+
+nginx vs hunchentoot vs hunchentoot with nginx front 
+
+single response speed(ms) in 1000 requests: 0.012 : 8.76  : 6.7
+
+hunchentoot with nginx front vs /blog main page
+6.7 : 15.9
 
