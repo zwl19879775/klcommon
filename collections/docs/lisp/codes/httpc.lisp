@@ -55,19 +55,19 @@
     (format nil "Host: ~a" host)
     (format nil "Host: ~a:~d" host port)))
  
-(defun send-http-request (host &optional (port 80))
+(defun send-http-request (host &key (port 80) (uri "/"))
   "Start an http request, and return the response time from server."
   (with-open-socket-stream
     (stream host port)
-    (format-header stream `(("GET / HTTP/1.0")
+    (format-header stream `(("GET ~a HTTP/1.0" ,uri)
                             (,(get-host-desc host port))))
     (finish-output stream)
     (with-run-time (elapsed)
                    (read-line stream nil nil))))
 
-(defun do-profile-seq (count host &optional (port 80))
+(defun do-profile-seq (count host &key (port 80) (uri "/"))
   (let ((used-time 0))
     (dotimes (c count)
-      (setf used-time (+ used-time (send-http-request host port))))
+      (setf used-time (+ used-time (send-http-request host :port port :uri uri))))
     (/ used-time count)))
 
