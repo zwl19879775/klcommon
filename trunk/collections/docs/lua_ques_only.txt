@@ -1,3 +1,4 @@
+
 一、多选题
 
 1. 下列哪些是不合法的变量名
@@ -7,8 +8,7 @@ B. __name
 C. AND
 D. and
 
-ANS: D
-Lua是大小写敏感的语言，其标识符同大部分语言一样。and是它的关键字，但AND则不是。
+答案：
 
 2. 下列关于LUA类型的说法正确的有
 
@@ -17,10 +17,7 @@ B. 给一个全局变量赋值nil可以删除该变量
 C. LUA认为false/nil/0都为假
 D. LUA中只有用双引号才能表示一个字符串，例如"a string"
 
-ANS: B 
-Lua是动态类型语言，它的变量没有类型之分，只有值才有类型。给一个全局变量赋值nil，
-也就标记该变量可被垃圾回收。Lua仅认为false和nil为布尔假，其余均为真。Lua可使用
-双引号和单引号表示字符串。
+答案：
 
 3. 关于LUA中字符串的操作正确的有
 
@@ -29,10 +26,7 @@ B. 10与"10"是相等的，即10=="10"结果为true
 C. 可以借助tonumber和tostring实现字符串和数字之间的转换
 D. 字符串以0作为结束符，就像C语言一样
 
-ANS: C
-并非所有类型都可被作为字符串连接，只有带有tostring metamethod的类型才可以。10和
-"10"在类型上不相同。Lua中的字符串内部使用显示的长度信息来标识字符串，不以任何字
-符作为结束符。所以Lua的字符串甚至可以保存二进制数据。
+答案：
 
 4. 关于赋值语句以下正确的有
 
@@ -41,8 +35,7 @@ B. a, b = 1, 2
 C. x, y = y, x
 D. a, b, c = 1
 
-ANS: A B C D
-参考相关章节。
+答案：
 
 5. LUA中属于控制语句(例如判断、循环等)关键字的有
 
@@ -51,8 +44,7 @@ B. while
 C. repeat
 D. if
 
-ANS: B C D
-loop不属于Lua关键字，参考相关章节。
+答案：
 
 6. LUA中定义函数的关键字是
 
@@ -61,9 +53,7 @@ B. local
 C. defun
 D. table
 
-ANS: A
-function用于定义函数，local用于定义局部变量。函数本质上也是变量，其类型为“函数”。
-defun不属于lua关键字。table也不是lua关键字。
+答案：
 
 7. 假设有函数init(name, age)，下列调用方式语法正确的有
 
@@ -72,9 +62,7 @@ B. init("kevin")
 C. init('kevin', 25)
 D. init('kevin', 25, "male")
 
-ANS: B C D
-Lua中调用函数时不需要传入相等形参数量的实参。如果实参少于形参，会以nil作为默认，
-多的话则丢弃。
+答案：
 
 8. 关于LUA函数返回值的说法下列正确的有
 
@@ -83,8 +71,7 @@ B. 函数支持多个返回值
 C. LUA中通过return语句实现函数的返回值
 D. 函数的返回值可以返回一个函数
 
-ANS: B C D
-Lua函数本质上也是变量，一个函数体本质上是一个值。所以函数可以返回函数。
+答案：
 
 9. 下列关于LUA函数定义的说法正确的有
 
@@ -93,8 +80,7 @@ B. 函数可以嵌套，即在函数中可以定义另一个函数
 C. 函数都有函数名
 D. 函数可以调用自己
 
-ANS: A B D
-可以定义匿名函数。匿名函数一般用于闭包、高阶函数等应用。
+答案：
 
 10. 下列关于for的使用正确的有
 
@@ -103,8 +89,7 @@ B. for i = 0, 10 do print(i) end
 C. for i, v in ipairs(a) do print(v) end
 D. for (i = 0) (10) (1) do print(i) end
 
-ANS: B C
-参考相关章节。
+答案：
 
 11. 下列关于构造表(table)的做法正确的有
 
@@ -113,8 +98,7 @@ B. w = { [1] = 1, [2] = 2 }
 C. w = {} w[1] = 1 w[2] = 2
 D. w = {} w.x = 1 w.s = "table"
 
-ANS: A B C D
-参考table构造。
+答案：
 
 12. 表w = { "red", "green", "blue" }，下列关于遍历表的做法正确的有
 
@@ -123,9 +107,7 @@ B. for i = 0, #w-1 do print(w[i]) end
 C. for i, v in ipairs(w) do print(v) end
 D. for i, v in pairs(w) do print(v) end
 
-ANS: A C D
-对于这种形式为数组的表，可以使用数组索引逐个遍历。这种表从索引1开始。也可以借助
-ipairs和pairs来逐个遍历。后一种方式应用更为广泛。
+答案：
 
 13. 下列代码输出结果为
      b = 10
@@ -140,8 +122,7 @@ B. 10 2
 C. 10 nil
 D. nil nil
 
-ANS: B
-考察作用域细节。Lua总是使用最近作用域的符号。不同作用域的符号彼此独立。
+答案：
 
 14. 下列代码输出结果为
  
@@ -162,8 +143,7 @@ B. 100 20  300
 C. 10  300 100
 d. 200 100 300
 
-ANS: A
-逐步分析代码即得。考察函数、变量等基础。
+答案：
 
 15. 下列代码输出结果为
 
@@ -178,8 +158,7 @@ B. 4
 C. 5
 D. 6
 
-ANS: C
-逐步分析代码即得。
+答案：
 
 16. 关于LUA中table的描述正确的有
 
@@ -188,8 +167,7 @@ B. table在初始化时就确定了大小，不可扩展
 C. table可以使用整数和其他类型作为索引，除了nil
 D. 通过key访问table的两种方式[]和.，例如a["b"]和a.b相同
 
-ANS: A C D
-table可动态改变其元素、大小。
+答案：
 
 17. shape为C++绑定到lua的对象, 提供一个接口setPos设置shape的坐标信息.
     setPos参数为x,y;现要设置shape的坐标x,y为(100,200)
@@ -205,8 +183,7 @@ B. shape:setPos(100, 200)
 C. shape->setPos(100, 200)
 D. shape.setPos(shape, 100, 200)
 
-ANS: B D
-.和:调用区别在于后者会自动将对象本身作为第一个参数传递。当然也可以手动传递该参数。
+答案：
 
 18. 下列代码输出结果为
 
@@ -224,8 +201,7 @@ B. 1 2 3 4 5
 C. 1 2 3 4
 D. 1 1 1 1 1 1 1 1 1 1
 
-ANS: B
-可使用break跳出循环。
+答案：
 
 19. 下列代码输出结果包含
 
@@ -242,8 +218,7 @@ B. 10 100
 C. 10 100 nil
 D. 10 100 10
 
-ANS: A B 
-考察函数参数传递。多余的参数被丢弃，数量不够则自动为nil。
+答案：
 
 20. 下列代码输出结果为
 
@@ -259,8 +234,7 @@ B. 2
 C. 3
 D. nil
 
-ANS: C
-同样考察作用域。
+答案：
 
 21. 下列代码输出结果为
 
@@ -277,26 +251,17 @@ B. nil nil
 C. 11 11
 D. 11 12
 
-ANS: D
-考察闭包。
+答案：
 
 二、判断题
 
 1. 表达式a, b = 1, 2是合法的表达式，执行该表达式后，a = nil，b = 1。
 
-ANS: F
-
 2. 表达式a = (10 and 20)执行后，a=true。
-
-ANS: F
-Lua中的逻辑运算符并不返回布尔值，而是返回表达式本身的值。
 
 3. Lua中的字符串可以通过..连接，但不可以通过+连接，例如：
 	print("hello"+" world") --错误
 	print("hello".." world") --正确
-
-ANS: T
-+运算符不用于字符串连接。
 
 4. #运算符用于求字符串和表等数据结构的长度，现有表如下：
 	t = {}
@@ -304,56 +269,52 @@ ANS: T
 	t[1] = 2
    #t的结果为2，表示该表有2个元素。
 
-ANS: F
-#运算符取table长度时，实际上是从索引1开始，取到t[n] ~= nil且t[n+1] == nil中的n。
-即使后面可能有其他元素。
-
 5. Lua中可以使用local定义局部变量，未使用local修饰的则自动为全局变量。
-
-ANS: T
 
 三、编程题
 
 1. 实现一个计算阶乘的非递归函数
 
-    function fac(n)
-        local ret = 1
-        for i = 2, n do
-            ret = ret * i
-        end
-        return ret
-    end
+ 
+
+
+
+
+
+
+
 
 2. 实现一个函数判断一个点是否在一个圆形范围内，函数参数包含圆心、圆半径、待判读
    判断坐标点，若点在圆内函数返回true，否则返回false
 
-    function isInCircle(center, radius, pos)
-        return (pos.x - center.x)^2 + (pos.y - center.y)^2 <= radius^2
-    end
+  
+
+
+
+
+
+
+
 
 3. LUA标准库中的string提供了很多查找、匹配的函数，甚至支持正则表达式匹配，例如
    string.find/string.gmatch等。实现一个函数将类似"hello world from lua"的字符
    串（以一个空格作为分隔符)拆分成一个单词列表返回。
 
-    function splitString(s)
-        local ret = {}
-        for w in string.gmatch(s, "%a+") do
-            ret[#ret+1] = w
-        end
-        return ret
-    end
-    或
-    function splitString(s)
-        local ret = {}
-        local SEP = ' '
-        local e, b = 0
-        repeat 
-            b = e + 1
-            e = string.find(s, SEP, b)
-            e = e or #s+1
-            ret[#ret+1] = string.sub(s, b, e-1)
-        until e == #s+1
-        return ret
-    end
+  
 
-加分点：使用正则表达式实现。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
