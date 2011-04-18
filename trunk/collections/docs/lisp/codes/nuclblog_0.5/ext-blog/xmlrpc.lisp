@@ -4,22 +4,8 @@
 ;;; Kevin Lynx
 ;;; 4.12.2011
 ;;;
-(in-package :cl-user)
 
-(defpackage nuclblog-ext
-  (:use
-    common-lisp
-    s-xml-rpc
-    nuclblog)
-  (:export 
-    :*process-blog*
-    :set-metaweblog-handler 
-    :get-recent-posts
-    :media-object-url
-    :update-entry 
-    :save-media-object))
-
-(in-package nuclblog-ext)
+(in-package xml-rpc-methods)
 
 (defparameter *xml-rpc-uri* "/api/metaweblog")
 (defparameter *process-blog* nil)
@@ -41,8 +27,8 @@
 ;;; nuclblog extend util functions
 (defun blog-entry->post (blog entry)
   "Convert a blog entry to a post structure which can be handled by s-xml-rpc."
-  (xml-rpc-struct 
-    "dateCreated" (xml-rpc-time (nuclblog::blog-entry-time entry))
+  (s-xml-rpc:xml-rpc-struct 
+    "dateCreated" (s-xml-rpc:xml-rpc-time (nuclblog::blog-entry-time entry))
     "description" (nuclblog::blog-entry-contents entry)
     "title" (nuclblog::blog-entry-title entry)
     "categories" (nuclblog::blog-entry-category entry)
@@ -56,7 +42,7 @@
          collect (blog-entry->post blog entry)))
 
 (defun media-object-url (url)
-  (xml-rpc-struct "url" url))
+  (s-xml-rpc:xml-rpc-struct "url" url))
 
 (defun save-media-object (media-obj)
   (let* ((name (get-xml-rpc-struct-member media-obj :|name|))
@@ -84,18 +70,6 @@
       nil)))
 
 ;;; xml-rpc methods
-(defpackage xml-rpc-methods
-  (:use
-    common-lisp
-    nuclblog-ext)
-  (:export
-    |blogger.deletePost|
-    |metaWeblog.getRecentPosts|
-    |metaWeblog.newMediaObject|
-    |metaWeblog.editPost|
-    |metaWeblog.newPost|))
-
-(in-package xml-rpc-methods)
 
 (defun |blogger.deletePost| (app-key postid username password publish)
   (declare (ignore app-key username password publish))
