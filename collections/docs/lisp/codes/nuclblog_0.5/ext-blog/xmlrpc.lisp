@@ -82,9 +82,6 @@
 
 (defun |metaWeblog.newPost| (blogid username password post publish)
   (declare (ignore blogid username password publish))
-  (format t "~a~%~a~%" 
-          (s-xml-rpc:get-xml-rpc-struct-member post :|title|)
-          (s-xml-rpc:get-xml-rpc-struct-member post :|description|))
   (let ((entry-lst
           (nuclblog::create-blog-entry 
             *process-blog* 
