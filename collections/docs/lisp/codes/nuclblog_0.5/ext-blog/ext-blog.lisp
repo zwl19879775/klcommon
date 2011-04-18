@@ -69,7 +69,7 @@
                                          "127.0.0.1")))
 
 (defun initialize-blog (blog host)
-  (nuclblog-ext:set-metaweblog-handler *blog*)
+  (xml-rpc-methods:set-metaweblog-handler *blog*)
   (pushnew (lambda (request)
              (setf (hunchentoot:content-type*) "text/html; charset=utf-8")
              (nuclblog::blog-dispatch request blog))

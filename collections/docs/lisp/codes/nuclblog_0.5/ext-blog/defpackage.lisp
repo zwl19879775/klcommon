@@ -7,3 +7,16 @@
   (:use #:cl #:hunchentoot #:cl-who)
   (:export #:start-services
            #:start-ssl-services))
+
+(defpackage #:xml-rpc-methods
+  (:use
+    :common-lisp
+    :s-xml-rpc
+    :ext-blog)
+  (:export
+    set-metaweblog-handler 
+    |blogger.deletePost|
+    |metaWeblog.getRecentPosts|
+    |metaWeblog.newMediaObject|
+    |metaWeblog.editPost|
+    |metaWeblog.newPost|))

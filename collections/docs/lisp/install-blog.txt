@@ -1,4 +1,7 @@
 
+96.44.164.42 
+sHWyGbKNdSTpNsNGxtQL
+
 4.15.2011
 
 Run hunchentoot behind nginx:
@@ -62,6 +65,8 @@ And all requests will be send to hunchentoot which listen on 8080.
 
    (ql:quickload :puri)
    (ql:quickload :ch-util)
+
+   (ql:quickload :s-xml-rpc)
 
 7. Run nuclblog-demo, start SBCL from nuclblog path, i.e
 

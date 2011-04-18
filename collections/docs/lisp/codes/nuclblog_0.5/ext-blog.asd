@@ -12,11 +12,12 @@
   ((:module
     :ext-blog
     :components
-    ((:cl-source-file "xmlrpc")
-     (:cl-source-file "defpackage")
+    ((:cl-source-file "defpackage")
+     (:cl-source-file "xmlrpc" :depends-on ("defpackage"))
      (:cl-source-file "config" :depends-on ("defpackage"))
      (:cl-source-file "pages")
      (:cl-source-file "ext-blog" :depends-on ("config")
+                      :depends-on ("xmlrpc")
                       :depends-on ("defpackage"))
      (:module "static"
       :components ((:static-file ext-blog-css :pathname #p"ext-blog.css")

@@ -21,7 +21,7 @@
   "Kevin Lynx")
 
 (defun cfg-blog-links ()
-  "http://www.nilcode.com")
+  "http://www.codemacro.com")
 
 (defun cfg-title ()
   "loop_in_codes")
@@ -30,7 +30,7 @@
   "导航")
 
 (defun cfg-sub-title ()
-  "Kevin Lynx's blog -> http://nilcode.com")
+  "Kevin Lynx's blog -> http://codemacro.com")
 
 (defun cfg-mail ()
   "kevinlynx@gmail.com")
