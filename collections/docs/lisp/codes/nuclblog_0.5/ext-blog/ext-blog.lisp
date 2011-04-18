@@ -75,6 +75,9 @@
              (nuclblog::blog-dispatch request blog))
            (hunchentoot-vhost::virtual-host-dispatch-table host) :test #'equal))
 
+(defun handle-index-page ()
+  (hunchentoot:redirect "/blog"))
+
 (defun initialize-server (server)
 
   ;; add the virtual host to the server
@@ -85,6 +88,9 @@
   ;; call blog-dispatch
   (initialize-blog *blog* *localhost-host*)
     
+  (pushnew (hunchentoot:create-regex-dispatcher "^/$" 'handle-index-page)
+           (hunchentoot-vhost::virtual-host-dispatch-table *localhost-host*) :test #'equal)
+
   (pushnew (hunchentoot::create-folder-dispatcher-and-handler
             "/nuclblog-css/"
             (ch-asdf:asdf-lookup-path "asdf:/nuclblog/css"))
