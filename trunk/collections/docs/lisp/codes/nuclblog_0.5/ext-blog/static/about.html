@@ -3,21 +3,32 @@
 
 <div class="section" id="id1">
 <h1>关于本站</h1>
-<p>本站是一个完全采用Common Lisp实现的个人博客站点，除了使用nginx作为Web前端服务器
-。之所以使用Common Lisp，纯碎是出于个人兴趣。</p>
-<p>其中包括的软件有：</p>
+<p>本站是一个完全采用Common Lisp实现的个人博客站点。虽然使用了nginx作为Web前端服务器
+但这完全是出于基本的效率考虑，在可预见的未来我将保持所有逻辑均由Lisp编写。之所以
+使用Common Lisp，纯碎是出于个人兴趣。</p>
+<p>本站的实现包括的软件有：</p>
 <ul class="simple">
-<li>SBCL: 作为Common Lisp的虚拟机</li>
-<li>hunchentoot: 作为后端Web服务器，之所以不直接使用它作为前端服务，而使用nginx，
-主要是处于效率考虑</li>
-<li>nuclblog: 一个Common Lisp实现的简易博客系统</li>
-<li>ext-blog: 基于nuclblog，用于增强其功能，由我自己开发:D</li>
+<li><a class="reference external" href="http://www.sbcl.org">SBCL</a>: 作为Common Lisp的实现</li>
+<li><a class="reference external" href="http://weitz.de/hunchentoot/">hunchentoot</a>: 作为后端Web服务器，之所以不直接使用它作为前端服务，而使用nginx，
+主要是出于并发效率考虑</li>
+<li><a class="reference external" href="https://cyrusharmon.org/projects?project=nuclblog">nuclblog</a>: 一个1000行Lisp代码的简易博客系统</li>
+<li>ext-blog: 基于 <a class="reference external" href="https://cyrusharmon.org/projects?project=nuclblog">nuclblog</a> ，用于增强其功能，由我自己开发:D</li>
+<li><a class="reference external" href="http://www.cppblog.com/kevinlynx/archive/2011/03/13/141713.aspx">cl-writer</a>: 使用Lisp开发的博客客户端，本站由该客户端发表文章，由我开发:D</li>
 </ul>
-<p>除此之外，以上Common Lisp软件还基于很多优秀的Common Lisp库，再次不详细列举。</p>
+<p>除此之外，以上Common Lisp软件还基于很多优秀的Common Lisp库，在此不详细列举。</p>
 </div>
 <div class="section" id="id2">
 <h1>关于作者</h1>
-<p>Kevin Lynx，在职MMO游戏程序员，半调子计算机科学爱好者。广泛涉猎各种计算机技术，
-对编程语言、模块设计尤为爱好，但均浅尝辄止。</p>
+<p>Kevin Lynx</p>
+<p>在职MMO游戏服务器端程序员，半调子计算机科学爱好者。广泛涉猎各种计算机技术，对编
+程语言、模块设计尤为爱好。高中开始自学编程，由电子词典上的GVBasic开始，从此开始
+不务正业。</p>
+<p>大学开始自写各类 <a class="reference external" href="http://www.cppblog.com/kevinlynx/archive/2008/05/14/49783.html">小游戏</a> ，代码越写越多，对计算机的理解却不见长。毕业后从业于网
+游行业，默默无闻至今。青春不再，还望自己努力。</p>
+</div>
+<div class="section" id="interest">
+<h1>INTEREST</h1>
+<p>使用Common Lisp建立本站，会发生很多趣事。详细过程见此文：</p>
+<p><a class="reference external" href="http://codemacro.com/blog/display?id=3">http://codemacro.com/blog/display?id=3</a></p>
 </div>
 </div>
