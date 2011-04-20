@@ -28,7 +28,7 @@
                  :about-content (read-whole-file-string 
                                   (merge-pathnames "about.html"
                                                   (cfg-rel-path "/static")))
-                 :logo-img-url "/images/blog-logo.png"
+                 :logo-img-url nil
                  :owner-email (cfg-mail)
                  :page-css (list (cons "ext-blog" "/static/ext-blog.css"))
                  :categories (cfg-categories)
@@ -65,8 +65,7 @@
 
 (defparameter *localhost-host*
   (hunchentoot-vhost:make-virtual-host "localhost"
-                                       '("localhost"
-                                         "127.0.0.1")))
+                                       (cfg-virtual-host)))
 
 (defun initialize-blog (blog host)
   (xml-rpc-methods:set-metaweblog-handler *blog*)
