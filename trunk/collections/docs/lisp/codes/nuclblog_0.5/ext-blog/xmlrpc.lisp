@@ -69,10 +69,28 @@
         t)
       nil)))
 
+(defun get-category (post)
+  (car (s-xml-rpc:get-xml-rpc-struct-member post :|categories|)))
+
+(defun auth-user (blog user password)
+  (let ((realm (nuclblog::blog-realm blog)))
+    (if (hunchentoot-auth:check-password realm user password)
+      (progn
+        (setf (hunchentoot-auth:session-realm-user realm) user)
+        (setf (hunchentoot-auth:session-realm-user-authenticated-p realm) t)
+        t)
+      nil)))
+
+(defmacro check-auth-user (user password method s)
+  `(unless (auth-user *process-blog* ,user ,password)
+     (format t "Auth user (~a:~a) failed in ~a~%" ,user ,password ,s)
+     (return-from ,method)))
+
 ;;; xml-rpc methods
 
 (defun |blogger.deletePost| (app-key postid username password publish)
-  (declare (ignore app-key username password publish))
+  (declare (ignore app-key publish))
+  (check-auth-user username password |blogger.deletePost| "deletePost")
   (nuclblog::delete-blog-entry *process-blog* (parse-integer postid))
   t)
 
@@ -81,31 +99,32 @@
   (get-recent-posts *process-blog* number))
 
 (defun |metaWeblog.newPost| (blogid username password post publish)
-  (declare (ignore blogid username password publish))
+  (declare (ignore blogid publish))
+  (check-auth-user username password |metaWeblog.newPost| "newPost")
   (let ((entry-lst
           (nuclblog::create-blog-entry 
             *process-blog* 
-            (s-xml-rpc:get-xml-rpc-struct-member post :|categories|)
+            (get-category post)
             (s-xml-rpc:get-xml-rpc-struct-member post :|title|)
             (s-xml-rpc:get-xml-rpc-struct-member post :|description|)
-            (hunchentoot-auth:session-realm-user 
-              (nuclblog::blog-realm *process-blog*)))))
+            username)))
     (if entry-lst
       (format nil "~a" (nuclblog::blog-entry-number (first entry-lst)))
       "")))
 
 (defun |metaWeblog.editPost| (postid username password post publish)
-  (declare (ignore username password publish))
+  (declare (ignore publish))
+  (check-auth-user username password |metaWeblog.editPost| "editPost")
   (update-entry 
     *process-blog* 
     (parse-integer postid)
-    (s-xml-rpc:get-xml-rpc-struct-member post :|categories|)
+    (get-category post)
     (s-xml-rpc:get-xml-rpc-struct-member post :|title|)
     (s-xml-rpc:get-xml-rpc-struct-member post :|description|)))
 
 (defun |metaWeblog.newMediaObject| (blogid username password media-obj)
-  (declare (ignore blogid username password))
+  (declare (ignore blogid))
+  (check-auth-user username password |metaWeblog.newMediaObject| "newMediaObject")
   (let ((url (save-media-object media-obj)))
     (media-object-url url)))
-
 

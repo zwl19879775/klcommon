@@ -166,8 +166,11 @@
    (:div 
      :class "nuclblog-content-nav"
      (str "页数：")
-     (let ((max-c (/ (length (get-blog-entries blog)) +entry-count-per-page+)))
-       (loop for i from 1 to (1+ max-c)
+     (let* ((length (length (get-blog-entries blog)))
+            (mod (mod length +entry-count-per-page+))
+            (max-c (/ length +entry-count-per-page+)))
+       (when (> mod 0) (incf max-c))
+       (loop for i from 1 to max-c
              do 
              (if 
               (= id i)
