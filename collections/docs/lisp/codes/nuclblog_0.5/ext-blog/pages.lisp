@@ -134,6 +134,9 @@
 (defun page-url-index (blog i)
   (concatenate-url (page-url blog) "?id=" (prin1-to-string i)))
 
+(defun entry-id-url (blog id)
+  (concatenate-url (blog-url-root blog) "/display?id=" id))
+
 (defun ext-blog-main (blog)
   (with-blog-page
     blog
@@ -192,6 +195,42 @@
            do (entry-html blog entry))
     (gen-page-index-nav blog id)))
 
+(defun entry-html-with-comment (blog entry)
+  (entry-html blog entry)
+  (with-html
+    (:div 
+      :class "nuclblog-comment"
+      (:h3 "添加回复")
+      (:p 
+        (:form :action (comment-url blog) :method :post
+               (:input :type :hidden :name "entryid" :value 
+                       (blog-entry-number entry))
+               (:p (:input :type :text :name "author" "名字(*)"))
+               (:p (:input :type :text :name "email" "Email(*不会公开)"))
+               (:p (:input :type :text :name "url" "网址"))
+               (:p (:textarea :name "comment" :rows "10" :cols "60" ""))
+               (:p (:input :type :submit :value "提交评论")))))))
+
+(defun ext-blog-display (blog &key id)
+  (with-blog-page
+    blog
+    (format nil "~A: display" (blog-title blog))
+    (if (and id (numberp id))
+      (let ((entry (get-entry id blog)))
+        (if entry
+          (entry-html-with-comment blog entry)
+          (with-html
+            (:p "Invalid entry."))))
+      (with-html
+        (:p "Please select a blog entry for display.")))))
+
+(defmethod comment-url ((blog blog))
+  (concatenate-url (blog-url-root blog) "/comment"))
+
+(defun ext-blog-comment (blog &key entryid author email url comment)
+  (format t "~a~%~a~%~a~%~a~%~a~%" entryid author email url comment)
+  (hunchentoot:redirect (entry-id-url blog entryid)))
+
 (defun ext-define-blog-handlers (blog)
   (define-blog-handlers blog)
   (define-blog-handler (blog :uri "/about") () #'ext-blog-about)
@@ -199,6 +238,12 @@
   (define-blog-handler (blog :uri "/page") 
                        ((id :parameter-type 'integer))
                         #'ext-blog-page)
+  (define-blog-handler (blog :uri "/display")
+                       ((id :parameter-type 'integer))
+                       #'ext-blog-display)
+  (define-blog-handler (blog :uri "/comment" :default-request-type :post)
+                       (entryid author email url comment)
+                       #'ext-blog-comment)
   (define-blog-handler (blog :uri "/archives")
                        (category)
                        #'ext-blog-archives))
