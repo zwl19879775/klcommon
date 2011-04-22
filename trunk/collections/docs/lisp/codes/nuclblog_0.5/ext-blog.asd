@@ -16,6 +16,7 @@
      (:cl-source-file "xmlrpc" :depends-on ("defpackage"))
      (:cl-source-file "config" :depends-on ("defpackage"))
      (:cl-source-file "pages")
+     (:cl-source-file "comment" :depends-on ("pages"))
      (:cl-source-file "ext-blog" :depends-on ("config")
                       :depends-on ("xmlrpc")
                       :depends-on ("defpackage"))

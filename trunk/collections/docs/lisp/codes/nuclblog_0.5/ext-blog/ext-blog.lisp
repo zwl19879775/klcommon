@@ -39,6 +39,10 @@
                  (merge-pathnames
                    "entries.store"
                    (cfg-storage-path))
+                 :comments-storage-path
+                 (merge-pathnames
+                   "comments.store"
+                   (cfg-storage-path))
                  :realm
                  (make-instance 'hunchentoot-auth:realm
                                 :user-storage-path
