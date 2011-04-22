@@ -133,3 +133,9 @@ div.nuclblog-comment {
     border-radius: 6px;
 }
 
+div.nuclblog-comment span {
+    padding: 5px;
+    font-size: 11px;
+    color: #777777;
+}
+

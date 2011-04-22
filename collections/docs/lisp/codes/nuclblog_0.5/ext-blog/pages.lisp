@@ -20,7 +20,18 @@
              :initform "")
    (about-content :initarg :about-content
                   :accessor blog-about
-                  :initform "No description")))
+                  :initform "No description")
+   (comments :accessor blog-comments
+            :initform nil)
+   (comments-storage-path :initarg :comments-storage-path
+                          :accessor blog-comments-storage-path
+                          :initform nil)))
+
+(defun format-display-date (time)
+  (multiple-value-bind (s m h day month year)
+    (decode-universal-time time)
+    (format nil "~4,'0d-~2,'0d-~2,'0d ~2,'0d:~2,'0d:~2,'0d" 
+            year month day h m s)))
 
 (defun get-search-func ()
  "function SearchGoogle(key,evt,site) {
@@ -195,11 +206,29 @@
            do (entry-html blog entry))
     (gen-page-index-nav blog id)))
 
+(defun comment-display (comment title)
+  (with-html
+    (:p
+      (:h4 (str (format nil "re: ~a" title))
+           (:span (str (format-display-date (comment-time comment))))
+           (if (string-emptyp (comment-url comment))
+             (str (comment-author comment))
+             (with-html (:a :href (comment-url comment) (str (comment-author comment))))))
+      (:p
+        (str (comment-desc comment))))))
+
+(defun comment-list-display (blog entry)
+ (let ((comments (get-entry-comments blog (blog-entry-number entry))))
+   (loop for comment in comments
+         do (comment-display comment (blog-entry-title entry)))))
+
 (defun entry-html-with-comment (blog entry)
   (entry-html blog entry)
   (with-html
     (:div 
       :class "nuclblog-comment"
+      (:h3 "评论")
+      (comment-list-display blog entry)
       (:h3 "添加回复")
       (:p 
         (:form :action (comment-url blog) :method :post
@@ -227,9 +256,22 @@
 (defmethod comment-url ((blog blog))
   (concatenate-url (blog-url-root blog) "/comment"))
 
+(defun string-emptyp (s)
+  (or (null s) (= 0 (length s))))
+
 (defun ext-blog-comment (blog &key entryid author email url comment)
-  (format t "~a~%~a~%~a~%~a~%~a~%" entryid author email url comment)
-  (hunchentoot:redirect (entry-id-url blog entryid)))
+  (with-blog-page
+    blog
+    (blog-title blog)
+    (if (or (string-emptyp author) (string-emptyp email) (string-emptyp comment))
+      (with-html 
+        (:p "Oops! You bad guy please input necessary fields!"))
+      (progn
+        (create-blog-comment blog (parse-integer entryid) author email url comment)
+        (with-html
+          (:p (:h4 "评论成功") (:br)
+              "评论内容被审核后才会出现在评论列表里，如有不便敬请谅解！"))))
+      (with-html (:a :href (entry-id-url blog entryid) "Back"))))
 
 (defun ext-define-blog-handlers (blog)
   (define-blog-handlers blog)
@@ -251,5 +293,6 @@
 (defmethod shared-initialize :after ((blog ext-blog) slot-names &rest initargs)
   (declare (ignore slot-names initargs))
   (read-blog-entries blog)
+  (read-blog-comments blog)
   (ext-define-blog-handlers blog))
 

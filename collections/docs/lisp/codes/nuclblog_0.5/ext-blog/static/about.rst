@@ -34,7 +34,7 @@ INTEREST
 
 使用Common Lisp建立本站，会发生很多趣事。详细过程见此文：
 
-http://codemacro.com/blog/display?id=3
+http://codemacro.com/blog/display?id=4
 
 .. _SBCL: http://www.sbcl.org
 .. _hunchentoot: http://weitz.de/hunchentoot/
