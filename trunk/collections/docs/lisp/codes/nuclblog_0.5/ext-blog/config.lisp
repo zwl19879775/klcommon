@@ -43,7 +43,8 @@
         "模块架构"
         "通用编程"
         "网络编程"
-        "游戏开发"))
+        "游戏开发"
+        "Others"))
 
 (defun cfg-ext-links ()
   '((:url "http://www.cppblog.com/kevinlynx"

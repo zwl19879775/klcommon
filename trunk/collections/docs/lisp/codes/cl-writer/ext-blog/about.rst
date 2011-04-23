@@ -1,6 +1,8 @@
+关于
+-----------
 
 关于本站
----------------
+~~~~~~~~~~~~~~~
 
 本站是一个完全采用Common Lisp实现的个人博客站点。虽然使用了nginx作为Web前端服务器
 但这完全是出于基本的效率考虑，在可预见的未来我将保持所有逻辑均由Lisp编写。之所以
@@ -18,7 +20,7 @@
 除此之外，以上Common Lisp软件还基于很多优秀的Common Lisp库，在此不详细列举。
 
 关于作者
---------------
+~~~~~~~~~~~~~
 
 Kevin Lynx
 
@@ -30,11 +32,11 @@ Kevin Lynx
 游行业，默默无闻至今。青春不再，还望自己努力。
 
 INTEREST
---------------
+~~~~~~~~~~~~
 
 使用Common Lisp建立本站，会发生很多趣事。详细过程见此文：
 
-http://codemacro.com/blog/display?id=4
+http://codemacro.com/blog/display?id=5
 
 .. _SBCL: http://www.sbcl.org
 .. _hunchentoot: http://weitz.de/hunchentoot/
