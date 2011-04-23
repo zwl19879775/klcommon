@@ -30,7 +30,8 @@
   "导航")
 
 (defun cfg-sub-title ()
-  "Kevin Lynx's blog -> http://codemacro.com")
+  "Kevin Lynx's blog -> http://codemacro.com 
+  (测试阶段，点击左侧导航'关于'了解更多)")
 
 (defun cfg-mail ()
   "kevinlynx@gmail.com")

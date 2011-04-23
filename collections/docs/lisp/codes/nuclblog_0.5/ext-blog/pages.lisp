@@ -70,8 +70,7 @@
          (:input :onclick (get-call-search-func blog) :type "button"
                  :value "搜索" :name "sa"))))
 
-(defun ext-blog-external-links (blog)
-  (with-html
+(defun ext-blog-external-links (blog) (with-html
     (box (:class "nuclblog-nav-box")
          (:h2 "我的项目")
          (:ul
@@ -262,7 +261,7 @@
       :class "nuclblog-comment"
       (:h3 "评论")
       (comment-list-display blog entry)
-      (:h3 "添加回复")
+      (:h3 "添加回复(带*为必填项)")
       (:p 
         (:form :action (comment-url blog) :method :post
                (:input :type :hidden :name "entryid" :value 
@@ -274,17 +273,15 @@
                (:p (:input :type :submit :value "提交评论")))))))
 
 (defun ext-blog-display (blog &key id)
-  (with-blog-page
-    blog
-    (format nil "~A: display" (blog-title blog))
-    (if (and id (numberp id))
-      (let ((entry (get-entry id blog)))
-        (if entry
-          (entry-html-with-comment blog entry)
-          (with-html
-            (:p "Invalid entry."))))
-      (with-html
-        (:p "Please select a blog entry for display.")))))
+  (let ((entry (get-entry id blog)))
+    (with-blog-page
+      blog
+      (format nil "~a  --~a" (if entry (blog-entry-title entry) "Invalid entry") 
+              (blog-title blog))
+      (if entry
+        (entry-html-with-comment blog entry)
+        (with-html
+          (:p "Invalid entry."))))))
 
 (defmethod comment-url ((blog blog))
   (concatenate-url (blog-url-root blog) "/comment"))
