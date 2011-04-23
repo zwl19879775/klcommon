@@ -6,14 +6,14 @@ div#nuclblog-banner {
 
 div#nuclblog-nav {
   float: left;
-  width: 180px;
+  width: 210px;
   margin-top: 6px;
 }
 
 div#nuclblog-content {
   padding-top: 12px;
   margin-top: 0px;
-  margin-left: 185px;
+  margin-left: 215px;
 }
 
 div[class~="nuclblog-box"] {

@@ -73,10 +73,39 @@
   (sort lst #'< :key #'comment-time))
 
 (defun get-entry-comments (blog entryid)
+  "Get all confirmed comments associated to the specified entry."
   (sort-by-time 
     (bt:with-lock-held 
       (*comments-lock*)
-      (remove-if-not #'(lambda (comment) (= entryid (comment-entryid comment)))
-                                    (blog-comments blog)))))
+      (remove-if-not #'(lambda (comment) 
+                         (and (= entryid (comment-entryid comment))
+                              (comment-confirmed comment)))
+                     (blog-comments blog)))))
 
+(defun get-confirmed-entry (blog)
+  (bt:with-lock-held
+    (*comments-lock*)
+    (remove-if-not #'(lambda (c) (comment-confirmed c))
+                   (blog-comments blog))))
+
+(defun get-all-comments (blog)
+  (bt:with-lock-held
+    (*comments-lock*)
+    ;; because 'sort' is destructively function
+    (blog-comments blog)))
+
+(defun confirm-comment (blog id)
+  (let ((comment (find-if #'(lambda (c) (= id (comment-id c))) 
+                          (blog-comments blog))))
+    (setf (comment-confirmed comment) t)
+    (store-blog-comments blog)
+    t))
+
+(defun delete-comment (blog id)
+  (bt:with-lock-held (*comments-lock*)
+    (when (find id (blog-comments blog) :key #'comment-id)
+      (setf (blog-comments blog)
+            (delete id (blog-comments blog) :key #'comment-id))
+      (store-blog-comments blog)
+      t)))
 

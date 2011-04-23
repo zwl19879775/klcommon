@@ -12,12 +12,6 @@
   (setf hunchentoot::*show-lisp-backtraces-p* t)
   (setf hunchentoot::*show-lisp-errors-p* t))
 
-(defun read-whole-file-string (name)
-  (with-open-file (in name)
-    (let ((ret (make-sequence 'string (file-length in))))
-      (read-sequence ret in)
-      ret)))
-
 (defparameter *blog*
   (make-instance 'blog::ext-blog
                  :owner (cfg-owner-name)
@@ -25,9 +19,7 @@
                  :title (cfg-title)
                  :subtitle (cfg-sub-title)
                  :blog-links (cfg-blog-links)
-                 :about-content (read-whole-file-string 
-                                  (merge-pathnames "about.html"
-                                                  (cfg-rel-path "/static")))
+                 :about-id 0
                  :logo-img-url nil
                  :owner-email (cfg-mail)
                  :page-css (list (cons "ext-blog" "/static/ext-blog.css"))

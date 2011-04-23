@@ -18,9 +18,10 @@
    (ext-html :initarg :ext-html
              :accessor blog-ext-html
              :initform "")
-   (about-content :initarg :about-content
-                  :accessor blog-about
-                  :initform "No description")
+   (about-id :initarg :about-id
+             :accessor blog-about-id
+             :initform 0
+             :documentation "the about entry id")
    (comments :accessor blog-comments
             :initform nil)
    (comments-storage-path :initarg :comments-storage-path
@@ -30,8 +31,16 @@
 (defun format-display-date (time)
   (multiple-value-bind (s m h day month year)
     (decode-universal-time time)
-    (format nil "~4,'0d-~2,'0d-~2,'0d ~2,'0d:~2,'0d:~2,'0d" 
-            year month day h m s)))
+    (declare (ignore s))
+    (format nil "~4,'0d-~2,'0d-~2,'0d ~2,'0d:~2,'0d" 
+            year month day h m)))
+
+(defun format-display-day (time)
+  (multiple-value-bind (s m h day month year)
+    (decode-universal-time time)
+    (declare (ignore s m h))
+    (format nil "~4,'0d-~2,'0d-~2,'0d" 
+            year month day)))
 
 (defun get-search-func ()
  "function SearchGoogle(key,evt,site) {
@@ -56,7 +65,7 @@
     (box (:class "nuclblog-nav-box")
          (:h2 "搜索本站")
          (:script :language "JavaScript" (str (get-search-func)))
-         (:input :style "width:140px" :type "text" :name "q" :id "q"
+         (:input :style "width:150px" :type "text" :name "q" :id "q"
                      :onkeydown (get-call-search-func blog))
          (:input :onclick (get-call-search-func blog) :type "button"
                  :value "搜索" :name "sa"))))
@@ -73,11 +82,28 @@
                      (:li
                        (:a :href url (str desc))))))))))
 
+(defun ext-blog-status (blog)
+  (let ((comm (length (blog-comments blog)))
+        (un-comm (count-if-not #'comment-confirmed (blog-comments blog)))
+        (time (when (> (length (blog-entries blog)) 0) 
+                (blog-entry-time (car (blog-entries blog))))))
+    (with-html
+      (box (:class "nuclblog-nav-box")
+           (:h2 "统计")
+           (:ul
+             (:li (str (format nil "文章：~a" (length (blog-entries blog)))))
+             (:li (str (format nil "评论：~a" (- comm un-comm))))
+             (:li "待验证评论：" 
+                  (:a :href (comment-manage-url blog) (str un-comm)))
+             (:li (str (format nil "最后发表：~a" (format-display-day time)))))))))
+
 (defmethod nav-boxes ((blog ext-blog))
   (ext-main-nav blog)
   (ext-blog-search blog)
+  (ext-blog-status blog)
   (categories blog)
   (recent-entries blog)
+  (recent-comments blog)
   (ext-blog-external-links blog))
 
 (defmethod footer ((blog ext-blog))
@@ -104,13 +130,12 @@
         (:li (:a :href (blog-email-redirect-url blog) "联系"))
         (:li (:a :href (blog-about-url blog) "关于")))))
 
+(defun make-entry-url-from-id (blog id)
+  (concatenate-url (blog-url-root blog)
+                   "/display?id=" (princ-to-string id)))
+
 (defun ext-blog-about (blog)
-  (with-blog-page 
-    blog
-    "关于"
-    (with-html
-      (:div :class "nuclblog-entry"
-            (str (blog-about blog))))))
+  (hunchentoot:redirect (make-entry-url-from-id blog (blog-about-id blog))))
 
 (defun entry-title-html (blog entry)
   (with-html
@@ -146,7 +171,8 @@
   (concatenate-url (page-url blog) "?id=" (prin1-to-string i)))
 
 (defun entry-id-url (blog id)
-  (concatenate-url (blog-url-root blog) "/display?id=" id))
+  (concatenate-url (blog-url-root blog) 
+                   (format nil "/display?id=~a" id)))
 
 (defun ext-blog-main (blog)
   (with-blog-page
@@ -206,10 +232,17 @@
            do (entry-html blog entry))
     (gen-page-index-nav blog id)))
 
-(defun comment-display (comment title)
+(defun comment-sub-url (blog comment)
+  (let ((entry (get-entry (comment-entryid comment) blog)))
+    (concatenate-url (make-entry-url blog entry) 
+                     (format nil "#~a" (comment-id comment)))))
+
+(defun comment-display (blog comment title)
   (with-html
     (:p
-      (:h4 (str (format nil "re: ~a" title))
+      (:h4 (:a :href (comment-sub-url blog comment) "#")
+           (:a :name (comment-id comment))
+           (str (format nil "re: ~a" title))
            (:span (str (format-display-date (comment-time comment))))
            (if (string-emptyp (comment-url comment))
              (str (comment-author comment))
@@ -220,7 +253,7 @@
 (defun comment-list-display (blog entry)
  (let ((comments (get-entry-comments blog (blog-entry-number entry))))
    (loop for comment in comments
-         do (comment-display comment (blog-entry-title entry)))))
+         do (comment-display blog comment (blog-entry-title entry)))))
 
 (defun entry-html-with-comment (blog entry)
   (entry-html blog entry)
@@ -267,11 +300,93 @@
       (with-html 
         (:p "Oops! You bad guy please input necessary fields!"))
       (progn
-        (create-blog-comment blog (parse-integer entryid) author email url comment)
+        (create-blog-comment blog entryid author email url comment)
         (with-html
           (:p (:h4 "评论成功") (:br)
               "评论内容被审核后才会出现在评论列表里，如有不便敬请谅解！"))))
       (with-html (:a :href (entry-id-url blog entryid) "Back"))))
+
+(defun comment-delete-url (blog comment)
+  (concatenate-url (blog-url-root blog) 
+                   (format nil "/comment-delete?id=~a" (comment-id comment))))
+
+(defun comment-confirm-url (blog comment)
+  (concatenate-url (blog-url-root blog) 
+                   (format nil "/comment-confirm?id=~a" (comment-id comment))))
+
+(defun comment-manage-url (blog)
+  (concatenate-url (blog-url-root blog) "/comment-manage"))
+
+(defun comment-display-manage (blog comment)
+  (let ((entry (get-entry (comment-entryid comment) blog)))
+    (when entry
+      (comment-display blog comment (blog-entry-title entry))
+      (unless (comment-confirmed comment)
+        (with-html (:a :href (comment-confirm-url blog comment) "Confirm")
+                   (str "&nbsp;&nbsp;")))
+      (with-html 
+        (:a :href (comment-delete-url blog comment) "Delete")
+        (str (format nil "&nbsp;&nbsp;E-mail: ~a" (comment-email comment)))))))
+      
+
+(defun string-brief (s len)
+  (if (<= len (length s))
+    (concatenate 'string (subseq s 0 (- len 3)) "...")
+    s))
+
+(defun comment-title (blog comment)
+  (let ((entry (get-entry (comment-entryid comment) blog)))
+    (format nil "re: ~a" (blog-entry-title entry))))
+
+(defun recent-comments (blog)
+  (with-html
+    (box (:class "nuclblog-recent-comments")
+         (:h2 "最新评论")
+         (:ul :type "none"
+           (loop for i from 1 to 5
+                 for c in (get-confirmed-entry blog)
+                 do (htm
+                      (:li :style ""
+                        (:a :href (comment-sub-url blog c)
+                          (str (format nil "~a.~a" i (comment-title blog c)))))
+                      (:li :style "" (str (string-brief (comment-desc c) 15)))
+                      (:li :style "text-align: right;margin-right:4px;"
+                           (str (format nil "-- ~a" (comment-author c))))))))))
+
+(defun ext-blog-comment-manage (blog &key user password)
+  (hunchentoot-auth:authorized-page
+    ((blog-realm blog)
+     :ssl-port (blog-ssl-port blog)
+     :login-page-function (lambda ()
+                            (blog-login-page blog user password)))
+    (with-blog-page
+      blog
+      (blog-title blog)
+      (with-html
+        (:div 
+          :class "nuclblog-comment"
+          (:h3 "All comments" (str "&nbsp;&nbsp;")
+               (:a :href (blog-logout-url blog) "Logout"))
+          (loop for comment in (get-all-comments blog)
+                do (comment-display-manage blog comment)))))))
+
+(defun ext-blog-comment-confirm (blog &key id user password)
+  (hunchentoot-auth:authorized-page
+    ((blog-realm blog)
+     :ssl-port (blog-ssl-port blog)
+     :login-page-function (lambda ()
+                            (blog-login-page blog user password)))
+    (when id (confirm-comment blog id))
+    (hunchentoot:redirect (comment-manage-url blog))))
+
+(defun ext-blog-comment-delete (blog &key id user password)
+  (hunchentoot-auth:authorized-page
+    ((blog-realm blog)
+     :ssl-port (blog-ssl-port blog)
+     :login-page-function (lambda ()
+                            (blog-login-page blog user password)))
+    (when id (delete-comment blog id))
+    (hunchentoot:redirect (comment-manage-url blog))))
 
 (defun ext-define-blog-handlers (blog)
   (define-blog-handlers blog)
@@ -284,8 +399,23 @@
                        ((id :parameter-type 'integer))
                        #'ext-blog-display)
   (define-blog-handler (blog :uri "/comment" :default-request-type :post)
-                       (entryid author email url comment)
+                       ((entryid :parameter-type 'integer)
+                        author email url comment)
                        #'ext-blog-comment)
+  (define-blog-handler (blog :uri "/comment-manage")
+                       ((user :init-form (hunchentoot-auth:session-realm-user (blog-realm blog)))
+                        password)
+                       #'ext-blog-comment-manage)
+  (define-blog-handler (blog :uri "/comment-confirm")
+                       ((id :parameter-type 'integer)
+                        (user :init-form (hunchentoot-auth:session-realm-user (blog-realm blog)))
+                        password)
+                       #'ext-blog-comment-confirm)
+  (define-blog-handler (blog :uri "/comment-delete")
+                       ((id :parameter-type 'integer)
+                        (user :init-form (hunchentoot-auth:session-realm-user (blog-realm blog)))
+                        password)
+                       #'ext-blog-comment-delete)
   (define-blog-handler (blog :uri "/archives")
                        (category)
                        #'ext-blog-archives))

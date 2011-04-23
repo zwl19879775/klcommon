@@ -53,7 +53,7 @@ div.nuclblog-box {
 
 div#nuclblog-main {
     background: white;
-    min-height: 1250px;
+    min-height: 1550px;
     padding: 6px;
     -moz-border-radius: 0px 0px 6px 6px;
     border-radius: 0px 0px 6px 6px;
@@ -137,5 +137,15 @@ div.nuclblog-comment span {
     padding: 5px;
     font-size: 11px;
     color: #777777;
+}
+
+div.nuclblog-recent-comments ul {
+    padding-left: 1px;
+}
+
+div.nuclblog-recent-comments li {
+    padding-left: 1px;
+    font-family: sans-serif;
+    font-size: 10pt;
 }
 
