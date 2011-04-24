@@ -324,7 +324,7 @@ ANS: T
         return ret
     end
 
-2. 实现一个函数判断一个点是否在一个圆形范围内，函数参数包含圆心、圆半径、待判读
+2. 实现一个函数判断一个点是否在一个圆形范围内，函数参数包含圆心、圆半径、待判
    判断坐标点，若点在圆内函数返回true，否则返回false
 
     function isInCircle(center, radius, pos)

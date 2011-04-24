@@ -339,15 +339,15 @@
   (with-html
     (box (:class "nuclblog-recent-comments")
          (:h2 "最新评论")
-         (:ul :type "none"
+         (:ul 
            (loop for i from 1 to 5
                  for c in (get-confirmed-entry blog)
                  do (htm
-                      (:li :style ""
+                      (:li :style "list-style-type:none;"
                         (:a :href (comment-sub-url blog c)
                           (str (format nil "~a.~a" i (comment-title blog c)))))
-                      (:li :style "" (str (string-brief (comment-desc c) 15)))
-                      (:li :style "text-align: right;margin-right:4px;"
+                      (:li :style "list-style-type:none;" (str (string-brief (comment-desc c) 15)))
+                      (:li :style "list-style-type:none;text-align: right;margin-right:4px;"
                            (str (format nil "-- ~a" (comment-author c))))))))))
 
 (defun ext-blog-comment-manage (blog &key user password)
