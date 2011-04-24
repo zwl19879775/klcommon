@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/" />
-<title>History</title>
+<title>传递Lua函数到C/C++中</title>
 <style type="text/css">
 
 /*
@@ -310,82 +310,107 @@ ul.auto-toc {
 </style>
 </head>
 <body>
-<div class="document" id="history">
-<h1 class="title">History</h1>
+<div class="document" id="luac-c">
+<h1 class="title">传递Lua函数到C/C++中</h1>
 
-<p>使用Lisp来开发博客系统，会发生很多趣事，在此偶尔记录。</p>
-<p><strong>4.24.2011</strong></p>
-<p>修正使用google搜索站内无内容的问题。 传给google的地址里，domains和sitesearch都包
-含了域名，domains可以为任意标示，但是sitesearch则必须为codemacro.com。</p>
-<p>到目前为止，主要功能基本都有了。服务器和SBCL都算稳定。</p>
-<p><strong>4.23.2011</strong></p>
-<p>现在没心思花在代码结构方面，一方面我不想以其他语言（C/C++）的模块组织方式去规划
-Lisp，Lisp有自己的方式；另一方面基于不想修改nuclblog源代码的基础上增加功能，本身
-就是个吃力不讨好的事情。索性，先完成功能。也许将来头一热，就自己重头写个。</p>
-<ul class="simple">
-<li>完成评论审核功能，加入后台评论管理，包括“删除评论“、”审核评论“</li>
-<li>加入“最新评论“栏</li>
-<li>修改了导航栏宽度，悲剧地修改了nuclblog的css文件</li>
-<li>修改about页面直接使用博客文章</li>
-<li>加入“统计“导航，方便查看是否有待验证留言</li>
-</ul>
-<p><strong>4.22.2011</strong></p>
-<p>原始的nuclblog功能实在过于简陋，包括评论功能我都得自己写。关键是我对WEB前端完全无
-经验更无多少积累。评论功能最麻烦的就是对垃圾信息的过滤，思来想去，还是直接人工审
-核算了。</p>
-<p>nuclblog在一开启的时候，就载入了所有的文章。这在内存如此有限的VPS上，实在是种
-残酷。包括评论也一样。要节约内存，只有等需要显示的时候，才载入。一想头皮就发麻，
-想想自己未来好长一段业余时间，都要扑在这个非主流语言的博客系统上，就为时间而痛心。</p>
-<p>Anyway，今天依然把这个简朴的评论功能发上来。为了让人测试，直接不过滤了。</p>
-<p><strong>4.20.2011</strong></p>
-<p>目前ext-blog还存在很多BUG，或者说很多不完美的地方。所以目前这个博客网站也算是处
-于测试阶段。现在上班期间干不了这事，所以只有晚上的几个小时能做。今天修正的问题包
-括:</p>
-<ul>
-<li><p class="first">修正XMLRPC发布文章时分类不正确问题</p>
-</li>
-<li><p class="first">修正XMLRPC发布文章无法显示作者问题(session-realm-user其实返回的是验证过的用户名)</p>
-</li>
-<li><p class="first">修正XMLRPC调用metaweblog api时没有进行用户验证的问题(check-password)</p>
-</li>
-<li><p class="first">修正当文章数为单页显示数整数倍时，页数多计算一页的问题</p>
-</li>
-<li><p class="first">修正RSS中关于channel的link错误问题，因为目前hunchentoot使用了nginx作为代理服务
-器，而nuclblog内部又是使用http request中的Host域来生成RSS channel link，所以就
-会得到http://127.0.0.1:xxx之类的url。解决办法就是在nginx的配置里重新设置http请
-求头中的Host:</p>
+<div class="section" id="id1">
+<h1>问题</h1>
+<p>在Lua中，因为函数也是第一类值，所以会出现将函数作为另一个函数的参数，或者函数作
+为函数的返回值。这种机制在很多地方都能代码更灵活更简洁，例如:</p>
 <pre class="literal-block">
-# nginx configure
-localtion / {
-    proxy_set_header Host $host;
-}
+table.sort(table [,comp])
 </pre>
-</li>
-<li><p class="first">增加virtual host，以正确响应不同域名请求，这个主要是nuclblog使用了virtual host
-导致</p>
-</li>
-</ul>
-<p><strong>4.19.2011</strong></p>
-<p>使用SSH登录VPS，启动SBCL，然后在其交互模式下开启hucnhentoot。然后断开SSH后，SBCL
-也会退出。解决方法可以简单地使用screen程序来完成，其具体原理暂时没时间去探究:</p>
+<p>这里的comp就要求传入一个函数，我们在调用时，大概会有如下形式:</p>
 <pre class="literal-block">
-screen -D -m -S nucblog sbcl --eval &quot;(load \&quot;ext-blog/wrap-run.lisp\&quot;)
---dynamic-space 90
+table.sort(t, comp) -- 直接写函数名
+table.sort(t, local_comp) -- 某个局部函数
+table.sort(t, function (a, b) xxx end ) -- 临时构造一个匿名函数
 </pre>
-<p><strong>4.18.2011</strong></p>
-<p>因为SBCL运行的OS貌似其locale不是utf8，所以SBCL在load包含中文的代码文件时，直接
-报错，大概就是不可识别某个字符：external-format :asci。使用如下方式载入代码文件
-是最简单直接的方法:</p>
+<p>其中最后一种方式最为灵活，任意时候在需要的时候构造一个匿名函数。这种在Lua自身的
+环境中使用，自然没有问题。但是，当我们在C/C++中注册一些函数到Lua环境中，而这些
+函数也需要使用函数参数的时候，问题就出来了。</p>
+<p>Lua本身是不支持将Lua函数作为函数参数传入C/C++的，不管这个想要传入的函数是全局的
+、局部的、或者匿名的（匿名的本质上也算局部的）。一般情况下，我们唯一的交互方式，
+不是传入一个函数，而是一个全局函数名。C/C++保存这个函数名，在需要回调Lua的时候，
+就在Lua全局表中找到这个函数（根据函数名），然后再调用之。情况大致如下:</p>
 <pre class="literal-block">
-(load &quot;ext-blog/run.lisp&quot; :external-format :utf-8)
+function lua_func () xxx end
+cfunc(lua_func) -- wrong
+cfunc(&quot;lua_func&quot;) -- right
 </pre>
-<p><strong>4.17.2011</strong></p>
-<p>VPS的内存非常有限，仅128M。网上关于SBCL运行于VPS上会出现的问题也非常多。似乎加上
-一些显示的内存大小参数，可以解决问题，这个当然得有待实验:</p>
+<p>我们这回的脚本模块，策划会大量使用需要回调函数的C/C++函数。显然，创建大量的全局
+函数，先是从写代码的角度看，就是很伤神的。</p>
+</div>
+<div class="section" id="id2">
+<h1>解决</h1>
+<p>我们最终需要的方式，大概如下:</p>
 <pre class="literal-block">
-#sbcl --dynamic-space 90
+cfunc(lua_func) -- ok
+cfunc(function () xxx end) -- ok
+local xxx = function () xxx end
+cfunc(xxx) -- ok
 </pre>
-<p>90M是我在本机上实验的最小数量，也许直接使用编译好的lisp文件可以减少此数值。</p>
+<p>要解决这个问题，我的思路是直接在Lua层做一些包装。因为C/C++那边仅支持传入一个全局
+函数名（当然不一定得全局的，根据实际情况，可能在其他自己构造的表里也行），也就是
+一个字符串，所以我的思路就是将Lua函数和一个唯一的字符串做映射。:</p>
+<pre class="literal-block">
+function wrap (fn)
+    local id = generate_id()
+    local fn_s = &quot;__callback_fn&quot;..id
+    _G[fn_s] = fn
+    return fn_s
+end
+</pre>
+<p>这个wrap函数，就是将一个函数在全局表里映射到一个字符串上，那么在使用时:</p>
+<pre class="literal-block">
+cfunc(wrap(function () xxx end))
+cfunc(const char *fn_name, xxx); -- cfunc的原型
+</pre>
+<p>cfunc是C/C++方注册进Lua的函数，它的原型很中规中矩，即：只接收一个函数名，一个字
+符串，如之前所说，C/C++要调用这个回调函数时，就根据这个字符串去查找对应的函数。
+脚本方在调用时，如果想传入一个匿名函数了，就调用wrap函数包装一下即可。</p>
+</div>
+<div class="section" id="id3">
+<h1>一个改进</h1>
+<p>上面的方法有个很严重的问题，在多次调用wrap函数后，将导致全局表也随之膨胀。我们需
+要想办法在C/C++完成回调后，来清除wrap建立的数据。这个工作当然可以放到C/C++来进行
+，例如每次发生回调后，就设置下全局表。但这明显是不对的，因为违背了接口的设计原则
+，这个额外的机制是在Lua里添加的，那么责任也最好由Lua来负。要解决这个问题，就可以
+使用Lua的metamethods机制。这个机制可以在Lua内部发生特定事件时，让应用层得到通知。
+这里，我们需要关注__call事件。</p>
+<p>Lua中只要有__call metamethod的值，均可被当作函数调用。例如:</p>
+<pre class="literal-block">
+ab(1, 2)
+</pre>
+<p>这里这个函数调用形式，Lua就会去找ab是否有__call metamethod，如果有，则调用它。这
+个事实暗示我们，一个table也可以被调用。一个改进的wrap函数如下:</p>
+<pre class="literal-block">
+local function create_callback_table (fn, name)
+    local t = {}
+    t.callback = fn
+    setmetatable (t, {__call =  -- 关注__call
+        function (func, ...) -- 在t(xx)时，将调用到这个函数
+            func.callback (...) -- 真正的回调
+            del_callback (name) -- 回调完毕，清除wrap建立的数据
+        end })
+    return t
+end
+
+function wrap (fn)
+    local id = generate_func_id() -- 产生唯一的id
+    local fn_s = &quot;_callback_fn&quot;..id
+    _G[fn_s] = create_callback_table(fn, fn_s) -- _G[fn_s]对应的是一个表
+    return fn_s
+end
+</pre>
+<p>在我们的C/C++程序中，依然如往常一样，先是从_G里取出函数名对应的对象。虽然这个对
+象现在已经是一个table。然后lua_call。</p>
+<p>上面的代码是否会在原有基础上增加不可接受的性能代价？虽然我没有做过实际测试，但是
+从表明看来，排除meta table在Lua里的代价，也就多了几次Lua函数调用。</p>
+<p>最后，感叹一下，Lua里的table及metatable机制，实在非常强大。这种强大不是功能堆砌
+出来的强大，而是简单东西组合出来的强大。其背后的设计思想，着实让人佩服。</p>
+<p>;; END</p>
+</div>
 </div>
 </body>
 </html>
