@@ -20,8 +20,9 @@
 (defun cfg-owner-name ()
   "Kevin Lynx")
 
+;; MUST not contain 'www', because google can NOT search that.
 (defun cfg-blog-links ()
-  "http://www.codemacro.com")
+  "codemacro.com")
 
 (defun cfg-title ()
   "loop_in_codes")

@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/" />
-<title>History</title>
+<title>博客迁移</title>
 <style type="text/css">
 
 /*
@@ -310,82 +310,29 @@ ul.auto-toc {
 </style>
 </head>
 <body>
-<div class="document" id="history">
-<h1 class="title">History</h1>
+<div class="document" id="id1">
+<h1 class="title">博客迁移</h1>
 
-<p>使用Lisp来开发博客系统，会发生很多趣事，在此偶尔记录。</p>
-<p><strong>4.24.2011</strong></p>
-<p>修正使用google搜索站内无内容的问题。 传给google的地址里，domains和sitesearch都包
-含了域名，domains可以为任意标示，但是sitesearch则必须为codemacro.com。</p>
-<p>到目前为止，主要功能基本都有了。服务器和SBCL都算稳定。</p>
-<p><strong>4.23.2011</strong></p>
-<p>现在没心思花在代码结构方面，一方面我不想以其他语言（C/C++）的模块组织方式去规划
-Lisp，Lisp有自己的方式；另一方面基于不想修改nuclblog源代码的基础上增加功能，本身
-就是个吃力不讨好的事情。索性，先完成功能。也许将来头一热，就自己重头写个。</p>
-<ul class="simple">
-<li>完成评论审核功能，加入后台评论管理，包括“删除评论“、”审核评论“</li>
-<li>加入“最新评论“栏</li>
-<li>修改了导航栏宽度，悲剧地修改了nuclblog的css文件</li>
-<li>修改about页面直接使用博客文章</li>
-<li>加入“统计“导航，方便查看是否有待验证留言</li>
-</ul>
-<p><strong>4.22.2011</strong></p>
-<p>原始的nuclblog功能实在过于简陋，包括评论功能我都得自己写。关键是我对WEB前端完全无
-经验更无多少积累。评论功能最麻烦的就是对垃圾信息的过滤，思来想去，还是直接人工审
-核算了。</p>
-<p>nuclblog在一开启的时候，就载入了所有的文章。这在内存如此有限的VPS上，实在是种
-残酷。包括评论也一样。要节约内存，只有等需要显示的时候，才载入。一想头皮就发麻，
-想想自己未来好长一段业余时间，都要扑在这个非主流语言的博客系统上，就为时间而痛心。</p>
-<p>Anyway，今天依然把这个简朴的评论功能发上来。为了让人测试，直接不过滤了。</p>
-<p><strong>4.20.2011</strong></p>
-<p>目前ext-blog还存在很多BUG，或者说很多不完美的地方。所以目前这个博客网站也算是处
-于测试阶段。现在上班期间干不了这事，所以只有晚上的几个小时能做。今天修正的问题包
-括:</p>
-<ul>
-<li><p class="first">修正XMLRPC发布文章时分类不正确问题</p>
-</li>
-<li><p class="first">修正XMLRPC发布文章无法显示作者问题(session-realm-user其实返回的是验证过的用户名)</p>
-</li>
-<li><p class="first">修正XMLRPC调用metaweblog api时没有进行用户验证的问题(check-password)</p>
-</li>
-<li><p class="first">修正当文章数为单页显示数整数倍时，页数多计算一页的问题</p>
-</li>
-<li><p class="first">修正RSS中关于channel的link错误问题，因为目前hunchentoot使用了nginx作为代理服务
-器，而nuclblog内部又是使用http request中的Host域来生成RSS channel link，所以就
-会得到http://127.0.0.1:xxx之类的url。解决办法就是在nginx的配置里重新设置http请
-求头中的Host:</p>
-<pre class="literal-block">
-# nginx configure
-localtion / {
-    proxy_set_header Host $host;
-}
-</pre>
-</li>
-<li><p class="first">增加virtual host，以正确响应不同域名请求，这个主要是nuclblog使用了virtual host
-导致</p>
-</li>
-</ul>
-<p><strong>4.19.2011</strong></p>
-<p>使用SSH登录VPS，启动SBCL，然后在其交互模式下开启hucnhentoot。然后断开SSH后，SBCL
-也会退出。解决方法可以简单地使用screen程序来完成，其具体原理暂时没时间去探究:</p>
-<pre class="literal-block">
-screen -D -m -S nucblog sbcl --eval &quot;(load \&quot;ext-blog/wrap-run.lisp\&quot;)
---dynamic-space 90
-</pre>
-<p><strong>4.18.2011</strong></p>
-<p>因为SBCL运行的OS貌似其locale不是utf8，所以SBCL在load包含中文的代码文件时，直接
-报错，大概就是不可识别某个字符：external-format :asci。使用如下方式载入代码文件
-是最简单直接的方法:</p>
-<pre class="literal-block">
-(load &quot;ext-blog/run.lisp&quot; :external-format :utf-8)
-</pre>
-<p><strong>4.17.2011</strong></p>
-<p>VPS的内存非常有限，仅128M。网上关于SBCL运行于VPS上会出现的问题也非常多。似乎加上
-一些显示的内存大小参数，可以解决问题，这个当然得有待实验:</p>
-<pre class="literal-block">
-#sbcl --dynamic-space 90
-</pre>
-<p>90M是我在本机上实验的最小数量，也许直接使用编译好的lisp文件可以减少此数值。</p>
+<p>3年前我从CSDN博客迁移到CPPBLOG写博客。然后我乱七八糟地写一篇博客声明。那个时候还
+没把写博客当一回事，纯碎是出于为自己做记录的目的。如今写博客一半还是出于记录，另
+一半则是出于在外面自我表现，还有那么一点点说出来觉得崇高的理由就是分享自己的知识
+。</p>
+<p>这回我倒不是迁移出CPPBLOG。CPPBLOG整体上是个更低调做技术的圈子，一如我博客的副标
+题。自己建了个独立博客，主要还是因为学习Lisp的原因。</p>
+<p>在过去的若干年中，有各种各样的技术点因为长久的疏远，一个一个淡出于大脑。虽说技术
+点不大重要，学习能力、方法才是终生受用的东西。但完全忘记，也算是一大遗憾。Lisp不
+应该被我忘记，一个程序员至少应该在他常用的语言之外，熟悉另一门语言。而这另一门语
+言应该是更“快速的“、更“方便的“，它能在你需要的时候更快速地构建你的想法。虽然出于
+工作原因，我得时不时地捣鼓下Lua。</p>
+<p>Anyway，这个独立博客就是我用Lisp搭建的。从Web server到博客系统。其中博客系统也有
+我很大一部分代码在其中，在可预见的未来，在Lisp应用方面我将主要用于构建这个博客系
+统。靠自己写的代码（虽然只有一部分）搭建出来的博客就是爽啊。如果要我用个现成的，
+我还真懒得去独立门户。</p>
+<p>程序员嘛，只有在不断地自我折腾（简写自虐）中，才能成长。最后，请求大家（+强迫）
+移步我的新博客 <a class="reference external" href="http://codemacro.com">codemacro.com</a> 。要参考技术信息的，可以 <a class="reference external" href="http://codemacro.com/blog/about">参考这里</a> ，要看看我使用
+Lisp是如何捣鼓出这个博客系统的，可以 <a class="reference external" href="http://codemacro.com/blog/display?id=5">点这里</a> 。当然，在可预见的未来，我还是会在
+CPPBLOG同步更新的。
+。</p>
 </div>
 </body>
 </html>
