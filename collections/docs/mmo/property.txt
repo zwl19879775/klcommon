@@ -1,0 +1,59 @@
+
+4.29.2011
+
+Extend properties does not need access effective. Even i store it in a map.
+
+in Lua:
+
+ATTACK_INDEX = add_property("attack", {
+        client = true, save = true, type = long })
+
+local atk_val = get_property(ATTACK_INDEX)
+
+in c/c++:
+
+size_t add_property (const char *name, property_set *set) {
+    vec_properties.push_back(xx);
+    // return the property index
+    // also we can build a map which map property name(string) to a property
+    // object, so that we can query a property by a string too.
+    return vec_properties.size() - 1;
+}
+
+xxx get_property_val (size_t index) {
+    // much more effective.
+    return vec_properties[index].val;
+}
+
+Basic properties need effective. And how to implement them? And make their access
+the same as these extend properties ?
+
+struct property {
+    int index; // property index from `add_property`
+    char name[64]; // property name
+    int type; // property data type, i.e: long
+    bool client; // need update to client?
+    bool save; // need save to database?
+    // more...
+};
+
+#define DEF_STATIC_PROPERTY (name, type, client, save) \
+    static const int PROPERTY_##name =  add_property (name, type, client, save); 
+
+#define DEF_PROPERTY_NAMESPACE_BEGIN (name) \
+    namespace name {
+
+#define DEF_PROPERTY_NAMESPACE_END () }
+
+sample:
+DEF_PROPERTY_NAMESPACE_BEGIN (PlayerProperty) 
+    DEF_STATIC_PROPERTY (Sex, type_long, true, true)
+    DEF_STATIC_PROPERTY (PosX, type_long, true, true)
+    DEF_STATIC_PROPERTY (PosY, type_long, true, true)
+DEF_PROPERTY_NAMESPACE_END()
+
+c/c++:
+property *p = get_property(PROPERTY_Hp)
+
+
+
