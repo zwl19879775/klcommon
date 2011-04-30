@@ -238,8 +238,9 @@ pre.address {
 
 pre.literal-block, pre.doctest-block {
   background: #BBBBBB;
-  margin-left: 2em ;
-  margin-right: 2em }
+  padding: 5px 10px 5px 10px;
+  margin-left: 1em ;
+  margin-right: 1em }
 
 span.classifier {
   font-family: sans-serif ;
