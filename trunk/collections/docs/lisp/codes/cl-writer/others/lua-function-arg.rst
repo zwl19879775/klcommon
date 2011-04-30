@@ -105,5 +105,18 @@ Lua中只要有__call metamethod的值，均可被当作函数调用。例如::
 最后，感叹一下，Lua里的table及metatable机制，实在非常强大。这种强大不是功能堆砌
 出来的强大，而是简单东西组合出来的强大。其背后的设计思想，着实让人佩服。
 
+**4.26.2011 Update**
+
+之前的文中说“Lua本身是不支持将Lua函数作为函数参数传入C/C++的“，这句话严格来说不
+正确（由某网友评论）。假设函数cfun由c/c++注册，我们是可以编写如下代码的::
+
+    cfunc(print) -- 传入Lua函数
+
+但是问题在于，我们无法取出这个函数并保存在c/c++方。Lua提供了一些接口用于取cfunc
+的参数，例如luaL_checknumber（封装lua_tonumber）。但没有类似luaL_checkfunction的
+接口。Lua中的table有同样的问题。究其原因，主要是Lua中的函数没有直接的c/c++数据结
+构对应。
+
+
 ;; END
 

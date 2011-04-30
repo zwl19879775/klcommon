@@ -26,6 +26,7 @@
                  :categories (cfg-categories)
                  :ext-links (cfg-ext-links)
                  :ext-html (cfg-ext-html)
+                 :notice (cfg-ext-notice)
                  :url-root "/blog"
                  :entry-storage-path
                  (merge-pathnames
@@ -57,7 +58,15 @@
                              :img-url "/static/sbclbutton.png"
                              :alt "(get 'sbcl)"))))
     
-  
+(defun update-blog ()
+  "Update some properties for the blog."
+  (setf (blog::blog-title *blog*) (cfg-title))
+  (setf (blog::blog-subtitle *blog*) (cfg-sub-title))
+  (setf (blog::blog-categories *blog*) (cfg-categories))
+  (setf (blog::blog-ext-html *blog*) (cfg-ext-html))
+  (setf (blog::blog-ext-links *blog*) (cfg-ext-links))
+  (setf (blog::blog-ext-notice *blog*) (cfg-ext-notice))
+  t)
 
 (defparameter *localhost-host*
   (hunchentoot-vhost:make-virtual-host "localhost"
