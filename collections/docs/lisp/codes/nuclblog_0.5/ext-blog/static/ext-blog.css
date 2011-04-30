@@ -21,7 +21,7 @@ div#nuclblog-banner {
     background: #123456;
     color: white;
     padding: 18px 18px 6px 18px;
-    -moz-border-radius: 6px 6px 6px 6px;
+    -moz-border-radius: 6px 6px 0px 0px;
     border-radius: 6px 6px 0px 0px;
 }
 
@@ -147,5 +147,53 @@ div.nuclblog-recent-comments li {
     padding-left: 1px;
     font-family: sans-serif;
     font-size: 10pt;
+}
+
+div#nuclblog-nav-menu {
+    height: 30px;
+    background: #123456;
+    padding: 0px 3px 5px 13px;
+}
+
+div#nuclblog-nav-menu ul {
+    list-style-type:none;
+    margin:0px;
+    padding:0px;
+}
+
+div#nuclblog-nav-menu li {
+    float:left; 
+}
+
+div#nuclblog-nav-menu li a {
+    display:block;
+    padding:3px 6px 3px 6px;
+    text-decoration:none;
+    border:1px solid #BBBBBB;
+    margin:2px;
+}
+
+div#nuclblog-nav-menu li a:link, #nuclblog-nav-menu li a:visited {
+    background-color:#123456;
+    color:#ffffff;
+}
+
+div#nuclblog-nav-menu li a:hover {
+    background-color:#2255BB;
+    color:#ffff00;
+}
+
+div#nuclblog-menu-search {
+    text-align: right;
+    color: white;
+    padding-right: 20px;
+}
+
+div#nuclblog-menu-search input {
+    margin-left: 10px;
+}
+
+div#nuclblog-nav-box-notice p {
+    padding: 3px 3px 3px 3px;
 }
 

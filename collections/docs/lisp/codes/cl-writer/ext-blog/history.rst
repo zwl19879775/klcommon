@@ -3,6 +3,15 @@ History
 
 使用Lisp来开发博客系统，会发生很多趣事，在此偶尔记录。
 
+**4.30.2011**
+
+* 增加留言功能，使用了评论功能的部分代码
+* 修改rststyle.css，改代码块背景色为灰色
+* 将主导航改为横向，由增加banner :after实现，主要还是通过css来控制
+* 将搜索框改到主导航右侧，进一步给左侧导航留出空间
+* 限制最新文章仅显示5篇
+* 添加公告导航框
+
 **4.24.2011**
 
 修正使用google搜索站内无内容的问题。 传给google的地址里，domains和sitesearch都包
@@ -62,8 +71,7 @@ Anyway，今天依然把这个简朴的评论功能发上来。为了让人测�
 使用SSH登录VPS，启动SBCL，然后在其交互模式下开启hucnhentoot。然后断开SSH后，SBCL
 也会退出。解决方法可以简单地使用screen程序来完成，其具体原理暂时没时间去探究::
 
-    screen -D -m -S nucblog sbcl --eval "(load \"ext-blog/wrap-run.lisp\")
-    --dynamic-space 90
+    screen -D -m -S nucblog sbcl --eval "(load \"ext-blog/wrap-run.lisp\") --dynamic-space 90
 
 **4.18.2011**
 

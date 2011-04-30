@@ -314,6 +314,15 @@ ul.auto-toc {
 <h1 class="title">History</h1>
 
 <p>使用Lisp来开发博客系统，会发生很多趣事，在此偶尔记录。</p>
+<p><strong>4.30.2011</strong></p>
+<ul class="simple">
+<li>增加留言功能，使用了评论功能的部分代码</li>
+<li>修改rststyle.css，改代码块背景色为灰色</li>
+<li>将主导航改为横向，由增加banner :after实现，主要还是通过css来控制</li>
+<li>将搜索框改到主导航右侧，进一步给左侧导航留出空间</li>
+<li>限制最新文章仅显示5篇</li>
+<li>添加公告导航框</li>
+</ul>
 <p><strong>4.24.2011</strong></p>
 <p>修正使用google搜索站内无内容的问题。 传给google的地址里，domains和sitesearch都包
 含了域名，domains可以为任意标示，但是sitesearch则必须为codemacro.com。</p>
@@ -369,8 +378,7 @@ localtion / {
 <p>使用SSH登录VPS，启动SBCL，然后在其交互模式下开启hucnhentoot。然后断开SSH后，SBCL
 也会退出。解决方法可以简单地使用screen程序来完成，其具体原理暂时没时间去探究:</p>
 <pre class="literal-block">
-screen -D -m -S nucblog sbcl --eval &quot;(load \&quot;ext-blog/wrap-run.lisp\&quot;)
---dynamic-space 90
+screen -D -m -S nucblog sbcl --eval &quot;(load \&quot;ext-blog/wrap-run.lisp\&quot;) --dynamic-space 90
 </pre>
 <p><strong>4.18.2011</strong></p>
 <p>因为SBCL运行的OS貌似其locale不是utf8，所以SBCL在load包含中文的代码文件时，直接

@@ -82,16 +82,19 @@
                               (comment-confirmed comment)))
                      (blog-comments blog)))))
 
-(defun get-confirmed-entry (blog)
+(defun valid-comment-p (c)
+  (>= (comment-entryid c) 0))
+
+(defun get-confirmed-comments (blog)
   (bt:with-lock-held
     (*comments-lock*)
-    (remove-if-not #'(lambda (c) (comment-confirmed c))
+    (remove-if-not #'(lambda (c) (and (comment-confirmed c)
+                                      (valid-comment-p c)))
                    (blog-comments blog))))
 
 (defun get-all-comments (blog)
   (bt:with-lock-held
     (*comments-lock*)
-    ;; because 'sort' is destructively function
     (blog-comments blog)))
 
 (defun confirm-comment (blog id)
@@ -108,4 +111,11 @@
             (delete id (blog-comments blog) :key #'comment-id))
       (store-blog-comments blog)
       t)))
+
+(defun unconfirmed-comment-count (blog)
+  (count-if-not #'(lambda (c) (or (comment-confirmed c)
+                                  (not (valid-comment-p c)))) (blog-comments blog)))
+
+(defun message-comment-count (blog)
+  (count-if-not #'valid-comment-p (blog-comments blog)))
 

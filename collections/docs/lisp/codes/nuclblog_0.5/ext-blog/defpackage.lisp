@@ -6,6 +6,7 @@
 (defpackage #:ext-blog
   (:use #:cl #:hunchentoot #:cl-who)
   (:export #:start-services
+           #:update-blog
            #:start-ssl-services))
 
 (defpackage #:xml-rpc-methods

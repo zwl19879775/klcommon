@@ -31,8 +31,8 @@
   "导航")
 
 (defun cfg-sub-title ()
-  "Kevin Lynx's blog -> http://codemacro.com 
-  (测试阶段，点击左侧导航'关于'了解更多)")
+  "Kevin Lynx 's blog -> http://codemacro.com  #Try to change the world by our codes.")
+  
 
 (defun cfg-mail ()
   "kevinlynx@gmail.com")
@@ -70,4 +70,6 @@
     "www.codemacro.com"
     "codemacro.com"))
 
+(defun cfg-ext-notice ()
+  "本站所有文章欢迎转载，转载请注明出处，商用请联系作者。本站完全采用Lisp构建，目前处于测试阶段，点击‘关于‘了解更多。")
 

@@ -22,6 +22,9 @@
              :accessor blog-about-id
              :initform 0
              :documentation "the about entry id")
+   (notice :initarg :notice
+           :initform ""
+           :accessor blog-ext-notice)
    (comments :accessor blog-comments
             :initform nil)
    (comments-storage-path :initarg :comments-storage-path
@@ -60,17 +63,18 @@
           "return SearchGoogle(document.getElementById(\"q\"),event, \"~a\")"
           (blog-blog-links blog)))
 
+;;; not used now.
 (defun ext-blog-search (blog)
   (with-html
     (box (:class "nuclblog-nav-box")
          (:h2 "搜索本站")
          (:script :language "JavaScript" (str (get-search-func)))
-         (:input :style "width:150px" :type "text" :name "q" :id "q"
-                     :onkeydown (get-call-search-func blog))
+         (:input :style "width:150px" :type "text" :name "q" :id "q" :onkeydown (get-call-search-func blog))
          (:input :onclick (get-call-search-func blog) :type "button"
                  :value "搜索" :name "sa"))))
 
-(defun ext-blog-external-links (blog) (with-html
+(defun ext-blog-external-links (blog) 
+  (with-html
     (box (:class "nuclblog-nav-box")
          (:h2 "我的项目")
          (:ul
@@ -81,9 +85,16 @@
                      (:li
                        (:a :href url (str desc))))))))))
 
+(defun ext-blog-notice (blog) 
+  (with-html
+    (box (:class "nuclblog-nav-box" :id "nuclblog-nav-box-notice")
+         (:h2 "本站公告")
+         (:p (str (blog-ext-notice blog))))))
+
 (defun ext-blog-status (blog)
   (let ((comm (length (blog-comments blog)))
-        (un-comm (count-if-not #'comment-confirmed (blog-comments blog)))
+        (un-comm (unconfirmed-comment-count blog))
+        (msg-comm (message-comment-count blog))
         (time (when (> (length (blog-entries blog)) 0) 
                 (blog-entry-time (car (blog-entries blog))))))
     (with-html
@@ -91,17 +102,30 @@
            (:h2 "统计")
            (:ul
              (:li (str (format nil "文章：~a" (length (blog-entries blog)))))
-             (:li (str (format nil "评论：~a" (- comm un-comm))))
+             (:li (str (format nil "评论：~a" (- comm un-comm msg-comm))))
+             (:li "留言："
+                  (:a :href (comment-manage-url blog) (str msg-comm)))
              (:li "待验证评论：" 
                   (:a :href (comment-manage-url blog) (str un-comm)))
              (:li (str (format nil "最后发表：~a" (format-display-day time)))))))))
 
+(defun ext-blog-recent-entries (blog)
+  (with-html
+    (box (:class "nuclblog-nav-box" :id "nuclblog-nav-box-recent-entries")
+         (:h2 "最新文章")
+         (:ul :class "nuclblog-recent-entries"
+              (loop for i from 1 to 5
+                 for j in (blog-entries blog)
+                 do (htm
+                     (:li
+                      (:a :href (entry-link blog j)
+                          (str (blog-entry-title j))))))))))
+
 (defmethod nav-boxes ((blog ext-blog))
-  (ext-main-nav blog)
-  (ext-blog-search blog)
+  (ext-blog-notice blog)
   (ext-blog-status blog)
   (categories blog)
-  (recent-entries blog)
+  (ext-blog-recent-entries blog)
   (recent-comments blog)
   (ext-blog-external-links blog))
 
@@ -119,6 +143,10 @@
 (defun blog-about-url (blog)
   (concatenate-url (blog-url-root blog) "/about"))
 
+(defun blog-leave-message-url (blog)
+  (concatenate-url (blog-url-root blog) "/leave-message"))
+
+;;; not used now.
 (defun ext-main-nav (blog)
   (box (:class "nuclblog-nav-box" :id "nuclblog-nav-box-1")
        (:h2 (str (blog-short-name blog)))
@@ -126,8 +154,29 @@
         (:li (:a :href (blog-url-root blog) "首页"))
         (:li (:a :href (blog-archives-url blog) "标题显示所有"))
         (:li (:a :href (archives-url blog :rss t) "订阅 (RSS)"))
-        (:li (:a :href (blog-email-redirect-url blog) "联系"))
+        (:li (:a :href (blog-leave-message-url blog) "给我留言"))
         (:li (:a :href (blog-about-url blog) "关于")))))
+
+(defun blog-search-html (blog)
+  (with-html
+    (:div :id "nuclblog-menu-search"
+          (:script :language "JavaScript" (str (get-search-func)))
+          (:input :style "width:150px" :type "text" :name "q" :id "q"
+                  :onkeydown (get-call-search-func blog))
+          (:input :onclick (get-call-search-func blog) :type "button"
+                 :value "搜索本站" :name "sa"))))
+
+(defmethod banner :after ((blog ext-blog))
+  (with-html-output 
+    (*standard-output*)
+    (:div :id "nuclblog-nav-menu"
+       (:ul
+        (:li (:a :href (blog-url-root blog) "首页"))
+        (:li (:a :href (blog-archives-url blog) "标题显示所有"))
+        (:li (:a :href (archives-url blog :rss t) "订阅 (RSS)"))
+        (:li (:a :href (blog-leave-message-url blog) "给我留言"))
+        (:li (:a :href (blog-about-url blog) "关于")))
+       (blog-search-html blog))))
 
 (defun make-entry-url-from-id (blog id)
   (concatenate-url (blog-url-root blog)
@@ -231,17 +280,23 @@
            do (entry-html blog entry))
     (gen-page-index-nav blog id)))
 
-(defun comment-sub-url (blog comment)
-  (let ((entry (get-entry (comment-entryid comment) blog)))
-    (concatenate-url (make-entry-url blog entry) 
-                     (format nil "#~a" (comment-id comment)))))
+(defun comment-sub-url (blog comment entry)
+  (concatenate-url (make-entry-url blog entry) 
+                   (format nil "#~a" (comment-id comment))))
 
-(defun comment-display (blog comment title)
+(defun comment-display-preheader (blog comment entry)
+  (if entry
+    (with-html
+      (:a :href (comment-sub-url blog comment entry) "#")
+      (:a :name (comment-id comment))
+      (str (format nil "re: ~a" (blog-entry-title entry))))
+    (with-html
+      (str "#留言"))))
+
+(defun comment-display (blog comment entry)
   (with-html
     (:p
-      (:h4 (:a :href (comment-sub-url blog comment) "#")
-           (:a :name (comment-id comment))
-           (str (format nil "re: ~a" title))
+      (:h4 (comment-display-preheader blog comment entry)
            (:span (str (format-display-date (comment-time comment))))
            (if (string-emptyp (comment-url comment))
              (str (comment-author comment))
@@ -252,7 +307,7 @@
 (defun comment-list-display (blog entry)
  (let ((comments (get-entry-comments blog (blog-entry-number entry))))
    (loop for comment in comments
-         do (comment-display blog comment (blog-entry-title entry)))))
+         do (comment-display blog comment entry))))
 
 (defun entry-html-with-comment (blog entry)
   (entry-html blog entry)
@@ -271,6 +326,26 @@
                (:p (:input :type :text :name "url" "网址"))
                (:p (:textarea :name "comment" :rows "10" :cols "60" ""))
                (:p (:input :type :submit :value "提交评论")))))))
+
+(defun leave-message-html (blog) 
+  (with-html
+    (:div
+      :class "nuclblog-comment"
+      (:h3 "留言(带*为必填项)")
+      (:p
+        (:form :action (comment-url blog) :method :post
+               (:input :type :hidden :name "entryid" :value -1)
+               (:p (:input :type :text :name "author" "名字(*)"))
+               (:p (:input :type :text :name "email" "Email(*不会公开)"))
+               (:p (:input :type :text :name "url" "网址"))
+               (:p (:textarea :name "comment" :rows "10" :cols "60" ""))
+               (:p (:input :type :submit :value "提交")))))))
+          
+(defun ext-blog-leave-message (blog)
+  (with-blog-page
+    blog
+    "Leave a message"
+    (leave-message-html blog)))
 
 (defun ext-blog-display (blog &key id)
   (let ((entry (get-entry id blog)))
@@ -298,10 +373,16 @@
         (:p "Oops! You bad guy please input necessary fields!"))
       (progn
         (create-blog-comment blog entryid author email url comment)
-        (with-html
-          (:p (:h4 "评论成功") (:br)
-              "评论内容被审核后才会出现在评论列表里，如有不便敬请谅解！"))))
-      (with-html (:a :href (entry-id-url blog entryid) "Back"))))
+        (if (>= entryid 0)
+          (with-html
+            (:p (:h4 "评论成功") (:br)
+                "评论内容被审核后才会出现在评论列表里，如有不便敬请谅解！"))
+          (with-html
+            (:p (:h4 "留言成功") (:br)
+                "如果有必要，作者会通过邮件联系你。And thank you for your message!")))))
+      (with-html (:a :href 
+                  (if (>= entryid 0) 
+                    (entry-id-url blog entryid) (blog-leave-message-url blog)) "Back"))))
 
 (defun comment-delete-url (blog comment)
   (concatenate-url (blog-url-root blog) 
@@ -316,14 +397,13 @@
 
 (defun comment-display-manage (blog comment)
   (let ((entry (get-entry (comment-entryid comment) blog)))
-    (when entry
-      (comment-display blog comment (blog-entry-title entry))
-      (unless (comment-confirmed comment)
-        (with-html (:a :href (comment-confirm-url blog comment) "Confirm")
-                   (str "&nbsp;&nbsp;")))
-      (with-html 
-        (:a :href (comment-delete-url blog comment) "Delete")
-        (str (format nil "&nbsp;&nbsp;E-mail: ~a" (comment-email comment)))))))
+    (comment-display blog comment entry)
+    (unless (comment-confirmed comment)
+      (with-html (:a :href (comment-confirm-url blog comment) "Confirm")
+                 (str "&nbsp;&nbsp;")))
+    (with-html 
+      (:a :href (comment-delete-url blog comment) "Delete")
+      (str (format nil "&nbsp;&nbsp;E-mail: ~a" (comment-email comment))))))
       
 
 (defun string-brief (s len)
@@ -341,11 +421,13 @@
          (:h2 "最新评论")
          (:ul 
            (loop for i from 1 to 5
-                 for c in (get-confirmed-entry blog)
+                 for c in (get-confirmed-comments blog)
                  do (htm
                       (:li :style "list-style-type:none;"
-                        (:a :href (comment-sub-url blog c)
-                          (str (format nil "~a.~a" i (comment-title blog c)))))
+                        (:a :href (comment-sub-url 
+                                    blog c 
+                                    (get-entry (comment-entryid c) blog))
+                            (str (format nil "~a.~a" i (comment-title blog c)))))
                       (:li :style "list-style-type:none;" (str (string-brief (comment-desc c) 15)))
                       (:li :style "list-style-type:none;text-align: right;margin-right:4px;"
                            (str (format nil "-- ~a" (comment-author c))))))))))
@@ -395,6 +477,7 @@
   (define-blog-handler (blog :uri "/display")
                        ((id :parameter-type 'integer))
                        #'ext-blog-display)
+  (define-blog-handler (blog :uri "/leave-message") () #'ext-blog-leave-message)
   (define-blog-handler (blog :uri "/comment" :default-request-type :post)
                        ((entryid :parameter-type 'integer)
                         author email url comment)
