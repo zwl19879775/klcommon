@@ -78,6 +78,10 @@
   (read-post-file u post-file context title
                   (edit-post u postid title context cates)))
 
+(defun batch-post-new (post-file &key (us (get-user-list)) (cates))
+  (mapcar #'(lambda (u) (writer-post-new post-file :u u :cates cates))
+          us))
+
 (defun get-all-category-title (&optional (u (get-default-user)))
   (mapcar #' (lambda (c) (struct-member c :|title|))
           (get-categories u)))
