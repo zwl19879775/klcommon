@@ -28,6 +28,7 @@
     #:insert-imglist-table 
 
     #:get-all-category-title 
+    #:batch-post-new
     #:writer-edit-post
     #:writer-post-new)
   (:documentation "A simple blog client"))

@@ -15,6 +15,16 @@
 (defun get-default-user ()
   *default-user*)
 
+(defvar *user-list* nil)
+
+(defun clear-user ()
+  (setf *user-list* nil))
+
+(defun add-user (u) 
+  (push u *user-list*))
+
+(defun get-user-list ()
+  *user-list*)
 ;;
 ;; in config file, must create a new user and set as *default-user*.
 ;; i.e: (setf *default-user* (make-cppblog-user "kevinlynx" "password"))
