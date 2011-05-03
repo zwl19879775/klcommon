@@ -26,7 +26,7 @@
        :accessor comment-id)
    (time :initarg :time :accessor comment-time)
    (confirmed :initarg :confirmed
-              :initform nil
+              :initform t
               :accessor comment-confirmed)))
 
 (defparameter *comments-file-lock* (bt:make-lock "comments-file-lock"))
