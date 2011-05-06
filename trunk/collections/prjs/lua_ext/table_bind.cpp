@@ -4,36 +4,63 @@
 #include <stdlib.h>
 #include <lua5.1/lua.hpp>
 #include "table.h"
+#include "gvalue_util.h"
 
 #define MT_NAME "ParamTable.MT"
 #define check_PT(L) *(ParamTable**)luaL_checkudata (L, 1, MT_NAME)
 #define DEBUG printf
 
-// value adapter, test only
+static void new_metatable (lua_State *L, ParamTable *pt) {
+    DEBUG ("new_metatable\n");
+    void **up = (void**) lua_newuserdata (L, sizeof(void*));
+    *up = pt;
+    luaL_getmetatable (L, MT_NAME);
+    lua_setmetatable (L, -2);
+}
+
+// value adapter
 static void PushValue (lua_State *L, const Value *val) {
-    val ? lua_pushnumber (L, (lua_Number) *val) : lua_pushnil (L);
+    switch (val->Type()) {
+        case Value::NIL: lua_pushnil (L); break;
+        case Value::NUMBER: lua_pushnumber (L, (lua_Number) val->GetNumber()); break;
+        case Value::BOOLEAN: lua_pushboolean (L, val->GetBool() ? 1 : 0); break;
+        case EXT_STRING: lua_pushstring (L, CastString (*val).c_str()); break;
+        case EXT_PARAMTABLE: {
+            // new everytime you want a ParamTable.
+            new_metatable (L, CastParamTable (*val));
+         }
+        break;
+        default: lua_pushnil (L); break;
+    }
 }
 
 static Value PopValue (lua_State *L, int idx) {
-    if (lua_isnil (L, idx)) return -1;
-    if (lua_isnumber (L, idx)) return lua_tonumber (L, idx);
-    return 0;
+    if (lua_isnil (L, idx)) return Value ();
+    if (lua_isnumber (L, idx)) return Value ((double)lua_tonumber (L, idx));
+    if (lua_isboolean (L, idx)) return Value (lua_toboolean (L, idx) ? true : false);
+    if (lua_isstring (L, idx)) return CreateGValue (lua_tostring (L, idx));
+    if (lua_isuserdata (L, idx)) {
+        void **u = (void**) luaL_checkudata (L, idx, MT_NAME);
+        ParamTable *pt = *(ParamTable**) u;
+        /* what can i do? Because lua cannot map fulluserdata to a c/c++ object*/
+        *u = NULL; 
+        return CreateGValue (pt);
+    }
+    return Value();
 }
 //
 
 int PT_New (lua_State *L) {
     DEBUG ("PT_New\n");
-    void **up = (void**) lua_newuserdata (L, sizeof(void*));
-    *up = new ParamTable ();
-    luaL_getmetatable (L, MT_NAME);
-    lua_setmetatable (L, -2);
+    new_metatable (L, new ParamTable ());
     return 1;
 }
 
 int PT_Delete (lua_State *L) {
     DEBUG ("PT_Delete\n");
     ParamTable *pt = check_PT (L);
-    delete pt;
+    if (pt) /* because i make it null somewhere */
+        delete pt;
     return 0;
 }
 

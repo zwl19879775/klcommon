@@ -1,9 +1,9 @@
 
 #include <map>
 #include <string>
+#include "gvalue_util.h"
 
-// test only
-typedef long Value;
+typedef GValue Value;
 
 class ParamTable {
 public:
@@ -31,4 +31,18 @@ private:
     Getter m_getter;
     Setter m_setter;
 };
+
+/// Wrap ParamTable in the Value.
+enum { EXT_PARAMTABLE = EXT_GUID + 1 };
+
+inline GValue CreateGValue (ParamTable *t) {
+    // here is a trick, be sure you can understand this
+    return GValue (&t, sizeof(&t), EXT_PARAMTABLE);
+}
+
+inline ParamTable *CastParamTable (const GValue &val) {
+    if (val.Type() != EXT_PARAMTABLE) return NULL;
+    void *p = val.GetRaw()->p;
+    return *(ParamTable**) p;
+}
 
