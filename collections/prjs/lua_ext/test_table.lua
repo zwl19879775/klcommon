@@ -13,3 +13,15 @@ print (pt.sub.sname)
 
 local s = pt.sub
 print (s.sname)
+if pt.sub == sub_pt then
+    print ("equal")
+else
+    print ("not equal")
+end
+print (pt)
+
+print ("+------------Traverse-----------------+")
+for k, v in ParamTable.values (pt) do
+    print (k, v)
+end
+print ("+-------------------------------------+")

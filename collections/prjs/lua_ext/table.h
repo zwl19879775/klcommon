@@ -1,4 +1,6 @@
-
+///
+///
+///
 #include <map>
 #include <string>
 #include "gvalue_util.h"
@@ -21,6 +23,12 @@ public:
 
     /// If the value does not exist, add a new one.
     bool Set (const std::string &name, const Value &val);
+
+    /// Only return the cache size.
+    size_t Size () const { return m_vals.size(); }
+
+    /// Return the raw value table.
+    const ValTable &Values() const { return m_vals; }
 
     /// Dump all cached properties by settter. And clear the cache.
     void Dump ();

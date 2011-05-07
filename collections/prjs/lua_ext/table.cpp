@@ -1,5 +1,6 @@
 ///
 ///
+///
 #include "table.h"
 
 ParamTable::ParamTable (Getter g, Setter s) : m_getter(g), m_setter(s) {
