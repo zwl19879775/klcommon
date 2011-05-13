@@ -13,10 +13,10 @@ public:
     /// It's not necessary to copy all properties of an object to this, so
     /// when the property does not exist here, it will call these Getter/Settter
     /// to access the property.
-    typedef const Value* (*Getter) (const ParamTable&, const std::string&);
-    typedef bool (*Setter) (const ParamTable&, const std::string&, const Value&);
+    typedef const Value* (*Getter) (void *u, const ParamTable&, const std::string&);
+    typedef bool (*Setter) (void *u, const ParamTable&, const std::string&, const Value&);
 public:
-    ParamTable (Getter g = NULL, Setter s = NULL);
+    ParamTable (Getter g = NULL, Setter s = NULL, void *u = NULL);
 
     /// Get a property value.
     const Value *Get (const std::string &name) const;
@@ -32,10 +32,13 @@ public:
 
     /// Dump all cached properties by settter. And clear the cache.
     void Dump ();
+
+    void SetAccessor (Getter g, Setter s, void *u = NULL);
 private:
     void Add (const std::string &name, const Value &val);
 private:
     ValTable m_vals;
+    void *m_udata;
     Getter m_getter;
     Setter m_setter;
 };
