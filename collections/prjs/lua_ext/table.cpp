@@ -3,7 +3,8 @@
 ///
 #include "table.h"
 
-ParamTable::ParamTable (Getter g, Setter s) : m_getter(g), m_setter(s) {
+ParamTable::ParamTable (Getter g, Setter s, void *u) {
+    SetAccessor (g, s, u);
 }
 
 const Value *ParamTable::Get (const std::string &name) const {
@@ -11,7 +12,7 @@ const Value *ParamTable::Get (const std::string &name) const {
     if (it != m_vals.end()) {
         return &it->second;
     }
-    return m_getter ? m_getter(*this, name) : NULL;
+    return m_getter ? m_getter(m_udata, *this, name) : NULL;
 }
 
 bool ParamTable::Set (const std::string &name, const Value &val) {
@@ -21,7 +22,7 @@ bool ParamTable::Set (const std::string &name, const Value &val) {
         return true;
     }
     Add (name, val);
-    return m_setter ? m_setter(*this, name, val) : false;
+    return m_setter ? m_setter(m_udata, *this, name, val) : false;
 }
 
 void ParamTable::Add (const std::string &name, const Value &val) {
@@ -31,8 +32,14 @@ void ParamTable::Add (const std::string &name, const Value &val) {
 void ParamTable::Dump () {
     if (!m_setter) return;
     for (ValTable::iterator it = m_vals.begin(); it != m_vals.end(); ++it) {
-        m_setter (*this, it->first, it->second);
+        m_setter (m_udata, *this, it->first, it->second);
     }
     m_vals.clear();
+}
+
+void ParamTable::SetAccessor (Getter g, Setter s, void *u) {
+    m_getter = g;
+    m_setter = s;
+    m_udata = u;
 }
 
