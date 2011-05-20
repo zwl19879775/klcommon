@@ -1,0 +1,233 @@
+
+TODO:
+* 状态类属性功能
+* 属性编解码
+* 属性存读档
+* 属性恢复
+
+--------------------------------------------------------------------------------    
+Components:
+
+* StatusComponent: maintain these status flag properties
+* BaseComponent: base properties are stored in MoveShape
+    .CharacterGUID
+    .Name
+    .RegionID
+    .Direction
+    .LocX
+    .LocY
+    Class
+    Sex
+    CharacterLevel
+    CharacterLvupExp
+    CharacterNowExp
+* VisualComponent: client visual properties
+    Ride
+    Body
+    HairStyle
+    HairColor
+    Jewelry
+    Face
+    Size
+    Interface
+    HpBarVisual
+    ;; wrong category ?
+    EffectImmune
+    Visibility
+    DetectHide
+    DetectHideReduce
+* SocialComponent
+    ChasGuildGUID
+    ChasGuildPosition
+    ChasTeamGUID
+    ChasTeamPosition
+    Faction
+* HPMPComponent (dummy ?)
+    MaxHitPoint
+    MaxHitPointExtraRatio
+    MaxHitPointEx
+    MaxHitPointExtraRatioEx
+    HitPointRecover
+    MaxManaPoint
+    MaxManaPointExtraRatio
+    MaxManaPointEx
+    MaxManaPointExtraRatioEx
+    ManaPointRecover
+    HitPoint
+    ManaPoint
+* RecoverComponent (provide property recover functionality)
+* MoveComponent
+    PeaceMoveSpeed
+    FightMoveSpeed
+    MoveSpeedExtraRatio
+    MoveSpeedEx
+    MoveSpeedExtraRatioEx
+    CharacterObstracle
+    CharacterObstacleMove
+    TerrainCObstacleMove
+
+--------------------------------------------------------------------------------    
+Basic properties:
+
+CharacterGUID
+Name
+Sex
+Body
+HairStyle
+HairColor
+Jewelry
+Face
+Class
+Ride
+Size
+Direction
+RegionID
+LocX
+LocY
+
+Extend properties:
+
+ChasGuildGUID
+ChasGuildPosition
+ChasTeamGUID
+ChasTeamPosition
+Interface
+HpBarVisual
+NameBarVisual
+EffectImmune
+Visibility
+DetectHide
+DetectHideReduce
+CharacterObstacle
+CharacterObstacleMove
+TerrainCObstacleMove
+Faction
+
+CharacterLevel
+CharacterLvupExp
+CharacterNowExp
+
+MaxHitPoint
+MaxHitPointExtraRatio
+MaxHitPointEx
+MaxHitPointExtraRatioEx
+HitPointRecover
+MaxManaPoint
+MaxManaPointExtraRatio
+MaxManaPointEx
+MaxManaPointExtraRatioEx
+ManaPointRecover
+HitPoint
+ManaPoint
+PeaceMoveSpeed
+FightMoveSpeed
+MoveSpeedExtraRatio
+MoveSpeedEx
+MoveSpeedExtraRatioEx
+
+Status properties:
+
+DeathState
+Control
+EquipChange
+MoveControl
+SkillControl
+Move
+SpellCast
+CombatState
+Selection
+
+
+
+Script properties:
+
+All these properties can be accessed in scripts, also will encode to client,
+maybe will be saved in database. But no more in c++.
+
+HitProbability
+HitProbabilityCompare
+HitLevel
+HitLevelRatio
+HitLevelEx
+HitLevelRatioEx
+DodgeProbability
+DodgeProbabilityCompare
+DodgeLevel
+DodgeLevelRatio
+DodgeLevelEx
+DodgeLevelRatioEx
+CriticalRating
+CriticalRatingCompare
+CriticalDamageIncrease
+CriticalLevel
+CriticalLevelRatio
+CriticalLevelEx
+CriticalLevelRatioEx
+CriticalRatingReduce
+CriticalDamageReduce
+CriticalReduceLevel
+CriticalReduceLevelRatio
+CriticalReduceLevelEx
+CriticalReduceLevelRatioEx
+PhysicalAttackPower
+PhysicalAttackPowerExtraRatio
+PhysicalAttackPowerEx
+PhysicalAttackPowerExtraRatioEx
+Armor
+ArmorExtraRatio
+ArmorEx
+ArmorExtraRatioEx
+ArmorPenetration
+ArmorPenetrationEx
+ArmorPenetrationExtraRatio
+ArmorPenetrationExtraRatioEx
+DamageReduce
+SpellAttackPower
+SpellAttackPowerRatio
+SpellAttackPowerEx
+SpellAttackPowerRatioEx
+SpellResisitence
+SpellResisitenceRatio
+SpellResisitenceEx
+SpellResisitenceRatioEx
+SpellPenetration
+SpellPenetrationEx
+SpellPenetrationExtraRatio
+SpellPenetrationExtraRatioEx
+SpellPotential
+SpellPotentialRatio
+SpellPotentialEx
+SpellPotentialRatioEx
+SpellToughness
+SpellToughnessRatio
+SpellToughnessEx
+SpellToughnessRatioEx
+Persistant
+PersistantEndurance
+Resist
+ResistEndurance
+Stable
+StableEndurance
+Focus
+FocusEndurance
+Will
+WillEndurance
+AttackInterval
+AttackSpeedAdd
+AttackSpeedLevel
+AttackSpeedLevelRatio
+AttackSpeedLevelEx
+AttackSpeedLevelRatioEx
+SpellSpeed
+SpellSpeedLevel
+SpellSpeedLevelRatio
+SpellSpeedLevelEx
+SpellSpeedLevelRatioEx
+SpellBreak
+BearPhysicalDamageExtraRatio
+BearSpellDamageExtraRatio
+CausePhysicalDamageExtraRatio
+CauseSpellDamageExtraRatio
+BearHealExtraRatio
+CauseHealExtraRatio
+

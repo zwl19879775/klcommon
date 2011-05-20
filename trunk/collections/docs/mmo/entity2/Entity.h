@@ -13,7 +13,7 @@ class IComponent;
 /// test purpose
 typedef long CGUID;
 
-/// An entity is an abstract game object, which only has some components. And components have
+/// An entity is an abstract game object, which only has some components. And components 
 /// maintain the properties. 
 class Entity
 {
@@ -52,6 +52,9 @@ public:
     /// overhead. The better way is to find the component first and then set the value.
     bool SetSharedPropertyVal (const std::string &name, const GValue &val);
 
+    /// Increase/Decrease a property value.
+    bool IncSharedPropertyVal (const std::string &name, double inc);
+
     /// Check whether this entity has a specified component.
     bool HasComponent (const std::string &name) const { return GetComponent (name) != NULL; }
 
@@ -65,8 +68,8 @@ private:
     /// Remove a shared property by the property name.
     void RemoveSharedProperty (const std::string &name);
 
-    /// Add a component all shared properties to shared properties table.
-    void AddSharedProperties (IComponent *com);
+    /// So that the Component can add/remove shared properties in their scope.
+    friend class IComponent;
 private:
     ComponentTable m_components;
     PropertyTable m_sharedProperties;

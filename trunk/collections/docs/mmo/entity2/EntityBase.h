@@ -7,6 +7,8 @@
 #define ___ENTITY_BASE_H_
 
 #include "gvalue.h"
+#include <stdlib.h>
+#include <string.h>
 
 #ifndef _USE_LOG4C_LOG
 #define ELogDebug(fmt, ...)
@@ -50,5 +52,20 @@
 
 #define L_VALUE (*IT_N)
 
+inline void *CreateStringArg (const std::string &s)
+{
+    void *arg = malloc (s.size ()+1);
+    memcpy (arg, s.c_str (), s.size ()+1);
+    return arg;
+}
+
+inline void DestroyStringArg (void *arg)
+{
+    free (arg);
+}
+
+#define StringArg(arg) ((char*) arg)
+
+#define VALUE_NIL(val) (val.Type () == GValue::NIL)
 #endif
 
