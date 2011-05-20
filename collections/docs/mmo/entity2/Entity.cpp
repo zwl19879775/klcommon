@@ -21,7 +21,7 @@ void Entity::AddComponent (IComponent *com)
     }
     ELogDebug ("Add a new component (%s)", com->Name ().c_str ());
     m_components[com->Name ()] = com;
-    AddSharedProperties (com);
+    com->OnAdd ();
 }
 
 void Entity::RemoveComponent (const std::string &name)
@@ -30,6 +30,7 @@ void Entity::RemoveComponent (const std::string &name)
     if (it != m_components.end ())
     {
         ELogDebug ("Remove a component (%s)", it->first.c_str ());
+        it->second->OnRemove ();
         delete it->second;
     }
 }
@@ -68,6 +69,18 @@ bool Entity::SetSharedPropertyVal (const std::string &name, const GValue &val)
     return true;
 }
 
+bool Entity::IncSharedPropertyVal (const std::string &name, double inc)
+{
+    PropertyTable::iterator it = m_sharedProperties.find (name);
+    if (it == m_sharedProperties.end ())
+    {
+        ELogWarn ("Not found the shared property (%s) value", name.c_str ());
+        return false;
+    }
+    it->second->IncPropertyVal (name, inc);
+    return true;
+}
+
 void Entity::AddSharedProperty (const std::string &name, IComponent *com)
 {
     PropertyTable::iterator it = m_sharedProperties.find (name);
@@ -84,17 +97,5 @@ void Entity::RemoveSharedProperty (const std::string &name)
 {
     ELogDebug ("Remove a shared property (%s)", name.c_str ());
     m_sharedProperties.erase (name);
-}
-
-void Entity::AddSharedProperties (IComponent *com)
-{
-    const IComponent::SharedPropertyList &lst = com->GetSharedProperties ();
-    if (lst.size () == 0)
-    {
-        ELogDebug ("Component (%s) has no shared properties", com->Name ().c_str ());
-        return ;
-    }
-    TRAVERSE_CONST_LIST (IComponent::SharedPropertyList, lst,
-        AddSharedProperty (L_VALUE, com))
 }
 

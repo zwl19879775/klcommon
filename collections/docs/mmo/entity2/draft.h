@@ -10,6 +10,9 @@
     SomeComponent *com = (SomeComponent*) player->GetComponentSet()->Get ("ComponentName");
     com->SomeMethod ();
  There is no observer either, instead we use the concrete component direclty.
+
+ When someone want to add properties dynamically, you donot add the real properties, instead
+ you add a component.
 */
 
 class IComponent
@@ -61,6 +64,18 @@ public:
 private:
     float m_x;
     float m_y;
+};
+
+class MoneyStore : public IComponent
+{
+public:
+    virtual void SetPropertyVal (const std::string &name, const GValue &val)
+    {
+        if (name == "money")
+        {
+            // goods stuff
+        }
+    }
 };
 
 /// In some component which may use this `DirtyUpdater`, when it want to update dirty
