@@ -41,6 +41,7 @@ bool RefMembers::IncValue (const std::string &name, double inc)
         return false;
     }
     it->second->Inc (inc);
+    return true;
 }
 
 GValue RefMembers::GetValue (const std::string &name)
