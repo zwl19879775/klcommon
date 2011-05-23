@@ -42,7 +42,7 @@ Components:
     ChasTeamGUID
     ChasTeamPosition
     Faction
-* HPMPComponent (dummy ?)
+* HPMPComponent (dummy ? Category them into BaseComponent)
     MaxHitPoint
     MaxHitPointExtraRatio
     MaxHitPointEx
