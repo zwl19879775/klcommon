@@ -11,7 +11,7 @@
 * SBCL_: 作为Common Lisp的实现
 * hunchentoot_: 作为后端Web服务器，之所以不直接使用它作为前端服务，而使用nginx，主要是出于并发效率考虑
 * restas_: 一个Common Lisp的Web开发框架
-* ext-blog: 基于 restas_ 的博客系统
+* ext-blog_: 基于 restas_ 的博客系统
 * cl-writer_: 使用Lisp开发的博客客户端，本站由该客户端发表文章
 
 除此之外，以上Common Lisp软件还基于很多优秀的Common Lisp库，在此不详细列举。
@@ -46,4 +46,5 @@ last update: 8.3.2011
 .. _cl-writer: http://www.cppblog.com/kevinlynx/archive/2011/03/13/141713.aspx
 .. _Kevin Lynx: http://codemacro.com
 .. _请点这里: http://www.cppblog.com/kevinlynx/archive/2008/05/14/49783.html
+.. _ext-blog: http://codemacro.com/view/8
 
