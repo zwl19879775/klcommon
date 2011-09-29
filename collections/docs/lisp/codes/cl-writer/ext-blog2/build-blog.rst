@@ -43,7 +43,7 @@ VPS提供商国内国外都有很多。我选择的是 rapidxen_ ，128M内存�
 * nginx，Web服务器
 * SBCL_ ，Lisp编译器实现
 * quicklisp_ ，可以方便自动下载、安装Lisp库的工具
-* hunchentoot_ ，Lisp实现的Web服务器 
+* hunchentoot_ ，Lisp实现的Web服务器（不用特意安装）
 * ext-blog_ ，Lisp实现的博客系统
 
 实际上，可以完全使用Lisp作为Web服务器，但我担心效率问题（对个人博客而言完全没这回事），所以使用了nginx作为Web服务器前端，将hunchentoot放在后面。
@@ -80,7 +80,7 @@ SBCL_ 同样可以通过apt直接安装::
 
     apt-get instal sbcl
 
-装好SBCL后，就可以进一步安装quicklisp_ 。可以完全遵守quicklisp官方给的安装方法进行安装。大概就是先获取quicklisp.lisp文件，然后在SBCL中载入，根据提示即可。这里不再赘述。
+装好SBCL后，就可以进一步安装 quicklisp_ 。可以完全遵守quicklisp官方给的安装方法进行安装。大概就是先获取quicklisp.lisp文件，然后在SBCL中载入，根据提示即可。这里不再赘述。
 
 安装好quicklisp后，就可以使用它安装很多Lisp软件/库了。quicklisp在安装一个Lisp库时，会自动下载并安装依赖库，就像apt-get一样。因为ext-blog并未收入到quicklisp的软件列表里，所以ext-blog需要手动安装。首先，在本地（非VPS上）获取ext-blog源码::
 
