@@ -10,4 +10,7 @@
 
 void send_chattext (xmpp_ctx_t *ctx, xmpp_conn_t *const conn, 
 					xmpp_stanza_t *const stanza, const char *text);
+
+void send_formattext(xmpp_ctx_t *ctx, xmpp_conn_t *const conn, 
+					 xmpp_stanza_t *const stanza, const char *fmt, ...);
 #endif
