@@ -3,6 +3,7 @@
   Kevin Lynx
   6.7.2010
 */
+#include <stdarg.h>
 #include "xmpputil.h"
 
 void send_chattext (xmpp_ctx_t *ctx, xmpp_conn_t *const conn, 
@@ -26,4 +27,15 @@ void send_chattext (xmpp_ctx_t *ctx, xmpp_conn_t *const conn,
 	xmpp_stanza_release(reply);
     xmpp_stanza_release(body);
     xmpp_stanza_release(text);
+}
+
+void send_formattext(xmpp_ctx_t *ctx, xmpp_conn_t *const conn,
+					 xmpp_stanza_t *const stanza, const char *fmt, ...)
+{
+	char buf[4096];
+	va_list list;
+	va_start(list, fmt);
+	vsprintf(buf, fmt, list);
+	va_end(list);
+	send_chattext(ctx, conn, stanza, buf);
 }
