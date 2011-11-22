@@ -68,8 +68,8 @@ int EXPORT Download(const Cmd *cmd, xmpp_ctx_t *ctx, xmpp_conn_t *const conn,
 	wchar_t *wfile = WChar(file);
 	wchar_t *wurl = WChar(url);
     DWORD ret = XLURLDownloadToFile(wfile, wurl, _T(""), taskId);
-	delete [] wfile;
-	delete [] wurl;
+	//delete [] wfile;
+	//delete [] wurl;
 	if (ret == XL_SUCCESS)
 	{
 		send_formattext(ctx, conn, stanza, "start download success, task id: %d", taskId);
