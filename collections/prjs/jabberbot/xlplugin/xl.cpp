@@ -59,10 +59,17 @@ int EXPORT Download(const Cmd *cmd, xmpp_ctx_t *ctx, xmpp_conn_t *const conn,
     const ArgList *args = cmd->args;
     const char *url = ARG_STR(args);
     const char *file = ARG_NEXT(args) ? ARG_STR(args) : NULL;
+	
 	if (!url || !file)
+	{
 		return 0;
+	}
     LONG taskId = 0;
-    DWORD ret = XLURLDownloadToFile(WChar(file), WChar(url), _T(""), taskId);
+	wchar_t *wfile = WChar(file);
+	wchar_t *wurl = WChar(url);
+    DWORD ret = XLURLDownloadToFile(wfile, wurl, _T(""), taskId);
+	delete [] wfile;
+	delete [] wurl;
 	if (ret == XL_SUCCESS)
 	{
 		send_formattext(ctx, conn, stanza, "start download success, task id: %d", taskId);
@@ -75,7 +82,7 @@ int EXPORT Download(const Cmd *cmd, xmpp_ctx_t *ctx, xmpp_conn_t *const conn,
 }
 
 int EXPORT plugin_init(CmdState *cs) {
-    if (XLInitDownloadEngine())
+    if (XLInitDownloadEngine() == FALSE && 0)
         return 0;
     cs_register(cs, PLUGIN_NAME, "download", Download);
     return 1;

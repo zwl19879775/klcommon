@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\expat\"
+				AdditionalIncludeDirectories="..\;..\expat\;..\openssl\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;XML_STATIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,6 +61,8 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="libeay32.lib ssleay32.lib"
+				AdditionalLibraryDirectories="..\openssl\lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -103,7 +105,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../;../expat"
+				AdditionalIncludeDirectories="../;../expat;..\openssl\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;XML_STATIC"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -122,6 +124,8 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				AdditionalDependencies="libeay32.lib ssleay32.lib"
+				AdditionalLibraryDirectories="..\openssl\lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -252,7 +256,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\libstrophe\tls_schannel.c"
+			RelativePath="..\libstrophe\tls_openssl.c"
 			>
 		</File>
 		<File
