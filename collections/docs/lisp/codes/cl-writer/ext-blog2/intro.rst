@@ -20,13 +20,9 @@ ext-blog包含以下特性：
 获取ext-blog
 ---------------
 
-目前，我仅仅将ext-blog放在我的一个github项目里，因为我还没来得及编写足够多的英文文档将其正式开源。你可以如下获取完整源代码::
+目前，ext-blog放在github上，你可以使用git来获取完整的源代码::
 
-    git clone git://github.com/kevinlynx/klprj.git
-
-或者你不想获取其他乱七八糟的东西，那么尝试访问下这个页面::
-
-    https://github.com/kevinlynx/klprj/tree/master/ext-blog
+    git clone git://github.com/kevinlynx/ext-blog.git
 
 安装
 ------------
