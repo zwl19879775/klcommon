@@ -84,9 +84,9 @@ SBCL_ 同样可以通过apt直接安装::
 
 安装好quicklisp后，就可以使用它安装很多Lisp软件/库了。quicklisp在安装一个Lisp库时，会自动下载并安装依赖库，就像apt-get一样。因为ext-blog并未收入到quicklisp的软件列表里，所以ext-blog需要手动安装。首先，在本地（非VPS上）获取ext-blog源码::
 
-    git clone git://github.com/kevinlynx/klprj.git
-
-上面的git是我个人存东西用的，暂时没将ext-blog单独放置。进入到ext-blog目录。该目录下有几个方便的脚本可以用于博客管理。首先将ext-blog打包并上传到VPS上，例如::
+    git clone git://github.com/kevinlynx/ext-blog.git
+    
+进入到ext-blog目录。该目录下有几个方便的脚本可以用于博客管理。首先将ext-blog打包并上传到VPS上，例如::
 
     ./upload-dist.sh root@codemacro.com 1234 /home/test
 
