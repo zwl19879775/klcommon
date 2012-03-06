@@ -15,7 +15,7 @@
 技术信息
 -------------
 
-不知道哪个王八蛋说的，程序员每一年得学一门新语言。我2010年末接触了Lisp，然后莫名其妙地写了 ext-blog_ ，又莫名其妙地在2011年末接触了Ruby。因为大学期间太痴迷C++，我勤奋努力，几乎通晓这门语言的各种细节；后来又稍微实践了下编译原理。在这若干年间，断断续续也接触过其他脚本类语言，我甚至在android上用java写过几个 小应用_ 。基于这些积累，我发现我可以很快上手Ruby，然后再上手Rails，然后就有了 codertrace.com_ 。
+不知道哪个王八蛋说的，程序员每一年得学一门新语言。我2010年末接触了Lisp，然后莫名其妙地写了 ext-blog_ ，又莫名其妙地在2011年末接触了Ruby。因为大学期间太痴迷C++，我勤奋努力，几乎通晓这门语言的各种细节；后来又稍微实践了下编译原理。在这若干年间，断断续续也接触过其他脚本类语言，我甚至在android上用java写过几个 小应用_ 。基于这些积累，我发现我可以很快上手Ruby，然后再上手Rails，然后就有了 codertrace.com_ （当然还做过一些小的 APP_ )
 
 所以， codertrace.com_ 就是一个Ruby on Rails的应用。当我用这货来做WEB的时候，我才发现曾经用Lisp写博客是多么geek。这种感觉就像你在用汇编写一个GUI程序一样。我的意思是，ruby/rails的世界里有太多现成的东西，但lisp的世界里没有。
 
@@ -56,5 +56,5 @@ workless，这个gem可以在有异步任务时，例如codertrace上读取RSS�
 .. _小应用: http://kevinlynx.iteye.com
 .. _codertrace.com: http://codertrace.com
 .. _heroku.com: http://heroku.com
-
+.. _APP: http://klquiz.heroku.com
 
